@@ -1,0 +1,6 @@
+__pycache__/
+*.pyc
+*.log
+dashboard.html
+site/
+.DS_Store

@@ -1,0 +1,57 @@
+//@version=5
+indicator("SET ปันผล — RSI Bullish Divergence + Entry", shorttitle="DIV Entry")
+
+// ===== Inputs =====
+rsiLen     = input.int(14, "RSI Length")
+lbL        = input.int(5,  "Pivot Left")
+lbR        = input.int(5,  "Pivot Right")
+rangeLower = input.int(5,  "Min bars between pivots")
+rangeUpper = input.int(60, "Max bars between pivots")
+osLevel    = input.int(40, "Oversold filter (RSI <=)")
+
+osc = ta.rsi(close, rsiLen)
+
+hline(70, "Overbought", color=color.red)
+hline(30, "Oversold",   color=color.green)
+plot(osc, "RSI", color=color.new(color.blue, 0))
+bgcolor(osc < 30 ? color.new(color.green, 90) : na)
+
+// ===== Regular Bullish Divergence (ราคา Lower Low, RSI Higher Low) =====
+plFound = not na(ta.pivotlow(osc, lbL, lbR))
+
+inRange(cond) =>
+    bars = ta.barssince(cond)
+    rangeLower <= bars and bars <= rangeUpper
+
+oscHL   = osc[lbR] > ta.valuewhen(plFound, osc[lbR], 1) and inRange(plFound[1])
+priceLL = low[lbR] < ta.valuewhen(plFound, low[lbR], 1)
+
+bullDiv = plFound and priceLL and oscHL
+buy     = bullDiv and osc[lbR] <= osLevel
+
+plot(plFound ? osc[lbR] : na, "Div", offset=-lbR,
+     color = bullDiv ? color.green : color.new(color.white, 100), linewidth=2)
+plotshape(bullDiv, "Bull Div", style=shape.labelup, location=location.absolute,
+     offset=-lbR, text="DIV", color=color.green, textcolor=color.white, size=size.tiny)
+plotshape(buy, "BUY", style=shape.triangleup, location=location.bottom,
+     text="BUY", color=color.lime, size=size.tiny)
+
+plot(buy ? 1 : 0, "Buy Signal", display=display.data_window)
+
+// ===== Discord Alert: ยิง JSON ตรงเข้า Discord webhook =====
+// ข้อความถูกจัดเป็นรูปแบบ {"content": "..."} ที่ Discord รับได้
+msg = '{"content": "🟢 **BUY** ' + syminfo.ticker +
+      ' | ราคา ' + str.tostring(close, format.mintick) +
+      ' | RSI ' + str.tostring(osc, '#.0') +
+      ' | TF ' + timeframe.period + '"}'
+if buy
+    alert(msg, alert.freq_once_per_bar_close)
+
+// (ทางเลือก) เตือนตอนเจอ divergence แม้ยังไม่ oversold — เอา // ออก 3 บรรทัดล่างถ้าจะใช้
+// divmsg = '{"content": "🔵 **Divergence** ' + syminfo.ticker + ' | ราคา ' + str.tostring(close, format.mintick) + ' | TF ' + timeframe.period + '"}'
+// if bullDiv and not buy
+//     alert(divmsg, alert.freq_once_per_bar_close)
+
+// ===== ทางเลือก: ตั้ง alert แบบเลือกเงื่อนไขเอง =====
+alertcondition(bullDiv, "Bullish Divergence", "RSI Bullish Divergence")
+alertcondition(buy,     "Buy Signal",         "สัญญาณเข้าซื้อ (divergence + oversold)")
