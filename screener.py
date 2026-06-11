@@ -443,7 +443,7 @@ HTML_TEMPLATE = r"""<!DOCTYPE html>
   </div>
 
   <h2 style="margin-top:26px">🏆 Top 5 น่าจัด — ปันผลคุณภาพ + คะแนนสูงสุด</h2>
-  <div class="sub" style="margin:-6px 0 12px">ลงทุน 1 ล้านบาท → ปันผล/ปี (สุทธิหลังหักภาษี ณ ที่จ่าย 10%) • คัดจากหุ้น 💎 งบแข็งแรง</div>
+  <div class="sub" style="margin:-6px 0 12px">ลงทุน 1 ล้านบาท → ปันผล <b>ต่อปี</b> (สุทธิหลังหักภาษี 10%) • จ่ายจริงปีละ 1–2 ครั้งตามวัน XD ไม่ใช่รายเดือน • คัดจากหุ้น 💎 งบแข็งแรง</div>
   <div id="top5" class="top5"></div>
 
   <h2>📋 ตารางทั้งหมด</h2>
@@ -508,8 +508,8 @@ document.getElementById('top5').innerHTML = picks.map((r,i)=>{
     <div class="rk">#${i+1} <span class="pill" style="background:${r.status_color};font-size:10px;padding:1px 6px">${r.status}</span></div>
     <div class="tk">${r.ticker}</div>
     <div class="big">${net.toLocaleString()} ฿<span class="lbl"> /ปี</span></div>
-    <div class="lbl">ลงล้าน · ยีลด์ ${r.yield.toFixed(1)}%</div>
-    <div class="meta2">payout ${r.payout==null?'—':r.payout.toFixed(0)+'%'} · งบ ${r.health} · PE ${r.pe==null?'—':r.pe.toFixed(0)}</div>
+    <div class="lbl">≈ ${Math.round(net/12).toLocaleString()} ฿/เดือน · ลงล้าน(สุทธิ)</div>
+    <div class="meta2">ยีลด์ ${r.yield.toFixed(1)}% · payout ${r.payout==null?'—':r.payout.toFixed(0)+'%'} · งบ ${r.health}</div>
   </div>`;
 }).join('');
 
