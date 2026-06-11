@@ -169,6 +169,14 @@ def analyze(ticker, df, fund):
     div_1y = float(div[div.index >= cutoff].sum())
     dyield = div_1y / price * 100
 
+    # ความสม่ำเสมอปันผล (ประวัติ ~5 ปี): จับการตัดปันผลแรง >50% YoY
+    dpos = div[div > 0]
+    div_cut = False
+    if len(dpos) > 2:
+        annual = dpos.groupby(dpos.index.year).sum()
+        full = annual[annual.index < annual.index.max()].values   # ตัดปีล่าสุดที่ยังไม่จบ
+        div_cut = any(full[k + 1] < full[k] * 0.5 for k in range(len(full) - 1)) if len(full) > 1 else False
+
     r = rsi(close)
     rsi_now = float(r.iloc[-1])
     ema20, ema50, ema200 = ema(close, 20), ema(close, 50), ema(close, 200)
@@ -216,6 +224,8 @@ def analyze(ticker, df, fund):
         score -= 20; reasons.append("🔴 Bearish Divergence (ระวังกลับหัว)")
     if trap:
         score -= 15; reasons.append("⚠ เสี่ยง dividend trap")
+    if div_cut and dyield > 0:
+        score -= 10; reasons.append("⚠ เคยตัดปันผล (ไม่สม่ำเสมอ)")
     if fg_pts is not None and fg_pts < 0:
         score -= 10
         for x in fg_reasons:
@@ -256,7 +266,7 @@ def analyze(ticker, df, fund):
         "de": None if fund.get("debtToEquity") is None else round(fund["debtToEquity"] / 100, 2),
         "epsg": pct(epsg), "pe": None if fund.get("trailingPE") is None else round(fund["trailingPE"], 1),
         "health": fg_label, "health_color": fg_color,
-        "bull_div": bull_div, "bear_div": bear_div, "trap": trap,
+        "bull_div": bull_div, "bear_div": bear_div, "trap": trap, "div_cut": div_cut,
         "score": score, "reasons": reasons,
         "chart": {"candles": candles, "ema20": l20, "ema50": l50, "ema200": l200, "markers": markers},
     }
@@ -265,7 +275,7 @@ def analyze(ticker, df, fund):
 def run(tickers):
     yq = [t + ".BK" for t in tickers]
     print(f"⬇  ราคา/ปันผล {len(yq)} ตัว ...")
-    raw = yf.download(yq, period="2y", interval="1d", group_by="ticker",
+    raw = yf.download(yq, period="5y", interval="1d", group_by="ticker",
                       auto_adjust=False, actions=True, progress=False, threads=True)
     print(f"⬇  งบการเงิน {len(yq)} ตัว ...")
     funds = fetch_fundamentals(yq)
@@ -289,11 +299,11 @@ def run(tickers):
 
 def build_dashboard(results, out_path):
     keys = ("ticker", "price", "yield", "payout", "roe", "de", "epsg", "pe",
-            "health", "health_color", "rsi", "trend", "score", "reasons", "id", "bear_div", "trap")
+            "health", "health_color", "rsi", "trend", "score", "reasons", "id", "bear_div", "trap", "div_cut")
     table = [{k: r[k] for k in keys} for r in results]
     charts = [{"id": r["id"], "ticker": r["ticker"], **r["chart"]} for r in results if r["chart"]["candles"]][:8]
     n_buy = sum(1 for r in results if r["score"] >= 50)
-    n_warn = sum(1 for r in results if r["bear_div"] or r["trap"])
+    n_warn = sum(1 for r in results if r["bear_div"] or r["trap"] or r["div_cut"])
 
     html = HTML_TEMPLATE
     html = html.replace("/*__ROWS__*/", json.dumps(table, ensure_ascii=False))
@@ -365,7 +375,7 @@ HTML_TEMPLATE = r"""<!DOCTYPE html>
   <div class="foot">
     ⚠ <b>คำเตือน:</b> เป็น "สัญญาณ" ไม่ใช่คำแนะนำซื้อขาย • ควร backtest + ศึกษางบจริงก่อนลงเงิน • ข้อมูล yfinance ไม่ใช่ realtime<br>
     🟢 <b>Bull Div ✅ ยืนยัน</b> = เจอ divergence + ราคาปิดเหนือ EMA20 (กรอง "มีดร่วง" → เข้าได้) • 🟡 <b>รอยืนยัน</b> = เจอ div แต่ราคายังไม่เหนือ EMA20 • 🔴 <b>Bearish Divergence</b> = ระวังกลับหัว<br>
-    💰 <b>สุขภาพงบ</b> ดูจาก payout ratio, ROE, margin, การเติบโตกำไร • <b>dividend trap</b> = ปันผลสูงแต่งบทรุด (อาจกำลังจะลดปันผล)
+    💰 <b>สุขภาพงบ</b> ดูจาก payout ratio, ROE, margin, การเติบโตกำไร • <b>dividend trap</b> = ปันผลสูงแต่งบทรุด • <b>เคยตัดปันผล</b> = ในอดีต 5 ปีเคยลดปันผลแรง >50% (ไม่สม่ำเสมอ)
   </div>
 </div>
 
@@ -378,7 +388,7 @@ function badge(r){ let c='badge'; if(r.includes('🔴'))c='badge bear'; else if(
 
 const tb = document.querySelector('#tbl tbody');
 function render(rows){
-  tb.innerHTML = rows.map(r=>`<tr style="${r.bear_div||r.trap?'background:rgba(239,83,80,.05)':''}">
+  tb.innerHTML = rows.map(r=>`<tr style="${r.bear_div||r.trap||r.div_cut?'background:rgba(239,83,80,.05)':''}">
     <td><b>${r.ticker}</b></td>
     <td class="num">${r.price.toFixed(2)}</td>
     <td class="num ${r.yield>=4?'up':''}">${r.yield.toFixed(2)}</td>
