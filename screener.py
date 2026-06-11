@@ -373,7 +373,54 @@ def run(tickers):
     return results
 
 
-def build_dashboard(results, out_path):
+def fetch_set_index():
+    try:
+        h = yf.Ticker("^SET.BK").history(period="1y", auto_adjust=False)
+        if len(h) < 20:
+            return None
+        c = h["Close"]
+        last = float(c.iloc[-1])
+        return {"level": last,
+                "chg_1m": (last / float(c.iloc[-22]) - 1) * 100 if len(c) > 22 else None,
+                "chg_1y": (last / float(c.iloc[0]) - 1) * 100,
+                "from_high": (last / float(h["High"].max()) - 1) * 100}
+    except Exception:
+        return None
+
+
+def market_banner(results, market):
+    n = len(results) or 1
+    up_pct = round(sum(1 for r in results if r["trend"] == "ขาขึ้น") / n * 100)
+    avg_rsi = round(sum(r["rsi"] for r in results) / n)
+    os_ = sum(1 for r in results if r["rsi"] < 35)
+    ob = sum(1 for r in results if r["rsi"] > 70)
+    bear = sum(1 for r in results if r["bear_div"])
+    chg1m = market["chg_1m"] if market else None
+    if chg1m is None:
+        mood, mcol = "—", "#3a3f4b"
+    elif chg1m > 2 and up_pct >= 55:
+        mood, mcol = "🐂 ขาขึ้น", "#0b6e4f"
+    elif chg1m < -2 or up_pct < 40:
+        mood, mcol = "🐻 ขาลง", "#7a2222"
+    else:
+        mood, mcol = "↔ ออกข้าง/ผสม", "#5a4a1f"
+    caution = ""
+    if market and market.get("from_high") is not None and market["from_high"] > -5 and bear >= 3:
+        caution = " · ⚠️ ใกล้ high + เริ่มมี bear div"
+    sgn = lambda v: "—" if v is None else f"{v:+.1f}%"
+    if market:
+        col1m = "#5fe0c8" if (market["chg_1m"] or 0) >= 0 else "#ff8a8a"
+        idx = (f'<b style="font-size:22px">{market["level"]:,.0f}</b><span class="lbl"> จุด</span> · '
+               f'<span style="color:{col1m}">1ด {sgn(market["chg_1m"])}</span> · 1ปี {sgn(market["chg_1y"])} · ห่าง high {sgn(market["from_high"])}')
+    else:
+        idx = '<span class="lbl">(ดึง SET Index ไม่ได้)</span>'
+    return (f'<div class="market"><div class="mk-top"><b>🇹🇭 ภาพรวมตลาด SET</b>'
+            f'<span class="pill" style="background:{mcol}">{mood}</span></div>'
+            f'<div class="mk-idx">{idx}</div>'
+            f'<div class="mk-br">Breadth: ขาขึ้น <b>{up_pct}%</b> · RSI เฉลี่ย <b>{avg_rsi}</b> · oversold {os_} · overbought {ob} · bear div {bear}{caution}</div></div>')
+
+
+def build_dashboard(results, market, out_path):
     keys = ("ticker", "price", "yield", "payout", "roe", "de", "epsg", "pe",
             "health", "health_color", "rsi", "trend", "score", "reasons", "id", "bear_div", "trap", "div_cut",
             "xd_last", "xd_next", "status", "status_color", "srank", "div_good", "turnaround")
@@ -387,6 +434,7 @@ def build_dashboard(results, out_path):
     html = HTML_TEMPLATE
     html = html.replace("/*__ROWS__*/", json.dumps(table, ensure_ascii=False))
     html = html.replace("/*__CHARTS__*/", json.dumps(charts, ensure_ascii=False))
+    html = html.replace("__MARKET__", market_banner(results, market))
     html = html.replace("__SCANNED__", str(len(results)))
     html = html.replace("__NGO__", str(n_go))
     html = html.replace("__NWAIT__", str(n_wait))
@@ -417,6 +465,9 @@ HTML_TEMPLATE = r"""<!DOCTYPE html>
   .pick .big{font-size:18px;font-weight:700;color:#5fe0c8;margin:6px 0 0}
   .pick .lbl{color:var(--mut);font-size:10.5px;font-weight:400}
   .pick .meta2{color:var(--mut);font-size:11px;margin-top:6px}
+  .market{background:linear-gradient(135deg,#16202e,#161b22);border:1px solid #2a3a4a;border-radius:12px;padding:14px 18px;margin-bottom:18px}
+  .mk-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px} .mk-top b{font-size:15px}
+  .mk-idx{font-size:13px;margin-bottom:6px} .mk-br{font-size:12px;color:var(--mut)}
   table{width:100%;border-collapse:collapse;background:var(--card);border:1px solid var(--bd);border-radius:10px;font-size:12.5px}
   th,td{padding:9px 10px;text-align:left;border-bottom:1px solid var(--bd)}
   th{color:var(--mut);font-weight:600;cursor:pointer;user-select:none;white-space:nowrap;position:sticky;top:0;z-index:3;background:#1a2130;box-shadow:inset 0 -1px 0 var(--bd)} th:hover{color:var(--tx)}
@@ -439,6 +490,7 @@ HTML_TEMPLATE = r"""<!DOCTYPE html>
 <div class="wrap">
   <h1>📈 SET Dividend + Technical + Fundamental Screener</h1>
   <div class="sub">หุ้นปันผลคุณภาพ + จังหวะเข้า + กรองงบการเงิน • ข้อมูล: yfinance • อินดิเคเตอร์คำนวณเอง</div>
+  __MARKET__
   <div class="stats">
     <div class="stat"><b>__SCANNED__</b><span>หุ้นที่สแกน</span></div>
     <div class="stat"><b class="up">__NGO__</b><span>🟢 เข้าได้ตอนนี้</span></div>
@@ -582,5 +634,6 @@ if __name__ == "__main__":
         sig = ", ".join(x for x in r["reasons"] if "Div" in x or "trap" in x or "oversold" in x)[:46]
         print(f"{r['ticker']:<8}{r['price']:>8.2f}{r['yield']:>6.1f}{pay:>6}{eg:>8}{r['health']:>10}{r['score']:>7.0f}  {sig}")
 
-    build_dashboard(res, args.out)
+    market = fetch_set_index()
+    build_dashboard(res, market, args.out)
     print(f"\n✅ สร้าง {args.out} แล้ว ({len(res)} หุ้น)")
