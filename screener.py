@@ -219,6 +219,7 @@ def analyze(ticker, df, fund):
     bbl = float(bb_low.iloc[-1]) if np.isfinite(bb_low.iloc[-1]) else price
     uptrend = price > e200
     low52 = float(low.tail(252).min())
+    high52 = float(high.tail(252).max())
     bull_div, bull_idx = detect_bull_div(low, r)
     bear_div, bear_idx = detect_bear_div(high, r)
 
@@ -242,6 +243,8 @@ def analyze(ticker, df, fund):
     margin = fund.get("profitMargins")
     trap = dyield >= 4 and ((payout or 0) > 1.0 or (epsg is not None and epsg <= -0.2)
                             or (margin is not None and margin < 0))
+    # Turnaround: ราคาโดนทุบ ≥20% จากจุดสูง 52 wk + กำไรเด้งกลับแรง ≥30%
+    turnaround = price <= high52 * 0.80 and epsg is not None and epsg >= 0.30
 
     # ---------- คะแนนจังหวะเข้า ----------
     score, reasons = 0.0, []
@@ -281,6 +284,8 @@ def analyze(ticker, df, fund):
                 and not trap and not div_cut and not bear_div)
     if div_good:
         score += 8; reasons.append("💎 ปันผลน่าสนใจ (สูง+ยั่งยืน)")
+    if turnaround:
+        reasons.append("🔄 Turnaround (กำไรฟื้น ราคายังถูก)")
     if uptrend:
         score += 10   # ขาขึ้น (เหนือ EMA200) = เหมาะถือยาว — โชว์ในคอลัมน์เทรนด์
     else:
@@ -337,7 +342,7 @@ def analyze(ticker, df, fund):
         "health": fg_label, "health_color": fg_color,
         "bull_div": bull_div, "bear_div": bear_div, "trap": trap, "div_cut": div_cut,
         "xd_last": xd_last, "xd_next": xd_next,
-        "status": status, "status_color": scolor, "srank": srank, "div_good": div_good,
+        "status": status, "status_color": scolor, "srank": srank, "div_good": div_good, "turnaround": turnaround,
         "score": score, "reasons": reasons,
         "chart": {"candles": candles, "ema20": l20, "ema50": l50, "ema200": l200, "ema800": l800, "markers": markers},
     }
@@ -371,7 +376,7 @@ def run(tickers):
 def build_dashboard(results, out_path):
     keys = ("ticker", "price", "yield", "payout", "roe", "de", "epsg", "pe",
             "health", "health_color", "rsi", "trend", "score", "reasons", "id", "bear_div", "trap", "div_cut",
-            "xd_last", "xd_next", "status", "status_color", "srank", "div_good")
+            "xd_last", "xd_next", "status", "status_color", "srank", "div_good", "turnaround")
     table = [{k: r[k] for k in keys} for r in results]
     charts = [{"id": r["id"], "ticker": r["ticker"], **r["chart"]} for r in results if r["chart"]["candles"]][:8]
     n_go = sum(1 for r in results if "เข้าได้" in r["status"])
@@ -420,7 +425,7 @@ HTML_TEMPLATE = r"""<!DOCTYPE html>
   .score{font-weight:700;padding:2px 8px;border-radius:6px;display:inline-block;min-width:30px;text-align:center}
   .pill{display:inline-block;padding:2px 8px;border-radius:20px;font-size:11px;color:#fff;white-space:nowrap}
   .badge{display:inline-block;background:#1f2630;border:1px solid var(--bd);color:var(--tx);border-radius:20px;padding:2px 8px;font-size:11px;margin:2px 3px 0 0;white-space:nowrap}
-  .badge.warn{border-color:#5a3a00;color:#ffcf66} .badge.bull{border-color:#1c5a4f;color:#5fe0c8} .badge.bear{border-color:#5a2222;color:#ff8a8a} .badge.gem{border-color:#7a6a1f;color:#ffe08a}
+  .badge.warn{border-color:#5a3a00;color:#ffcf66} .badge.bull{border-color:#1c5a4f;color:#5fe0c8} .badge.bear{border-color:#5a2222;color:#ff8a8a} .badge.gem{border-color:#7a6a1f;color:#ffe08a} .badge.turn{border-color:#5a3d6e;color:#c89aff}
   .up{color:var(--grn)} .down{color:var(--red)}
   h2{font-size:16px;margin:30px 0 12px}
   .grid{display:grid;grid-template-columns:repeat(2,1fr);gap:16px} @media(max-width:860px){.grid{grid-template-columns:1fr}}
@@ -442,6 +447,7 @@ HTML_TEMPLATE = r"""<!DOCTYPE html>
     <div class="stat"><b class="down">__NWARN__</b><span>ติดธงเตือน</span></div>
   </div>
 
+  <div id="turncall"></div>
   <h2 style="margin-top:26px">🏆 Top 5 น่าจัด — ปันผลคุณภาพ + คะแนนสูงสุด</h2>
   <div class="sub" style="margin:-6px 0 12px">ลงทุน 1 ล้านบาท → ปันผล <b>ต่อปี</b> (สุทธิหลังหักภาษี 10%) • จ่ายจริงปีละ 1–2 ครั้งตามวัน XD ไม่ใช่รายเดือน • คัดจากหุ้น 💎 งบแข็งแรง</div>
   <div id="top5" class="top5"></div>
@@ -480,7 +486,7 @@ const ROWS = /*__ROWS__*/;
 const CHARTS = /*__CHARTS__*/;
 const f1 = (v)=> v===null||v===undefined ? '—' : (+v).toFixed(1);
 function scoreColor(s){ if(s>=70) return '#0b6e4f'; if(s>=50) return '#1f7a4d'; if(s>=30) return '#5a4a1f'; return '#3a3f4b'; }
-function badge(r){ let c='badge'; if(r.includes('🔴'))c='badge bear'; else if(r.includes('🟢'))c='badge bull'; else if(r.includes('💎'))c='badge gem'; else if(r.includes('⚠'))c='badge warn'; return `<span class="${c}">${r}</span>`; }
+function badge(r){ let c='badge'; if(r.includes('🔴'))c='badge bear'; else if(r.includes('🟢'))c='badge bull'; else if(r.includes('💎'))c='badge gem'; else if(r.includes('🔄'))c='badge turn'; else if(r.includes('⚠'))c='badge warn'; return `<span class="${c}">${r}</span>`; }
 
 const tb = document.querySelector('#tbl tbody');
 function render(rows){
@@ -503,6 +509,8 @@ function render(rows){
 render(ROWS);
 
 // 🏆 Top 5 น่าจัด (คัด div_good เรียงคะแนน)
+const turns=ROWS.filter(r=>r.turnaround);
+document.getElementById('turncall').innerHTML = turns.length ? `<div style="background:#231a2e;border:1px solid #5a3d6e;border-radius:10px;padding:10px 14px;margin:6px 0;font-size:13px">🔄 <b style="color:#c89aff">หุ้น Turnaround ตอนนี้:</b> ${turns.map(r=>r.ticker+' ('+r.status+')').join(' · ')} <span style="color:var(--mut)">— กำไรฟื้นแต่ราคายังถูก/ขาลง = เสี่ยงสูง รอ confirm ก่อน</span></div>` : '';
 const picks=[...ROWS].filter(r=>r.div_good).sort((a,b)=>b.score-a.score).slice(0,5);
 document.getElementById('top5').innerHTML = picks.map((r,i)=>{
   const net=Math.round(1000000*r.yield/100*0.9);
