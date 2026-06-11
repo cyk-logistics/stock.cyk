@@ -1,0 +1,45 @@
+name: Build & Deploy SET Screener
+
+on:
+  schedule:
+    - cron: '30 10 * * 1-5'   # ~17:30 ICT วันธรรมดา (หลังตลาด SET ปิด) — เวลาเป็น UTC
+  workflow_dispatch:           # กดรันเองได้จากหน้า Actions
+  push:
+    branches: [ main ]
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: ติดตั้ง dependencies
+        run: pip install -r requirements.txt
+      - name: สแกนหุ้น + สร้างหน้าเว็บ
+        run: |
+          mkdir -p site
+          python screener.py --out site/index.html
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: site
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4
