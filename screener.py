@@ -318,9 +318,9 @@ HTML_TEMPLATE = r"""<!DOCTYPE html>
   .stats{display:flex;gap:12px;margin-bottom:20px;flex-wrap:wrap}
   .stat{background:var(--card);border:1px solid var(--bd);border-radius:10px;padding:12px 16px;min-width:110px}
   .stat b{display:block;font-size:22px} .stat span{color:var(--mut);font-size:12px}
-  table{width:100%;border-collapse:collapse;background:var(--card);border:1px solid var(--bd);border-radius:10px;overflow:hidden;font-size:12.5px}
+  table{width:100%;border-collapse:collapse;background:var(--card);border:1px solid var(--bd);border-radius:10px;font-size:12.5px}
   th,td{padding:9px 10px;text-align:left;border-bottom:1px solid var(--bd)}
-  th{color:var(--mut);font-weight:600;cursor:pointer;user-select:none;white-space:nowrap} th:hover{color:var(--tx)}
+  th{color:var(--mut);font-weight:600;cursor:pointer;user-select:none;white-space:nowrap;position:sticky;top:0;z-index:3;background:#1a2130;box-shadow:inset 0 -1px 0 var(--bd)} th:hover{color:var(--tx)}
   tr:last-child td{border-bottom:none}
   td.num,th.num{text-align:right;font-variant-numeric:tabular-nums}
   .score{font-weight:700;padding:2px 8px;border-radius:6px;display:inline-block;min-width:30px;text-align:center}
