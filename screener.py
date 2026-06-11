@@ -10,6 +10,7 @@ SET Dividend + Technical + Fundamental Screener
 """
 import argparse
 import json
+from datetime import datetime, timezone, timedelta
 from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 
@@ -88,7 +89,14 @@ def detect_bear_div(high, r, left=5, right=5, lookback=70):
 
 # ---------- งบการเงิน ----------
 FUND_FIELDS = ["payoutRatio", "returnOnEquity", "debtToEquity", "profitMargins",
-               "trailingPE", "priceToBook", "earningsGrowth", "revenueGrowth"]
+               "trailingPE", "priceToBook", "earningsGrowth", "revenueGrowth", "exDividendDate"]
+
+TH_MON = ["", "ม.ค.", "ก.พ.", "มี.ค.", "เม.ย.", "พ.ค.", "มิ.ย.",
+          "ก.ค.", "ส.ค.", "ก.ย.", "ต.ค.", "พ.ย.", "ธ.ค."]
+
+
+def _fmt_xd(dt):
+    return f"{dt.day} {TH_MON[dt.month]}{str(dt.year)[2:]}"
 
 
 def _one_fund(tq):
@@ -176,6 +184,27 @@ def analyze(ticker, df, fund):
         annual = dpos.groupby(dpos.index.year).sum()
         full = annual[annual.index < annual.index.max()].values   # ตัดปีล่าสุดที่ยังไม่จบ
         div_cut = any(full[k + 1] < full[k] * 0.5 for k in range(len(full) - 1)) if len(full) > 1 else False
+
+    # วัน XD: ล่าสุด (yfinance) + คาดถัดไป (ประมาณจากความถี่การจ่าย)
+    if len(dpos):
+        py = dpos.groupby(dpos.index.year).size()
+        fyc = py[py.index < py.index.max()]
+        freq = max(1, min(int(round(float(fyc.median()))) if len(fyc) else 1, 4))
+    else:
+        freq = 1
+    xd_last, xd_next = "—", "—"
+    xts = fund.get("exDividendDate")
+    if xts:
+        try:
+            ld = datetime.fromtimestamp(xts, tz=timezone.utc)
+            step = timedelta(days=round(365 / freq))
+            nd = ld + step
+            now = datetime.now(timezone.utc)
+            while nd < now:
+                nd += step
+            xd_last, xd_next = _fmt_xd(ld), _fmt_xd(nd)
+        except Exception:
+            pass
 
     r = rsi(close)
     rsi_now = float(r.iloc[-1])
@@ -267,6 +296,7 @@ def analyze(ticker, df, fund):
         "epsg": pct(epsg), "pe": None if fund.get("trailingPE") is None else round(fund["trailingPE"], 1),
         "health": fg_label, "health_color": fg_color,
         "bull_div": bull_div, "bear_div": bear_div, "trap": trap, "div_cut": div_cut,
+        "xd_last": xd_last, "xd_next": xd_next,
         "score": score, "reasons": reasons,
         "chart": {"candles": candles, "ema20": l20, "ema50": l50, "ema200": l200, "markers": markers},
     }
@@ -299,7 +329,8 @@ def run(tickers):
 
 def build_dashboard(results, out_path):
     keys = ("ticker", "price", "yield", "payout", "roe", "de", "epsg", "pe",
-            "health", "health_color", "rsi", "trend", "score", "reasons", "id", "bear_div", "trap", "div_cut")
+            "health", "health_color", "rsi", "trend", "score", "reasons", "id", "bear_div", "trap", "div_cut",
+            "xd_last", "xd_next")
     table = [{k: r[k] for k in keys} for r in results]
     charts = [{"id": r["id"], "ticker": r["ticker"], **r["chart"]} for r in results if r["chart"]["candles"]][:8]
     n_buy = sum(1 for r in results if r["score"] >= 50)
@@ -360,6 +391,7 @@ HTML_TEMPLATE = r"""<!DOCTYPE html>
     <th data-k="ticker">หุ้น</th>
     <th class="num" data-k="price">ราคา</th>
     <th class="num" data-k="yield">ปันผล%</th>
+    <th data-k="xd_last">XD ล่าสุด</th>
     <th class="num" data-k="payout">Payout%</th>
     <th class="num" data-k="roe">ROE%</th>
     <th class="num" data-k="epsg">กำไรโต%</th>
@@ -375,7 +407,8 @@ HTML_TEMPLATE = r"""<!DOCTYPE html>
   <div class="foot">
     ⚠ <b>คำเตือน:</b> เป็น "สัญญาณ" ไม่ใช่คำแนะนำซื้อขาย • ควร backtest + ศึกษางบจริงก่อนลงเงิน • ข้อมูล yfinance ไม่ใช่ realtime<br>
     🟢 <b>Bull Div ✅ ยืนยัน</b> = เจอ divergence + ราคาปิดเหนือ EMA20 (กรอง "มีดร่วง" → เข้าได้) • 🟡 <b>รอยืนยัน</b> = เจอ div แต่ราคายังไม่เหนือ EMA20 • 🔴 <b>Bearish Divergence</b> = ระวังกลับหัว<br>
-    💰 <b>สุขภาพงบ</b> ดูจาก payout ratio, ROE, margin, การเติบโตกำไร • <b>dividend trap</b> = ปันผลสูงแต่งบทรุด • <b>เคยตัดปันผล</b> = ในอดีต 5 ปีเคยลดปันผลแรง >50% (ไม่สม่ำเสมอ)
+    💰 <b>สุขภาพงบ</b> ดูจาก payout ratio, ROE, margin, การเติบโตกำไร • <b>dividend trap</b> = ปันผลสูงแต่งบทรุด • <b>เคยตัดปันผล</b> = ในอดีต 5 ปีเคยลดปันผลแรง >50% (ไม่สม่ำเสมอ)<br>
+    📅 <b>XD ล่าสุด</b> = วันขึ้นเครื่องหมาย XD ครั้งหลังสุด (yfinance) • <b>คาดถัดไป</b> = ประมาณจากรอบเดิม ไม่ใช่วันประกาศจริง → เช็กวัน XD จริงที่ set.or.th
   </div>
 </div>
 
@@ -392,6 +425,7 @@ function render(rows){
     <td><b>${r.ticker}</b></td>
     <td class="num">${r.price.toFixed(2)}</td>
     <td class="num ${r.yield>=4?'up':''}">${r.yield.toFixed(2)}</td>
+    <td style="white-space:nowrap;color:var(--mut);font-size:11px">${r.xd_last||'—'}</td>
     <td class="num ${r.payout>100?'down':''}">${f1(r.payout)}</td>
     <td class="num">${f1(r.roe)}</td>
     <td class="num ${r.epsg<0?'down':r.epsg>0?'up':''}">${f1(r.epsg)}</td>
@@ -419,7 +453,7 @@ CHARTS.forEach(c=>{
   const row = ROWS.find(r=>r.id===c.id) || {};
   const card=document.createElement('div'); card.className='chart-card';
   card.innerHTML = `<div class="chart-head"><b>${c.ticker}</b>
-     <span class="meta">ปันผล ${(row.yield||0).toFixed(2)}% · งบ ${row.health||'—'} · Payout ${f1(row.payout)}% · คะแนน ${row.score||0}</span></div>
+     <span class="meta">ปันผล ${(row.yield||0).toFixed(2)}% · งบ ${row.health||'—'} · คะแนน ${row.score||0}<br>XD ล่าสุด ${row.xd_last||'—'} · คาดถัดไป ~${row.xd_next||'—'}</span></div>
      <div class="chart" id="c_${c.id}"></div>`;
   host.appendChild(card);
   const el = card.querySelector('.chart');
