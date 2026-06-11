@@ -248,6 +248,14 @@ def analyze(ticker, df, fund):
         score += 15; reasons.append("ใกล้ Low 52 สัปดาห์")
     if bool(macd_line.iloc[-1] > macd_sig.iloc[-1] and macd_line.iloc[-2] <= macd_sig.iloc[-2]):
         score += 10; reasons.append("MACD ตัดขึ้น")
+    # คุณภาพ + มูลค่า (ดันตัว "น่าสนใจโดยรวม" ขึ้นบน ไม่ใช่แค่ตัวที่ย่อแรง)
+    if fg_pts is not None and fg_pts >= 2:
+        score += 10   # งบแข็งแรง (โชว์ในคอลัมน์สุขภาพงบอยู่แล้ว)
+    _pb, _pe = fund.get("priceToBook"), fund.get("trailingPE")
+    if _pb is not None and 0 < _pb < 1:
+        score += 8; reasons.append(f"ถูก P/B {_pb:.2f}")
+    if _pe is not None and 0 < _pe < 10:
+        score += 5; reasons.append(f"PE ต่ำ {_pe:.1f}")
     # ตัวหักลบ / เตือน
     if bear_div:
         score -= 20; reasons.append("🔴 Bearish Divergence (ระวังกลับหัว)")
