@@ -1,5 +1,5 @@
 //@version=5
-indicator("SET — RSI Divergence + Confirmed Entry", shorttitle="DIV Entry")
+indicator("SET — RSI Divergence + Confirmed Entry + EMA800", shorttitle="DIV Entry")
 
 // ===== Inputs =====
 rsiLen      = input.int(14, "RSI Length")
@@ -11,9 +11,11 @@ osLevel     = input.int(40, "Bull: RSI ต่ำกว่า")
 obLevel     = input.int(60, "Bear: RSI สูงกว่า")
 confirmLen  = input.int(20, "EMA ยืนยันเข้า")
 confirmBars = input.int(8,  "รอยืนยันภายใน N แท่ง")
+supportPct  = input.float(2.0, "ระยะใกล้แนวรับ EMA800 (%)")
 
-osc  = ta.rsi(close, rsiLen)
-emaC = ta.ema(close, confirmLen)
+osc    = ta.rsi(close, rsiLen)
+emaC   = ta.ema(close, confirmLen)
+ema800 = ta.ema(close, 800)
 
 hline(70, "OB", color=color.new(color.red, 50))
 hline(30, "OS", color=color.new(color.green, 50))
@@ -24,23 +26,21 @@ inRange(cond) =>
     bars = ta.barssince(cond)
     rangeLower <= bars and bars <= rangeUpper
 
-// ===== Divergence (แค่ "setup" ยังไม่เข้า) =====
+// ===== Divergence (setup) =====
 plFound = not na(ta.pivotlow(osc, lbL, lbR))
 bullDiv = plFound and low[lbR] < ta.valuewhen(plFound, low[lbR], 1) and osc[lbR] > ta.valuewhen(plFound, osc[lbR], 1) and inRange(plFound[1])
 phFound = not na(ta.pivothigh(osc, lbL, lbR))
 bearDiv = phFound and high[lbR] > ta.valuewhen(phFound, high[lbR], 1) and osc[lbR] < ta.valuewhen(phFound, osc[lbR], 1) and inRange(phFound[1])
 
-// ===== ยืนยันการเข้า/ออก: divergence แล้วราคาต้อง "ปิดข้าม EMA" ภายใน N แท่ง =====
+// ===== ยืนยันเข้า/ออก =====
 var int armedB = 0
 var int armedS = 0
 if bullDiv and osc[lbR] <= osLevel
     armedB := confirmBars
 if bearDiv and osc[lbR] >= obLevel
     armedS := confirmBars
-
-buy  = armedB > 0 and ta.crossover(close, emaC)    // ยืนยันกลับขึ้น
-sell = armedS > 0 and ta.crossunder(close, emaC)   // ยืนยันกลับลง
-
+buy  = armedB > 0 and ta.crossover(close, emaC)
+sell = armedS > 0 and ta.crossunder(close, emaC)
 if buy
     armedB := 0
 else if armedB > 0
@@ -50,27 +50,38 @@ if sell
 else if armedS > 0
     armedS := armedS - 1
 
-// ===== Plot: setup บนแพเนล RSI =====
+// ===== แนวรับใหญ่ EMA800 =====
+near800   = math.abs(close - ema800) / ema800 <= supportPct / 100
+atSupport = near800 and not near800[1]   // เพิ่งเข้าโซนแนวรับ (เตือนครั้งเดียว)
+
+// ===== Plot บนแพเนล RSI =====
 plot(plFound ? osc[lbR] : na, "BullLn", offset=-lbR, color = bullDiv ? color.green : color.new(color.white, 100), linewidth=2)
 plot(phFound ? osc[lbR] : na, "BearLn", offset=-lbR, color = bearDiv ? color.red   : color.new(color.white, 100), linewidth=2)
 plotshape(bullDiv, "Bull setup", style=shape.circle, location=location.absolute, offset=-lbR, color=color.new(color.green, 30), size=size.tiny)
 plotshape(bearDiv, "Bear setup", style=shape.circle, location=location.absolute, offset=-lbR, color=color.new(color.red, 30), size=size.tiny)
 
-// ===== Plot: EMA ยืนยัน + จุดเข้า/ออกจริง บนกราฟราคา =====
-plot(emaC, "Confirm EMA", color=color.new(color.aqua, 0), force_overlay=true)
+// ===== Plot บนกราฟราคา =====
+plot(emaC,   "Confirm EMA",          color=color.new(color.aqua, 0), force_overlay=true)
+plot(ema800, "EMA800 (แนวรับใหญ่)",  color=color.new(color.purple, 0), linewidth=2, force_overlay=true)
 plotshape(buy,  "BUY",  style=shape.labelup,   location=location.belowbar, text="BUY",  color=color.lime, textcolor=color.black, size=size.small, force_overlay=true)
 plotshape(sell, "SELL", style=shape.labeldown, location=location.abovebar, text="SELL", color=color.red,  textcolor=color.white, size=size.small, force_overlay=true)
+plotshape(atSupport, "At EMA800", style=shape.diamond, location=location.belowbar, color=color.purple, size=size.small, force_overlay=true)
 
-plot(buy  ? 1 : 0, "Buy Signal",  display=display.data_window)
-plot(sell ? 1 : 0, "Sell Signal", display=display.data_window)
+plot(buy       ? 1 : 0, "Buy Signal",  display=display.data_window)
+plot(sell      ? 1 : 0, "Sell Signal", display=display.data_window)
+plot(atSupport ? 1 : 0, "At Support",  display=display.data_window)
 
-// ===== Discord alerts (ยิงเฉพาะตอน "ยืนยันแล้ว") =====
+// ===== Discord alerts =====
 buyMsg  = '{"content": "🟢 **เข้าซื้อ (ยืนยัน)** ' + syminfo.ticker + ' @ ' + str.tostring(close, format.mintick) + ' | Bull Div + ปิดเหนือ EMA' + str.tostring(confirmLen) + ' | TF ' + timeframe.period + '"}'
 sellMsg = '{"content": "🔴 **ออก/ระวัง (ยืนยัน)** ' + syminfo.ticker + ' @ ' + str.tostring(close, format.mintick) + ' | Bear Div + ปิดใต้ EMA' + str.tostring(confirmLen) + ' | TF ' + timeframe.period + '"}'
+supMsg  = '{"content": "🟣 **ถึงแนวรับสำคัญ EMA800** ' + syminfo.ticker + ' @ ' + str.tostring(close, format.mintick) + ' | TF ' + timeframe.period + '"}'
 if buy
     alert(buyMsg, alert.freq_once_per_bar_close)
 if sell
     alert(sellMsg, alert.freq_once_per_bar_close)
+if atSupport
+    alert(supMsg, alert.freq_once_per_bar_close)
 
-alertcondition(buy,  "Buy (confirmed)",  "เข้าซื้อยืนยันแล้ว")
-alertcondition(sell, "Sell (confirmed)", "สัญญาณออกยืนยันแล้ว")
+alertcondition(buy,       "Buy (confirmed)",   "เข้าซื้อยืนยันแล้ว")
+alertcondition(sell,      "Sell (confirmed)",  "สัญญาณออกยืนยันแล้ว")
+alertcondition(atSupport, "At EMA800 support", "ราคาถึงแนวรับสำคัญ EMA800")

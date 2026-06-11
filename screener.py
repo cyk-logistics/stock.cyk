@@ -209,10 +209,13 @@ def analyze(ticker, df, fund):
     r = rsi(close)
     rsi_now = float(r.iloc[-1])
     ema20, ema50, ema200 = ema(close, 20), ema(close, 50), ema(close, 200)
+    ema800 = ema(close, 800)
     _, _, bb_low = bollinger(close)
     macd_line, macd_sig, _ = macd(close)
     e20, e50, e200 = float(ema20.iloc[-1]), float(ema50.iloc[-1]), float(ema200.iloc[-1])
     above20 = price > e20   # ยืนยัน: ราคาปิดเหนือ EMA20 = โมเมนตัมกลับขึ้น (กรองมีดร่วง)
+    e800 = float(ema800.iloc[-1]) if len(close) >= 800 and np.isfinite(ema800.iloc[-1]) else None
+    near800 = e800 is not None and abs(price - e800) / e800 <= 0.03   # ใกล้แนวรับใหญ่ EMA800 (±3%)
     bbl = float(bb_low.iloc[-1]) if np.isfinite(bb_low.iloc[-1]) else price
     uptrend = price > e200
     low52 = float(low.tail(252).min())
@@ -256,6 +259,8 @@ def analyze(ticker, df, fund):
         score += 8; reasons.append(f"ถูก P/B {_pb:.2f}")
     if _pe is not None and 0 < _pe < 10:
         score += 5; reasons.append(f"PE ต่ำ {_pe:.1f}")
+    if near800:
+        score += 8; reasons.append("🟣 ใกล้แนวรับใหญ่ (EMA800)")
     # ตัวหักลบ / เตือน
     if bear_div:
         score -= 20; reasons.append("🔴 Bearish Divergence (ระวังกลับหัว)")
@@ -271,8 +276,8 @@ def analyze(ticker, df, fund):
 
     # ---------- ข้อมูลกราฟ ----------
     tail = df.tail(300)
-    e20t, e50t, e200t = ema20.tail(300), ema50.tail(300), ema200.tail(300)
-    candles, l20, l50, l200 = [], [], [], []
+    e20t, e50t, e200t, e800t = ema20.tail(300), ema50.tail(300), ema200.tail(300), ema800.tail(300)
+    candles, l20, l50, l200, l800 = [], [], [], [], []
     for ts, row in tail.iterrows():
         o, h, lo, c = row["Open"], row["High"], row["Low"], row["Close"]
         if all(np.isfinite([o, h, lo, c])):
@@ -287,6 +292,9 @@ def analyze(ticker, df, fund):
     for ts, v in e200t.items():
         if np.isfinite(v):
             l200.append({"time": ts.strftime("%Y-%m-%d"), "value": round(float(v), 2)})
+    for ts, v in e800t.items():
+        if np.isfinite(v):
+            l800.append({"time": ts.strftime("%Y-%m-%d"), "value": round(float(v), 2)})
     markers = []
     if bull_div and bull_idx is not None:
         markers.append({"time": df.index[bull_idx].strftime("%Y-%m-%d"), "position": "belowBar",
@@ -306,7 +314,7 @@ def analyze(ticker, df, fund):
         "bull_div": bull_div, "bear_div": bear_div, "trap": trap, "div_cut": div_cut,
         "xd_last": xd_last, "xd_next": xd_next,
         "score": score, "reasons": reasons,
-        "chart": {"candles": candles, "ema20": l20, "ema50": l50, "ema200": l200, "markers": markers},
+        "chart": {"candles": candles, "ema20": l20, "ema50": l50, "ema200": l200, "ema800": l800, "markers": markers},
     }
 
 
@@ -416,7 +424,8 @@ HTML_TEMPLATE = r"""<!DOCTYPE html>
     ⚠ <b>คำเตือน:</b> เป็น "สัญญาณ" ไม่ใช่คำแนะนำซื้อขาย • ควร backtest + ศึกษางบจริงก่อนลงเงิน • ข้อมูล yfinance ไม่ใช่ realtime<br>
     🟢 <b>Bull Div ✅ ยืนยัน</b> = เจอ divergence + ราคาปิดเหนือ EMA20 (กรอง "มีดร่วง" → เข้าได้) • 🟡 <b>รอยืนยัน</b> = เจอ div แต่ราคายังไม่เหนือ EMA20 • 🔴 <b>Bearish Divergence</b> = ระวังกลับหัว<br>
     💰 <b>สุขภาพงบ</b> ดูจาก payout ratio, ROE, margin, การเติบโตกำไร • <b>dividend trap</b> = ปันผลสูงแต่งบทรุด • <b>เคยตัดปันผล</b> = ในอดีต 5 ปีเคยลดปันผลแรง >50% (ไม่สม่ำเสมอ)<br>
-    📅 <b>XD ล่าสุด</b> = วันขึ้นเครื่องหมาย XD ครั้งหลังสุด (yfinance) • <b>คาดถัดไป</b> = ประมาณจากรอบเดิม ไม่ใช่วันประกาศจริง → เช็กวัน XD จริงที่ set.or.th
+    📅 <b>XD ล่าสุด</b> = วันขึ้นเครื่องหมาย XD ครั้งหลังสุด (yfinance) • <b>คาดถัดไป</b> = ประมาณจากรอบเดิม ไม่ใช่วันประกาศจริง → เช็กวัน XD จริงที่ set.or.th<br>
+    🟣 <b>EMA800 (เส้นม่วง)</b> = ค่าเฉลี่ยยาว = แนวรับใหญ่ระยะยาว • <b>ใกล้แนวรับใหญ่</b> = ราคาเข้าใกล้ EMA800 (±3%) = โซนเสี่ยง-ผลตอบแทนน่าสนใจ
   </div>
 </div>
 
@@ -474,6 +483,7 @@ CHARTS.forEach(c=>{
   const e20=chart.addLineSeries({color:'#00bcd4',lineWidth:1,priceLineVisible:false,lastValueVisible:false}); e20.setData(c.ema20||[]);
   const e50=chart.addLineSeries({color:'#f0a000',lineWidth:1,priceLineVisible:false,lastValueVisible:false}); e50.setData(c.ema50);
   const e200=chart.addLineSeries({color:'#2962ff',lineWidth:1,priceLineVisible:false,lastValueVisible:false}); e200.setData(c.ema200);
+  const e800=chart.addLineSeries({color:'#a050d0',lineWidth:2,priceLineVisible:false,lastValueVisible:false}); e800.setData(c.ema800||[]);
   if(c.markers&&c.markers.length) cs.setMarkers(c.markers);
   chart.timeScale().fitContent();
   let _lw=el.clientWidth; new ResizeObserver(()=>{const w=el.clientWidth; if(w&&w!==_lw){_lw=w; chart.applyOptions({width:w});}}).observe(el);
