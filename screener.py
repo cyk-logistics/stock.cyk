@@ -222,6 +222,20 @@ def analyze(ticker, df, fund):
     bull_div, bull_idx = detect_bull_div(low, r)
     bear_div, bear_idx = detect_bear_div(high, r)
 
+    # สถานะเข้า (ไฟสัญญาณ) — actionable ลดหลั่น
+    if bull_div and above20:
+        status, scolor, srank = "🟢 เข้าได้", "#0b6e4f", 5
+    elif bull_div:
+        status, scolor, srank = "🟡 รอยืนยัน", "#6e5a1f", 4
+    elif bear_div:
+        status, scolor, srank = "🔴 เลี่ยง", "#7a2222", 1
+    elif near800:
+        status, scolor, srank = "🟣 ที่แนวรับ", "#5a2d6e", 3
+    elif rsi_now < 35:
+        status, scolor, srank = "🔵 oversold", "#1f4e7a", 2
+    else:
+        status, scolor, srank = "⚪ เฝ้าดู", "#3a3f4b", 0
+
     fg_label, fg_color, fg_reasons, fg_pts = grade_financials(fund)
     payout = fund.get("payoutRatio")
     epsg = fund.get("earningsGrowth")
@@ -313,6 +327,7 @@ def analyze(ticker, df, fund):
         "health": fg_label, "health_color": fg_color,
         "bull_div": bull_div, "bear_div": bear_div, "trap": trap, "div_cut": div_cut,
         "xd_last": xd_last, "xd_next": xd_next,
+        "status": status, "status_color": scolor, "srank": srank,
         "score": score, "reasons": reasons,
         "chart": {"candles": candles, "ema20": l20, "ema50": l50, "ema200": l200, "ema800": l800, "markers": markers},
     }
@@ -346,17 +361,19 @@ def run(tickers):
 def build_dashboard(results, out_path):
     keys = ("ticker", "price", "yield", "payout", "roe", "de", "epsg", "pe",
             "health", "health_color", "rsi", "trend", "score", "reasons", "id", "bear_div", "trap", "div_cut",
-            "xd_last", "xd_next")
+            "xd_last", "xd_next", "status", "status_color", "srank")
     table = [{k: r[k] for k in keys} for r in results]
     charts = [{"id": r["id"], "ticker": r["ticker"], **r["chart"]} for r in results if r["chart"]["candles"]][:8]
-    n_buy = sum(1 for r in results if r["score"] >= 50)
+    n_go = sum(1 for r in results if "เข้าได้" in r["status"])
+    n_wait = sum(1 for r in results if "รอยืนยัน" in r["status"])
     n_warn = sum(1 for r in results if r["bear_div"] or r["trap"] or r["div_cut"])
 
     html = HTML_TEMPLATE
     html = html.replace("/*__ROWS__*/", json.dumps(table, ensure_ascii=False))
     html = html.replace("/*__CHARTS__*/", json.dumps(charts, ensure_ascii=False))
     html = html.replace("__SCANNED__", str(len(results)))
-    html = html.replace("__NBUY__", str(n_buy))
+    html = html.replace("__NGO__", str(n_go))
+    html = html.replace("__NWAIT__", str(n_wait))
     html = html.replace("__NWARN__", str(n_warn))
     Path(out_path).write_text(html, encoding="utf-8")
 
@@ -399,12 +416,14 @@ HTML_TEMPLATE = r"""<!DOCTYPE html>
   <div class="sub">หุ้นปันผลคุณภาพ + จังหวะเข้า + กรองงบการเงิน • ข้อมูล: yfinance • อินดิเคเตอร์คำนวณเอง</div>
   <div class="stats">
     <div class="stat"><b>__SCANNED__</b><span>หุ้นที่สแกน</span></div>
-    <div class="stat"><b class="up">__NBUY__</b><span>มีสัญญาณเข้า (คะแนน ≥ 50)</span></div>
-    <div class="stat"><b class="down">__NWARN__</b><span>ติดธงเตือน (bear/trap)</span></div>
+    <div class="stat"><b class="up">__NGO__</b><span>🟢 เข้าได้ตอนนี้</span></div>
+    <div class="stat"><b style="color:#e0b020">__NWAIT__</b><span>🟡 รอยืนยัน</span></div>
+    <div class="stat"><b class="down">__NWARN__</b><span>ติดธงเตือน</span></div>
   </div>
 
   <table id="tbl"><thead><tr>
     <th data-k="ticker">หุ้น</th>
+    <th data-k="srank">สถานะ</th>
     <th class="num" data-k="price">ราคา</th>
     <th class="num" data-k="yield">ปันผล%</th>
     <th data-k="xd_last">XD ล่าสุด</th>
@@ -440,6 +459,7 @@ const tb = document.querySelector('#tbl tbody');
 function render(rows){
   tb.innerHTML = rows.map(r=>`<tr style="${r.bear_div||r.trap||r.div_cut?'background:rgba(239,83,80,.05)':''}">
     <td><b>${r.ticker}</b></td>
+    <td><span class="pill" style="background:${r.status_color}">${r.status}</span></td>
     <td class="num">${r.price.toFixed(2)}</td>
     <td class="num ${r.yield>=4?'up':''}">${r.yield.toFixed(2)}</td>
     <td style="white-space:nowrap;color:var(--mut);font-size:11px">${r.xd_last||'—'}</td>
