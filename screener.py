@@ -400,6 +400,14 @@ HTML_TEMPLATE = r"""<!DOCTYPE html>
   .stats{display:flex;gap:12px;margin-bottom:20px;flex-wrap:wrap}
   .stat{background:var(--card);border:1px solid var(--bd);border-radius:10px;padding:12px 16px;min-width:110px}
   .stat b{display:block;font-size:22px} .stat span{color:var(--mut);font-size:12px}
+  .top5{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-bottom:6px}
+  @media(max-width:820px){.top5{grid-template-columns:repeat(2,1fr)}}
+  .pick{background:linear-gradient(160deg,#1c2436,#161b22);border:1px solid #6a5a25;border-radius:10px;padding:12px}
+  .pick .rk{color:#ffe08a;font-size:11px;font-weight:700}
+  .pick .tk{font-size:18px;font-weight:700;margin:3px 0}
+  .pick .big{font-size:18px;font-weight:700;color:#5fe0c8;margin:6px 0 0}
+  .pick .lbl{color:var(--mut);font-size:10.5px;font-weight:400}
+  .pick .meta2{color:var(--mut);font-size:11px;margin-top:6px}
   table{width:100%;border-collapse:collapse;background:var(--card);border:1px solid var(--bd);border-radius:10px;font-size:12.5px}
   th,td{padding:9px 10px;text-align:left;border-bottom:1px solid var(--bd)}
   th{color:var(--mut);font-weight:600;cursor:pointer;user-select:none;white-space:nowrap;position:sticky;top:0;z-index:3;background:#1a2130;box-shadow:inset 0 -1px 0 var(--bd)} th:hover{color:var(--tx)}
@@ -430,6 +438,11 @@ HTML_TEMPLATE = r"""<!DOCTYPE html>
     <div class="stat"><b class="down">__NWARN__</b><span>ติดธงเตือน</span></div>
   </div>
 
+  <h2 style="margin-top:26px">🏆 Top 5 น่าจัด — ปันผลคุณภาพ + คะแนนสูงสุด</h2>
+  <div class="sub" style="margin:-6px 0 12px">ลงทุน 1 ล้านบาท → ปันผล/ปี (สุทธิหลังหักภาษี ณ ที่จ่าย 10%) • คัดจากหุ้น 💎 งบแข็งแรง</div>
+  <div id="top5" class="top5"></div>
+
+  <h2>📋 ตารางทั้งหมด</h2>
   <table id="tbl"><thead><tr>
     <th data-k="ticker">หุ้น</th>
     <th data-k="srank">สถานะ</th>
@@ -482,6 +495,19 @@ function render(rows){
   </tr>`).join('');
 }
 render(ROWS);
+
+// 🏆 Top 5 น่าจัด (คัด div_good เรียงคะแนน)
+const picks=[...ROWS].filter(r=>r.div_good).sort((a,b)=>b.score-a.score).slice(0,5);
+document.getElementById('top5').innerHTML = picks.map((r,i)=>{
+  const net=Math.round(1000000*r.yield/100*0.9);
+  return `<div class="pick">
+    <div class="rk">#${i+1} <span class="pill" style="background:${r.status_color};font-size:10px;padding:1px 6px">${r.status}</span></div>
+    <div class="tk">${r.ticker}</div>
+    <div class="big">${net.toLocaleString()} ฿<span class="lbl"> /ปี</span></div>
+    <div class="lbl">ลงล้าน · ยีลด์ ${r.yield.toFixed(1)}%</div>
+    <div class="meta2">payout ${r.payout==null?'—':r.payout.toFixed(0)+'%'} · งบ ${r.health} · PE ${r.pe==null?'—':r.pe.toFixed(0)}</div>
+  </div>`;
+}).join('');
 
 let asc = {};
 document.querySelectorAll('#tbl th').forEach(th=>{
