@@ -1,18 +1,22 @@
 //@version=5
-indicator("SET ปันผล — RSI Bull & Bear Divergence + Entry", shorttitle="DIV Entry")
+indicator("SET — RSI Divergence + Confirmed Entry", shorttitle="DIV Entry")
 
 // ===== Inputs =====
-rsiLen     = input.int(14, "RSI Length")
-lbL        = input.int(5,  "Pivot Left")
-lbR        = input.int(5,  "Pivot Right")
-rangeLower = input.int(5,  "Min bars between pivots")
-rangeUpper = input.int(60, "Max bars between pivots")
-osLevel    = input.int(40, "Oversold filter (RSI <=)")
+rsiLen      = input.int(14, "RSI Length")
+lbL         = input.int(5,  "Pivot Left")
+lbR         = input.int(5,  "Pivot Right")
+rangeLower  = input.int(5,  "Min bars between pivots")
+rangeUpper  = input.int(60, "Max bars between pivots")
+osLevel     = input.int(40, "Bull: RSI ต่ำกว่า")
+obLevel     = input.int(60, "Bear: RSI สูงกว่า")
+confirmLen  = input.int(20, "EMA ยืนยันเข้า")
+confirmBars = input.int(8,  "รอยืนยันภายใน N แท่ง")
 
-osc = ta.rsi(close, rsiLen)
+osc  = ta.rsi(close, rsiLen)
+emaC = ta.ema(close, confirmLen)
 
-hline(70, "Overbought", color=color.red)
-hline(30, "Oversold",   color=color.green)
+hline(70, "OB", color=color.new(color.red, 50))
+hline(30, "OS", color=color.new(color.green, 50))
 plot(osc, "RSI", color=color.new(color.blue, 0))
 bgcolor(osc < 30 ? color.new(color.green, 90) : osc > 70 ? color.new(color.red, 90) : na)
 
@@ -20,45 +24,53 @@ inRange(cond) =>
     bars = ta.barssince(cond)
     rangeLower <= bars and bars <= rangeUpper
 
-// ===== Bullish Divergence (กระทิง: ราคา Lower Low, RSI Higher Low) =====
+// ===== Divergence (แค่ "setup" ยังไม่เข้า) =====
 plFound = not na(ta.pivotlow(osc, lbL, lbR))
-oscHL   = osc[lbR] > ta.valuewhen(plFound, osc[lbR], 1) and inRange(plFound[1])
-priceLL = low[lbR] < ta.valuewhen(plFound, low[lbR], 1)
-bullDiv = plFound and priceLL and oscHL
-buy     = bullDiv and osc[lbR] <= osLevel
-
-// ===== Bearish Divergence (หมี: ราคา Higher High, RSI Lower High) =====
+bullDiv = plFound and low[lbR] < ta.valuewhen(plFound, low[lbR], 1) and osc[lbR] > ta.valuewhen(plFound, osc[lbR], 1) and inRange(plFound[1])
 phFound = not na(ta.pivothigh(osc, lbL, lbR))
-oscLH   = osc[lbR] < ta.valuewhen(phFound, osc[lbR], 1) and inRange(phFound[1])
-priceHH = high[lbR] > ta.valuewhen(phFound, high[lbR], 1)
-bearDiv = phFound and priceHH and oscLH
+bearDiv = phFound and high[lbR] > ta.valuewhen(phFound, high[lbR], 1) and osc[lbR] < ta.valuewhen(phFound, osc[lbR], 1) and inRange(phFound[1])
 
-// ===== Plot บนแพเนล RSI =====
-plot(plFound ? osc[lbR] : na, "Bull line", offset=-lbR, color = bullDiv ? color.green : color.new(color.white, 100), linewidth=2)
-plot(phFound ? osc[lbR] : na, "Bear line", offset=-lbR, color = bearDiv ? color.red   : color.new(color.white, 100), linewidth=2)
-plotshape(bullDiv, "Bull Div", style=shape.labelup,   location=location.absolute, offset=-lbR, text="BULL", color=color.green, textcolor=color.white, size=size.tiny)
-plotshape(bearDiv, "Bear Div", style=shape.labeldown, location=location.absolute, offset=-lbR, text="BEAR", color=color.red,   textcolor=color.white, size=size.tiny)
-plotshape(buy, "BUY", style=shape.triangleup, location=location.bottom, text="BUY", color=color.lime, size=size.tiny)
+// ===== ยืนยันการเข้า/ออก: divergence แล้วราคาต้อง "ปิดข้าม EMA" ภายใน N แท่ง =====
+var int armedB = 0
+var int armedS = 0
+if bullDiv and osc[lbR] <= osLevel
+    armedB := confirmBars
+if bearDiv and osc[lbR] >= obLevel
+    armedS := confirmBars
 
-plot(buy     ? 1 : 0, "Buy Signal",  display=display.data_window)
-plot(bearDiv ? 1 : 0, "Bear Signal", display=display.data_window)
+buy  = armedB > 0 and ta.crossover(close, emaC)    // ยืนยันกลับขึ้น
+sell = armedS > 0 and ta.crossunder(close, emaC)   // ยืนยันกลับลง
 
-// ===== Discord Alerts: ยิง JSON ตรงเข้า webhook =====
-buyMsg = '{"content": "🟢 **BUY** ' + syminfo.ticker +
-      ' | ราคา ' + str.tostring(close, format.mintick) +
-      ' | RSI ' + str.tostring(osc, '#.0') +
-      ' | Bullish Divergence | TF ' + timeframe.period + '"}'
+if buy
+    armedB := 0
+else if armedB > 0
+    armedB := armedB - 1
+if sell
+    armedS := 0
+else if armedS > 0
+    armedS := armedS - 1
+
+// ===== Plot: setup บนแพเนล RSI =====
+plot(plFound ? osc[lbR] : na, "BullLn", offset=-lbR, color = bullDiv ? color.green : color.new(color.white, 100), linewidth=2)
+plot(phFound ? osc[lbR] : na, "BearLn", offset=-lbR, color = bearDiv ? color.red   : color.new(color.white, 100), linewidth=2)
+plotshape(bullDiv, "Bull setup", style=shape.circle, location=location.absolute, offset=-lbR, color=color.new(color.green, 30), size=size.tiny)
+plotshape(bearDiv, "Bear setup", style=shape.circle, location=location.absolute, offset=-lbR, color=color.new(color.red, 30), size=size.tiny)
+
+// ===== Plot: EMA ยืนยัน + จุดเข้า/ออกจริง บนกราฟราคา =====
+plot(emaC, "Confirm EMA", color=color.new(color.aqua, 0), force_overlay=true)
+plotshape(buy,  "BUY",  style=shape.labelup,   location=location.belowbar, text="BUY",  color=color.lime, textcolor=color.black, size=size.small, force_overlay=true)
+plotshape(sell, "SELL", style=shape.labeldown, location=location.abovebar, text="SELL", color=color.red,  textcolor=color.white, size=size.small, force_overlay=true)
+
+plot(buy  ? 1 : 0, "Buy Signal",  display=display.data_window)
+plot(sell ? 1 : 0, "Sell Signal", display=display.data_window)
+
+// ===== Discord alerts (ยิงเฉพาะตอน "ยืนยันแล้ว") =====
+buyMsg  = '{"content": "🟢 **เข้าซื้อ (ยืนยัน)** ' + syminfo.ticker + ' @ ' + str.tostring(close, format.mintick) + ' | Bull Div + ปิดเหนือ EMA' + str.tostring(confirmLen) + ' | TF ' + timeframe.period + '"}'
+sellMsg = '{"content": "🔴 **ออก/ระวัง (ยืนยัน)** ' + syminfo.ticker + ' @ ' + str.tostring(close, format.mintick) + ' | Bear Div + ปิดใต้ EMA' + str.tostring(confirmLen) + ' | TF ' + timeframe.period + '"}'
 if buy
     alert(buyMsg, alert.freq_once_per_bar_close)
+if sell
+    alert(sellMsg, alert.freq_once_per_bar_close)
 
-bearMsg = '{"content": "🔴 **BEAR** ' + syminfo.ticker +
-      ' | ราคา ' + str.tostring(close, format.mintick) +
-      ' | RSI ' + str.tostring(osc, '#.0') +
-      ' | Bearish Divergence (ระวังกลับหัว) | TF ' + timeframe.period + '"}'
-if bearDiv
-    alert(bearMsg, alert.freq_once_per_bar_close)
-
-// ===== ทางเลือก: ตั้ง alert แบบเลือกเงื่อนไขเอง =====
-alertcondition(bullDiv, "Bullish Divergence", "RSI Bullish Divergence")
-alertcondition(bearDiv, "Bearish Divergence", "RSI Bearish Divergence")
-alertcondition(buy,     "Buy Signal",         "สัญญาณเข้าซื้อ (divergence + oversold)")
+alertcondition(buy,  "Buy (confirmed)",  "เข้าซื้อยืนยันแล้ว")
+alertcondition(sell, "Sell (confirmed)", "สัญญาณออกยืนยันแล้ว")
