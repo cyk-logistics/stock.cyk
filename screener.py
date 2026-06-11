@@ -281,6 +281,10 @@ def analyze(ticker, df, fund):
                 and not trap and not div_cut and not bear_div)
     if div_good:
         score += 8; reasons.append("💎 ปันผลน่าสนใจ (สูง+ยั่งยืน)")
+    if uptrend:
+        score += 10   # ขาขึ้น (เหนือ EMA200) = เหมาะถือยาว — โชว์ในคอลัมน์เทรนด์
+    else:
+        score -= 10; reasons.append("⚠ ขาลง (ใต้ EMA200)")
     # ตัวหักลบ / เตือน
     if bear_div:
         score -= 20; reasons.append("🔴 Bearish Divergence (ระวังกลับหัว)")
