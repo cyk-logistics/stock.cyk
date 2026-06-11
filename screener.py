@@ -171,10 +171,11 @@ def analyze(ticker, df, fund):
 
     r = rsi(close)
     rsi_now = float(r.iloc[-1])
-    ema50, ema200 = ema(close, 50), ema(close, 200)
+    ema20, ema50, ema200 = ema(close, 20), ema(close, 50), ema(close, 200)
     _, _, bb_low = bollinger(close)
     macd_line, macd_sig, _ = macd(close)
-    e50, e200 = float(ema50.iloc[-1]), float(ema200.iloc[-1])
+    e20, e50, e200 = float(ema20.iloc[-1]), float(ema50.iloc[-1]), float(ema200.iloc[-1])
+    above20 = price > e20   # ยืนยัน: ราคาปิดเหนือ EMA20 = โมเมนตัมกลับขึ้น (กรองมีดร่วง)
     bbl = float(bb_low.iloc[-1]) if np.isfinite(bb_low.iloc[-1]) else price
     uptrend = price > e200
     low52 = float(low.tail(252).min())
@@ -198,8 +199,10 @@ def analyze(ticker, df, fund):
         reasons.append(f"ปันผล {dyield:.1f}%")
     if rsi_now < 35:
         score += 20; reasons.append(f"RSI oversold ({rsi_now:.0f})")
-    if bull_div:
-        score += 30; reasons.append("🟢 Bullish Divergence")
+    if bull_div and above20:
+        score += 30; reasons.append("🟢 Bull Div ✅ ยืนยัน (เหนือ EMA20)")
+    elif bull_div:
+        score += 10; reasons.append("🟡 Bull Div (รอยืนยัน—ยังไม่เหนือ EMA20)")
     if price < bbl:
         score += 15; reasons.append("หลุดกรอบล่าง BB")
     if uptrend and price <= e50 * 1.02:
@@ -221,13 +224,16 @@ def analyze(ticker, df, fund):
 
     # ---------- ข้อมูลกราฟ ----------
     tail = df.tail(300)
-    e50t, e200t = ema50.tail(300), ema200.tail(300)
-    candles, l50, l200 = [], [], []
+    e20t, e50t, e200t = ema20.tail(300), ema50.tail(300), ema200.tail(300)
+    candles, l20, l50, l200 = [], [], [], []
     for ts, row in tail.iterrows():
         o, h, lo, c = row["Open"], row["High"], row["Low"], row["Close"]
         if all(np.isfinite([o, h, lo, c])):
             candles.append({"time": ts.strftime("%Y-%m-%d"), "open": round(float(o), 2),
                             "high": round(float(h), 2), "low": round(float(lo), 2), "close": round(float(c), 2)})
+    for ts, v in e20t.items():
+        if np.isfinite(v):
+            l20.append({"time": ts.strftime("%Y-%m-%d"), "value": round(float(v), 2)})
     for ts, v in e50t.items():
         if np.isfinite(v):
             l50.append({"time": ts.strftime("%Y-%m-%d"), "value": round(float(v), 2)})
@@ -252,7 +258,7 @@ def analyze(ticker, df, fund):
         "health": fg_label, "health_color": fg_color,
         "bull_div": bull_div, "bear_div": bear_div, "trap": trap,
         "score": score, "reasons": reasons,
-        "chart": {"candles": candles, "ema50": l50, "ema200": l200, "markers": markers},
+        "chart": {"candles": candles, "ema20": l20, "ema50": l50, "ema200": l200, "markers": markers},
     }
 
 
@@ -358,7 +364,7 @@ HTML_TEMPLATE = r"""<!DOCTYPE html>
 
   <div class="foot">
     ⚠ <b>คำเตือน:</b> เป็น "สัญญาณ" ไม่ใช่คำแนะนำซื้อขาย • ควร backtest + ศึกษางบจริงก่อนลงเงิน • ข้อมูล yfinance ไม่ใช่ realtime<br>
-    🟢 <b>Bullish Divergence</b> = ราคาลงแต่แรงขายอ่อน → ลุ้นเด้ง (เข้า) • 🔴 <b>Bearish Divergence</b> = ราคาขึ้นแต่แรงซื้ออ่อน → ระวังกลับหัว (เลี่ยง/ขาย)<br>
+    🟢 <b>Bull Div ✅ ยืนยัน</b> = เจอ divergence + ราคาปิดเหนือ EMA20 (กรอง "มีดร่วง" → เข้าได้) • 🟡 <b>รอยืนยัน</b> = เจอ div แต่ราคายังไม่เหนือ EMA20 • 🔴 <b>Bearish Divergence</b> = ระวังกลับหัว<br>
     💰 <b>สุขภาพงบ</b> ดูจาก payout ratio, ROE, margin, การเติบโตกำไร • <b>dividend trap</b> = ปันผลสูงแต่งบทรุด (อาจกำลังจะลดปันผล)
   </div>
 </div>
@@ -413,6 +419,7 @@ CHARTS.forEach(c=>{
     timeScale:{borderColor:'#2a2e39'}, rightPriceScale:{borderColor:'#2a2e39'} });
   const cs=chart.addCandlestickSeries({upColor:'#26a69a',downColor:'#ef5350',borderVisible:false,wickUpColor:'#26a69a',wickDownColor:'#ef5350'});
   cs.setData(c.candles);
+  const e20=chart.addLineSeries({color:'#00bcd4',lineWidth:1,priceLineVisible:false,lastValueVisible:false}); e20.setData(c.ema20||[]);
   const e50=chart.addLineSeries({color:'#f0a000',lineWidth:1,priceLineVisible:false,lastValueVisible:false}); e50.setData(c.ema50);
   const e200=chart.addLineSeries({color:'#2962ff',lineWidth:1,priceLineVisible:false,lastValueVisible:false}); e200.setData(c.ema200);
   if(c.markers&&c.markers.length) cs.setMarkers(c.markers);
@@ -441,7 +448,7 @@ if __name__ == "__main__":
     for r in res[:20]:
         pay = "—" if r["payout"] is None else f"{r['payout']:.0f}"
         eg = "—" if r["epsg"] is None else f"{r['epsg']:.0f}"
-        sig = ", ".join(x for x in r["reasons"] if "Diverg" in x or "trap" in x or "oversold" in x)[:40]
+        sig = ", ".join(x for x in r["reasons"] if "Div" in x or "trap" in x or "oversold" in x)[:46]
         print(f"{r['ticker']:<8}{r['price']:>8.2f}{r['yield']:>6.1f}{pay:>6}{eg:>8}{r['health']:>10}{r['score']:>7.0f}  {sig}")
 
     build_dashboard(res, args.out)
