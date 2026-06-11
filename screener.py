@@ -452,6 +452,7 @@ HTML_TEMPLATE = r"""<!DOCTYPE html>
     <th data-k="srank">สถานะ</th>
     <th class="num" data-k="price">ราคา</th>
     <th class="num" data-k="yield">ปันผล%</th>
+    <th class="num" data-k="yield">ปันผล/ปี (ลงล้าน)</th>
     <th data-k="xd_last">XD ล่าสุด</th>
     <th class="num" data-k="payout">Payout%</th>
     <th class="num" data-k="roe">ROE%</th>
@@ -488,6 +489,7 @@ function render(rows){
     <td><span class="pill" style="background:${r.status_color}">${r.status}</span></td>
     <td class="num">${r.price.toFixed(2)}</td>
     <td class="num ${r.yield>=4?'up':''}">${r.yield.toFixed(2)}</td>
+    <td class="num">${Math.round(9000*r.yield).toLocaleString()}<br><span style="color:var(--mut);font-size:10px">≈${Math.round(750*r.yield).toLocaleString()}/ด.</span></td>
     <td style="white-space:nowrap;color:var(--mut);font-size:11px">${r.xd_last||'—'}</td>
     <td class="num ${r.payout>100?'down':''}">${f1(r.payout)}</td>
     <td class="num">${f1(r.roe)}</td>
