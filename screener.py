@@ -275,6 +275,12 @@ def analyze(ticker, df, fund):
         score += 5; reasons.append(f"PE ต่ำ {_pe:.1f}")
     if near800:
         score += 8; reasons.append("🟣 ใกล้แนวรับใหญ่ (EMA800)")
+    # ปันผลน่าสนใจ: ยีลด์≥5% + งบแข็งแรง + payout มีบัฟเฟอร์ (≤85%) + ไม่ติดธง
+    div_good = (dyield >= 5 and fg_pts is not None and fg_pts >= 2
+                and payout is not None and 0 < payout <= 0.85
+                and not trap and not div_cut and not bear_div)
+    if div_good:
+        score += 8; reasons.append("💎 ปันผลน่าสนใจ (สูง+ยั่งยืน)")
     # ตัวหักลบ / เตือน
     if bear_div:
         score -= 20; reasons.append("🔴 Bearish Divergence (ระวังกลับหัว)")
@@ -327,7 +333,7 @@ def analyze(ticker, df, fund):
         "health": fg_label, "health_color": fg_color,
         "bull_div": bull_div, "bear_div": bear_div, "trap": trap, "div_cut": div_cut,
         "xd_last": xd_last, "xd_next": xd_next,
-        "status": status, "status_color": scolor, "srank": srank,
+        "status": status, "status_color": scolor, "srank": srank, "div_good": div_good,
         "score": score, "reasons": reasons,
         "chart": {"candles": candles, "ema20": l20, "ema50": l50, "ema200": l200, "ema800": l800, "markers": markers},
     }
@@ -361,11 +367,12 @@ def run(tickers):
 def build_dashboard(results, out_path):
     keys = ("ticker", "price", "yield", "payout", "roe", "de", "epsg", "pe",
             "health", "health_color", "rsi", "trend", "score", "reasons", "id", "bear_div", "trap", "div_cut",
-            "xd_last", "xd_next", "status", "status_color", "srank")
+            "xd_last", "xd_next", "status", "status_color", "srank", "div_good")
     table = [{k: r[k] for k in keys} for r in results]
     charts = [{"id": r["id"], "ticker": r["ticker"], **r["chart"]} for r in results if r["chart"]["candles"]][:8]
     n_go = sum(1 for r in results if "เข้าได้" in r["status"])
     n_wait = sum(1 for r in results if "รอยืนยัน" in r["status"])
+    n_div = sum(1 for r in results if r["div_good"])
     n_warn = sum(1 for r in results if r["bear_div"] or r["trap"] or r["div_cut"])
 
     html = HTML_TEMPLATE
@@ -374,6 +381,7 @@ def build_dashboard(results, out_path):
     html = html.replace("__SCANNED__", str(len(results)))
     html = html.replace("__NGO__", str(n_go))
     html = html.replace("__NWAIT__", str(n_wait))
+    html = html.replace("__NDIV__", str(n_div))
     html = html.replace("__NWARN__", str(n_warn))
     Path(out_path).write_text(html, encoding="utf-8")
 
@@ -400,7 +408,7 @@ HTML_TEMPLATE = r"""<!DOCTYPE html>
   .score{font-weight:700;padding:2px 8px;border-radius:6px;display:inline-block;min-width:30px;text-align:center}
   .pill{display:inline-block;padding:2px 8px;border-radius:20px;font-size:11px;color:#fff;white-space:nowrap}
   .badge{display:inline-block;background:#1f2630;border:1px solid var(--bd);color:var(--tx);border-radius:20px;padding:2px 8px;font-size:11px;margin:2px 3px 0 0;white-space:nowrap}
-  .badge.warn{border-color:#5a3a00;color:#ffcf66} .badge.bull{border-color:#1c5a4f;color:#5fe0c8} .badge.bear{border-color:#5a2222;color:#ff8a8a}
+  .badge.warn{border-color:#5a3a00;color:#ffcf66} .badge.bull{border-color:#1c5a4f;color:#5fe0c8} .badge.bear{border-color:#5a2222;color:#ff8a8a} .badge.gem{border-color:#7a6a1f;color:#ffe08a}
   .up{color:var(--grn)} .down{color:var(--red)}
   h2{font-size:16px;margin:30px 0 12px}
   .grid{display:grid;grid-template-columns:repeat(2,1fr);gap:16px} @media(max-width:860px){.grid{grid-template-columns:1fr}}
@@ -418,6 +426,7 @@ HTML_TEMPLATE = r"""<!DOCTYPE html>
     <div class="stat"><b>__SCANNED__</b><span>หุ้นที่สแกน</span></div>
     <div class="stat"><b class="up">__NGO__</b><span>🟢 เข้าได้ตอนนี้</span></div>
     <div class="stat"><b style="color:#e0b020">__NWAIT__</b><span>🟡 รอยืนยัน</span></div>
+    <div class="stat"><b style="color:#ffe08a">__NDIV__</b><span>💎 ปันผลน่าสนใจ</span></div>
     <div class="stat"><b class="down">__NWARN__</b><span>ติดธงเตือน</span></div>
   </div>
 
@@ -453,7 +462,7 @@ const ROWS = /*__ROWS__*/;
 const CHARTS = /*__CHARTS__*/;
 const f1 = (v)=> v===null||v===undefined ? '—' : (+v).toFixed(1);
 function scoreColor(s){ if(s>=70) return '#0b6e4f'; if(s>=50) return '#1f7a4d'; if(s>=30) return '#5a4a1f'; return '#3a3f4b'; }
-function badge(r){ let c='badge'; if(r.includes('🔴'))c='badge bear'; else if(r.includes('🟢'))c='badge bull'; else if(r.includes('⚠'))c='badge warn'; return `<span class="${c}">${r}</span>`; }
+function badge(r){ let c='badge'; if(r.includes('🔴'))c='badge bear'; else if(r.includes('🟢'))c='badge bull'; else if(r.includes('💎'))c='badge gem'; else if(r.includes('⚠'))c='badge warn'; return `<span class="${c}">${r}</span>`; }
 
 const tb = document.querySelector('#tbl tbody');
 function render(rows){
