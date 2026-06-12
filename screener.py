@@ -303,6 +303,41 @@ def analyze(ticker, df, fund):
             reasons.append("⚠ " + x)
     score = round(max(0, min(score, 100)), 0)
 
+    # ===== คอมเมนต์งบ (สร้างอัตโนมัติเป็นภาษาคน) =====
+    cm = [f"งบ{fg_label}"] if fg_label != "n/a" else ["ข้อมูลงบจำกัด"]
+    _roe = fund.get("returnOnEquity")
+    if _roe is not None:
+        cm.append(f"ROE {_roe*100:.0f}%")
+    if epsg is not None:
+        cm.append(f"กำไร{'โต' if epsg >= 0 else 'หด'} {abs(epsg)*100:.0f}%")
+    if payout is not None:
+        if payout > 1.0:
+            cm.append(f"จ่ายปันผล {payout*100:.0f}% ของกำไร (เกินกำไร—เสี่ยง)")
+        elif payout >= 0.85:
+            cm.append(f"payout {payout*100:.0f}% (จ่ายเกือบหมด ไม่มีบัฟเฟอร์)")
+        else:
+            cm.append(f"payout {payout*100:.0f}% (มีบัฟเฟอร์)")
+    _pe, _pb = fund.get("trailingPE"), fund.get("priceToBook")
+    if _pe is not None and _pb is not None:
+        _v = "ถูก" if (_pb < 1 or 0 < _pe < 10) else ("แพง" if (_pe > 20 or _pb > 3) else "สมเหตุผล")
+        cm.append(f"PE {_pe:.0f} / PB {_pb:.1f} ({_v})")
+    if div_cut:
+        cm.append("เคยตัดปันผล (ไม่สม่ำเสมอ)")
+    cm.append("เทรนด์ขาขึ้น" if uptrend else "อยู่ขาลง")
+    if trap:
+        _concl = "→ ⚠ เสี่ยง dividend trap: ยีลด์สูงแต่งบ/ปันผลไม่มั่นคง อย่าหลงตัวเลข"
+    elif turnaround:
+        _concl = "→ 🔄 Turnaround: กำไรฟื้นแต่ราคายังถูก/ขาลง — เสี่ยงสูง รอราคายืนยันก่อน"
+    elif div_good and uptrend:
+        _concl = "→ 💎 หุ้นปันผลคุณภาพ: ยีลด์ดี งบแข็ง อยู่ขาขึ้น น่าถือยาว"
+    elif div_good:
+        _concl = "→ ปันผลน่าสนใจ งบแข็ง แต่ยังขาลง รอจังหวะกลับตัว"
+    elif fg_pts is not None and fg_pts < 0:
+        _concl = "→ งบอ่อนแอ ควรระวัง"
+    else:
+        _concl = ""
+    comment = " · ".join(cm) + (("  " + _concl) if _concl else "")
+
     # ---------- ข้อมูลกราฟ ----------
     tail = df.tail(300)
     e20t, e50t, e200t, e800t = ema20.tail(300), ema50.tail(300), ema200.tail(300), ema800.tail(300)
@@ -343,6 +378,7 @@ def analyze(ticker, df, fund):
         "bull_div": bull_div, "bear_div": bear_div, "trap": trap, "div_cut": div_cut,
         "xd_last": xd_last, "xd_next": xd_next,
         "status": status, "status_color": scolor, "srank": srank, "div_good": div_good, "turnaround": turnaround,
+        "comment": comment,
         "score": score, "reasons": reasons,
         "chart": {"candles": candles, "ema20": l20, "ema50": l50, "ema200": l200, "ema800": l800, "markers": markers},
     }
@@ -423,7 +459,7 @@ def market_banner(results, market):
 def build_dashboard(results, market, out_path):
     keys = ("ticker", "price", "yield", "payout", "roe", "de", "epsg", "pe",
             "health", "health_color", "rsi", "trend", "score", "reasons", "id", "bear_div", "trap", "div_cut",
-            "xd_last", "xd_next", "status", "status_color", "srank", "div_good", "turnaround")
+            "xd_last", "xd_next", "status", "status_color", "srank", "div_good", "turnaround", "comment")
     table = [{k: r[k] for k in keys} for r in results]
     charts = [{"id": r["id"], "ticker": r["ticker"], **r["chart"]} for r in results if r["chart"]["candles"]][:8]
     n_go = sum(1 for r in results if "เข้าได้" in r["status"])
@@ -468,6 +504,9 @@ HTML_TEMPLATE = r"""<!DOCTYPE html>
   .market{background:linear-gradient(135deg,#16202e,#161b22);border:1px solid #2a3a4a;border-radius:12px;padding:14px 18px;margin-bottom:18px}
   .mk-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px} .mk-top b{font-size:15px}
   .mk-idx{font-size:13px;margin-bottom:6px} .mk-br{font-size:12px;color:var(--mut)}
+  .modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.65);z-index:100;align-items:center;justify-content:center;padding:16px} .modal.show{display:flex}
+  .modal-box{background:var(--card);border:1px solid var(--bd);border-radius:12px;max-width:520px;width:100%;padding:22px;position:relative;max-height:85vh;overflow:auto}
+  .modal-close{position:absolute;top:10px;right:14px;cursor:pointer;color:var(--mut);font-size:18px}
   table{width:100%;border-collapse:collapse;background:var(--card);border:1px solid var(--bd);border-radius:10px;font-size:12.5px}
   th,td{padding:9px 10px;text-align:left;border-bottom:1px solid var(--bd)}
   th{color:var(--mut);font-weight:600;cursor:pointer;user-select:none;white-space:nowrap;position:sticky;top:0;z-index:3;background:#1a2130;box-shadow:inset 0 -1px 0 var(--bd)} th:hover{color:var(--tx)}
@@ -500,6 +539,7 @@ HTML_TEMPLATE = r"""<!DOCTYPE html>
   </div>
 
   <div id="turncall"></div>
+  <div id="modal" class="modal" onclick="if(event.target===this)closeModal()"><div class="modal-box"><span class="modal-close" onclick="closeModal()">✕</span><div id="modal-body"></div></div></div>
   <h2 style="margin-top:26px">🏆 Top 5 น่าจัด — ปันผลคุณภาพ + คะแนนสูงสุด</h2>
   <div class="sub" style="margin:-6px 0 12px">ลงทุน 1 ล้านบาท → ปันผล <b>ต่อปี</b> (สุทธิหลังหักภาษี 10%) • จ่ายจริงปีละ 1–2 ครั้งตามวัน XD ไม่ใช่รายเดือน • คัดจากหุ้น 💎 งบแข็งแรง</div>
   <div id="top5" class="top5"></div>
@@ -543,7 +583,7 @@ function badge(r){ let c='badge'; if(r.includes('🔴'))c='badge bear'; else if(
 const tb = document.querySelector('#tbl tbody');
 function render(rows){
   tb.innerHTML = rows.map(r=>`<tr style="${r.bear_div||r.trap||r.div_cut?'background:rgba(239,83,80,.05)':''}">
-    <td><b>${r.ticker}</b></td>
+    <td><b style="cursor:pointer;color:#58a6ff" onclick="openComment('${r.ticker}')">${r.ticker} 💬</b></td>
     <td><span class="pill" style="background:${r.status_color}">${r.status}</span></td>
     <td class="num">${r.price.toFixed(2)}</td>
     <td class="num ${r.yield>=4?'up':''}">${r.yield.toFixed(2)}</td>
@@ -559,6 +599,12 @@ function render(rows){
   </tr>`).join('');
 }
 render(ROWS);
+function openComment(tk){
+  const r=ROWS.find(x=>x.ticker===tk); if(!r)return;
+  document.getElementById('modal-body').innerHTML=`<h2 style="margin:0 0 4px">${r.ticker} <span class="pill" style="background:${r.status_color};font-size:11px">${r.status}</span></h2><div class="sub" style="margin-bottom:12px">ราคา ${r.price.toFixed(2)} · ยีลด์ ${r.yield.toFixed(1)}% · ลงล้าน ~${Math.round(9000*r.yield).toLocaleString()} ฿/ปี</div><div style="font-size:13.5px;line-height:1.75">${r.comment||'—'}</div><div class="sub" style="margin-top:14px;font-size:11px">💬 คอมเมนต์สร้างอัตโนมัติจากงบ/ราคา (yfinance) • ไม่ใช่คำแนะนำลงทุน</div>`;
+  document.getElementById('modal').classList.add('show');
+}
+function closeModal(){document.getElementById('modal').classList.remove('show');}
 
 // 🏆 Top 5 น่าจัด (คัด div_good เรียงคะแนน)
 const turns=ROWS.filter(r=>r.turnaround);
