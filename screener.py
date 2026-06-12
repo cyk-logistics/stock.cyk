@@ -489,7 +489,48 @@ def market_banner(results, market):
             f'<div class="mk-br">Breadth: ขาขึ้น <b>{up_pct}%</b> · RSI เฉลี่ย <b>{avg_rsi}</b> · oversold {os_} · overbought {ob} · bear div {bear}{caution}</div></div>')
 
 
-def build_dashboard(results, market, out_path):
+SIGNALS_FILE = Path(__file__).parent / "signals.json"
+TRACK_DAYS = 60   # ติดตามผลสัญญาณ 60 วันปฏิทิน แล้วปิดบันทึกผล
+
+
+def track_signals(results):
+    """บันทึก/อัปเดต track record ของสัญญาณ 🟢 เข้าได้ — วัดผลว่าระบบแม่นจริงไหม"""
+    try:
+        data = json.loads(SIGNALS_FILE.read_text(encoding="utf-8"))
+    except Exception:
+        data = {"open": [], "closed": []}
+    today = (datetime.now(timezone.utc) + timedelta(hours=7)).date()
+    prices = {r["ticker"]: r["price"] for r in results}
+    go_now = {r["ticker"] for r in results if "เข้าได้" in r["status"]}
+    open_tickers = {s["ticker"] for s in data["open"]}
+
+    still_open = []
+    for s in data["open"]:
+        p = prices.get(s["ticker"])
+        if p:
+            s["last"] = p
+            s["ret"] = round((p / s["entry"] - 1) * 100, 2)
+            s["peak"] = max(s.get("peak", 0.0), s["ret"])
+        s["days"] = (today - datetime.strptime(s["date"], "%Y-%m-%d").date()).days
+        if s["days"] >= TRACK_DAYS:
+            s["exit_date"] = today.isoformat()
+            s["win"] = s["ret"] > 0
+            data["closed"].append(s)
+        else:
+            still_open.append(s)
+    data["open"] = still_open
+
+    for r in results:
+        if r["ticker"] in go_now and r["ticker"] not in open_tickers:
+            data["open"].append({"ticker": r["ticker"], "date": today.isoformat(),
+                                 "entry": r["price"], "last": r["price"],
+                                 "ret": 0.0, "peak": 0.0, "days": 0})
+
+    SIGNALS_FILE.write_text(json.dumps(data, ensure_ascii=False, indent=1), encoding="utf-8")
+    return data
+
+
+def build_dashboard(results, market, signals, out_path):
     keys = ("ticker", "price", "yield", "payout", "roe", "de", "epsg", "pe",
             "health", "health_color", "rsi", "trend", "score", "reasons", "id", "bear_div", "trap", "div_cut",
             "xd_last", "xd_next", "status", "status_color", "srank", "div_good", "turnaround", "comment", "fair_txt")
@@ -506,6 +547,7 @@ def build_dashboard(results, market, out_path):
     now_ict = datetime.now(timezone.utc) + timedelta(hours=7)
     updated = f"{now_ict.day} {TH_MON[now_ict.month]} {now_ict.year} {now_ict.hour:02d}:{now_ict.minute:02d} น."
     html = html.replace("__UPDATED__", updated)
+    html = html.replace("/*__SIGNALS__*/", json.dumps(signals, ensure_ascii=False))
     html = html.replace("__MARKET__", market_banner(results, market))
     html = html.replace("__SCANNED__", str(len(results)))
     html = html.replace("__NGO__", str(n_go))
@@ -581,6 +623,9 @@ HTML_TEMPLATE = r"""<!DOCTYPE html>
   <h2 style="margin-top:26px">🏆 Top 5 น่าจัด — ปันผลคุณภาพ + คะแนนสูงสุด</h2>
   <div class="sub" style="margin:-6px 0 12px">ลงทุน 1 ล้านบาท → ปันผล <b>ต่อปี</b> (สุทธิหลังหักภาษี 10%) • จ่ายจริงปีละ 1–2 ครั้งตามวัน XD ไม่ใช่รายเดือน • คัดจากหุ้น 💎 งบแข็งแรง</div>
   <div id="top5" class="top5"></div>
+
+  <h2>📊 ผลสัญญาณที่เคยแนะนำ — วัดผลจริง</h2>
+  <div id="track"></div>
 
   <h2>📋 ตารางทั้งหมด</h2>
   <table id="tbl"><thead><tr>
@@ -661,6 +706,23 @@ const entries=ROWS.filter(r=>r.status.indexOf('เข้าได้')>=0);
 document.getElementById('entrycall').innerHTML = entries.length ? `<div style="background:#10261b;border:1px solid #2c6e4f;border-radius:10px;padding:12px 14px;margin:6px 0;font-size:13px">🟢 <b style="color:#5fe0c8">มีสัญญาณเข้าตอนนี้ (${entries.length} ตัว)</b>${entries.map(r=>`<div style="margin-top:8px"><b style="cursor:pointer;color:#58a6ff" onclick="openComment('${r.ticker}')">${r.ticker} 💬</b> <span style="color:var(--mut)">ยีลด์ ${r.yield.toFixed(1)}% · คะแนน ${r.score} · งบ${r.health}</span><br><span style="font-size:12.5px;line-height:1.6">${entryAdvice(r)}</span></div>`).join('')}<div style="color:var(--mut);font-size:11px;margin-top:9px">สัญญาณ ≠ คำแนะนำซื้อ — กำหนดขนาดไม้ + จุดตัดขาดทุนเองเสมอ</div></div>` : '';
 const turns=ROWS.filter(r=>r.turnaround);
 document.getElementById('turncall').innerHTML = turns.length ? `<div style="background:#231a2e;border:1px solid #5a3d6e;border-radius:10px;padding:10px 14px;margin:6px 0;font-size:13px">🔄 <b style="color:#c89aff">หุ้น Turnaround ตอนนี้:</b> ${turns.map(r=>r.ticker+' ('+r.status+')').join(' · ')} <span style="color:var(--mut)">— กำไรฟื้นแต่ราคายังถูก/ขาลง = เสี่ยงสูง รอ confirm ก่อน</span></div>` : '';
+// 📊 Track record ของสัญญาณที่เคยแนะนำ
+const SIG = /*__SIGNALS__*/;
+(function(){
+  const el=document.getElementById('track');
+  const open=SIG.open||[], closed=SIG.closed||[];
+  if(!open.length && !closed.length){
+    el.innerHTML='<div class="sub">ยังไม่มีสัญญาณสะสม — ระบบจะบันทึกอัตโนมัติทุกครั้งที่มีหุ้นขึ้น 🟢 เข้าได้ แล้ววัดผลให้ดูตรงนี้</div>';
+    return;
+  }
+  const winners=open.filter(s=>s.ret>0.5);
+  const winBanner=winners.length?`<div style="background:#10261b;border:1px solid #2c6e4f;border-radius:10px;padding:10px 14px;margin-bottom:10px;font-size:13px">📈 <b style="color:#5fe0c8">สัญญาณที่แนะนำไว้กำลังกำไร:</b> ${winners.map(s=>`${s.ticker} <b style="color:var(--grn)">+${s.ret.toFixed(1)}%</b> <span style="color:var(--mut)">(แนะนำ ${s.date} @${s.entry.toFixed(2)})</span>`).join(' · ')}</div>`:'';
+  const row=(s)=>`<tr><td><b>${s.ticker}</b></td><td style="color:var(--mut)">${s.date}</td><td class="num">${s.entry.toFixed(2)}</td><td class="num">${(s.last??s.entry).toFixed(2)}</td><td class="num" style="font-weight:700;color:${s.ret>0?'var(--grn)':s.ret<0?'var(--red)':'var(--mut)'}">${s.ret>0?'+':''}${s.ret.toFixed(1)}%</td><td class="num" style="color:var(--mut)">${s.days}</td></tr>`;
+  const wins=closed.filter(s=>s.win).length;
+  const avg=closed.length?closed.reduce((a,s)=>a+s.ret,0)/closed.length:0;
+  const sum=closed.length?`<div class="sub" style="margin:8px 0 0">ปิดติดตามแล้ว ${closed.length} สัญญาณ · ชนะ ${wins} (${Math.round(wins/closed.length*100)}%) · เฉลี่ย ${avg>0?'+':''}${avg.toFixed(1)}%</div>`:'';
+  el.innerHTML=winBanner+`<table><thead><tr><th>หุ้น</th><th>วันแนะนำ</th><th class="num">ราคาแนะนำ</th><th class="num">ล่าสุด</th><th class="num">ผลตอบแทน</th><th class="num">ถือมา(วัน)</th></tr></thead><tbody>${open.map(row).join('')||'<tr><td colspan="6" style="color:var(--mut)">ไม่มีสัญญาณเปิดอยู่</td></tr>'}</tbody></table>`+sum+`<div class="sub" style="margin-top:6px;font-size:11px">ติดตามอัตโนมัติ 60 วันนับจากวันแนะนำ · วัดจากราคาปิด ไม่รวมปันผล/ค่าคอม · ไม่ใช่คำแนะนำซื้อขาย</div>`;
+})();
 const picks=[...ROWS].filter(r=>r.div_good).sort((a,b)=>b.score-a.score).slice(0,5);
 document.getElementById('top5').innerHTML = picks.map((r,i)=>{
   const net=Math.round(1000000*r.yield/100*0.9);
@@ -733,5 +795,9 @@ if __name__ == "__main__":
         print(f"{r['ticker']:<8}{r['price']:>8.2f}{r['yield']:>6.1f}{pay:>6}{eg:>8}{r['health']:>10}{r['score']:>7.0f}  {sig}")
 
     market = fetch_set_index()
-    build_dashboard(res, market, args.out)
+    signals = track_signals(res)
+    n_open = len(signals["open"])
+    if n_open:
+        print(f"📊 track record: เปิดติดตาม {n_open} สัญญาณ · ปิดแล้ว {len(signals['closed'])}")
+    build_dashboard(res, market, signals, args.out)
     print(f"\n✅ สร้าง {args.out} แล้ว ({len(res)} หุ้น)")
