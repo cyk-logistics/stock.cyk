@@ -575,6 +575,7 @@ HTML_TEMPLATE = r"""<!DOCTYPE html>
     <div class="stat"><b class="down">__NWARN__</b><span>ติดธงเตือน</span></div>
   </div>
 
+  <div id="entrycall"></div>
   <div id="turncall"></div>
   <div id="modal" class="modal" onclick="if(event.target===this)closeModal()"><div class="modal-box"><span class="modal-close" onclick="closeModal()">✕</span><div id="modal-body"></div></div></div>
   <h2 style="margin-top:26px">🏆 Top 5 น่าจัด — ปันผลคุณภาพ + คะแนนสูงสุด</h2>
@@ -644,6 +645,20 @@ function openComment(tk){
 function closeModal(){document.getElementById('modal').classList.remove('show');}
 
 // 🏆 Top 5 น่าจัด (คัด div_good เรียงคะแนน)
+// 🟢 ป้ายสัญญาณเข้า + คำแนะนำอัตโนมัติ (เทคนิค + พื้นฐาน)
+function entryAdvice(r){
+  const risks=[];
+  if(r.payout!=null && r.payout>=90) risks.push('payout '+r.payout.toFixed(0)+'% แทบไม่มีบัฟเฟอร์ปันผล');
+  if(r.epsg!=null && r.epsg<0) risks.push('กำไรหด '+Math.abs(r.epsg).toFixed(0)+'%');
+  if(r.div_cut) risks.push('เคยตัดปันผล');
+  if(r.trap) risks.push('เสี่ยง dividend trap');
+  if(r.health && r.health!=='แข็งแรง' && r.health!=='n/a') risks.push('งบ'+r.health);
+  if(!risks.length && r.div_good) return '✅ เทคนิคให้เข้า + พื้นฐานแข็งแรง ปันผลยั่งยืน → น่าสนใจทั้งเล่นรอบและถือยาวกินปันผล';
+  if(!risks.length) return '✅ เทคนิคให้เข้า พื้นฐานโอเค → เล่นรอบได้ ตั้งจุดตัดขาดทุนเสมอ';
+  return '⚠️ เทคนิคให้เข้า แต่'+risks.join(' · ')+' → เหมาะเล่นสั้น/แบ่งไม้เล็ก มากกว่าถือยาว';
+}
+const entries=ROWS.filter(r=>r.status.indexOf('เข้าได้')>=0);
+document.getElementById('entrycall').innerHTML = entries.length ? `<div style="background:#10261b;border:1px solid #2c6e4f;border-radius:10px;padding:12px 14px;margin:6px 0;font-size:13px">🟢 <b style="color:#5fe0c8">มีสัญญาณเข้าตอนนี้ (${entries.length} ตัว)</b>${entries.map(r=>`<div style="margin-top:8px"><b style="cursor:pointer;color:#58a6ff" onclick="openComment('${r.ticker}')">${r.ticker} 💬</b> <span style="color:var(--mut)">ยีลด์ ${r.yield.toFixed(1)}% · คะแนน ${r.score} · งบ${r.health}</span><br><span style="font-size:12.5px;line-height:1.6">${entryAdvice(r)}</span></div>`).join('')}<div style="color:var(--mut);font-size:11px;margin-top:9px">สัญญาณ ≠ คำแนะนำซื้อ — กำหนดขนาดไม้ + จุดตัดขาดทุนเองเสมอ</div></div>` : '';
 const turns=ROWS.filter(r=>r.turnaround);
 document.getElementById('turncall').innerHTML = turns.length ? `<div style="background:#231a2e;border:1px solid #5a3d6e;border-radius:10px;padding:10px 14px;margin:6px 0;font-size:13px">🔄 <b style="color:#c89aff">หุ้น Turnaround ตอนนี้:</b> ${turns.map(r=>r.ticker+' ('+r.status+')').join(' · ')} <span style="color:var(--mut)">— กำไรฟื้นแต่ราคายังถูก/ขาลง = เสี่ยงสูง รอ confirm ก่อน</span></div>` : '';
 const picks=[...ROWS].filter(r=>r.div_good).sort((a,b)=>b.score-a.score).slice(0,5);
