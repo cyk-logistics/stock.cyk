@@ -338,6 +338,30 @@ def analyze(ticker, df, fund):
         _concl = ""
     comment = " · ".join(cm) + (("  " + _concl) if _concl else "")
 
+    # ===== ราคาเหมาะสม (ประเมิน): มัธยฐาน 3 วิธี + ธงความเชื่อมั่น =====
+    fairs = []
+    if _pe is not None and _pe > 0:
+        fairs.append(price / _pe * 12)      # PE 12 เท่า
+    if div_1y > 0:
+        fairs.append(div_1y / 0.045)        # ยีลด์เป้า 4.5%
+    if _pb is not None and _pb > 0:
+        fairs.append(price / _pb)           # มูลค่าทางบัญชี (PBV 1.0)
+    fairs = sorted(f for f in fairs if f and f > 0)
+    if len(fairs) >= 2:
+        mid = fairs[len(fairs) // 2] if len(fairs) % 2 else (fairs[len(fairs) // 2 - 1] + fairs[len(fairs) // 2]) / 2
+        spread = (fairs[-1] - fairs[0]) / mid if mid else 9
+        upside = (mid / price - 1) * 100
+        risky = (not uptrend) or (epsg is not None and epsg < 0) or trap or div_cut
+        if spread <= 0.35 and not risky:
+            conf = "🟢 เชื่อได้"
+        elif spread <= 0.35:
+            conf = "🟡 ดูถูกแต่ระวัง (ขาลง/กำไรหด อาจเป็นกับดัก)"
+        else:
+            conf = "⚠️ ประเมินยาก (3 วิธีต่างกันมาก)"
+        fair_txt = f"~{mid:,.0f} บาท · upside {upside:+.0f}% · {conf}"
+    else:
+        fair_txt = "ข้อมูลไม่พอประเมิน"
+
     # ---------- ข้อมูลกราฟ ----------
     tail = df.tail(300)
     e20t, e50t, e200t, e800t = ema20.tail(300), ema50.tail(300), ema200.tail(300), ema800.tail(300)
@@ -378,7 +402,7 @@ def analyze(ticker, df, fund):
         "bull_div": bull_div, "bear_div": bear_div, "trap": trap, "div_cut": div_cut,
         "xd_last": xd_last, "xd_next": xd_next,
         "status": status, "status_color": scolor, "srank": srank, "div_good": div_good, "turnaround": turnaround,
-        "comment": comment,
+        "comment": comment, "fair_txt": fair_txt,
         "score": score, "reasons": reasons,
         "chart": {"candles": candles, "ema20": l20, "ema50": l50, "ema200": l200, "ema800": l800, "markers": markers},
     }
@@ -459,7 +483,7 @@ def market_banner(results, market):
 def build_dashboard(results, market, out_path):
     keys = ("ticker", "price", "yield", "payout", "roe", "de", "epsg", "pe",
             "health", "health_color", "rsi", "trend", "score", "reasons", "id", "bear_div", "trap", "div_cut",
-            "xd_last", "xd_next", "status", "status_color", "srank", "div_good", "turnaround", "comment")
+            "xd_last", "xd_next", "status", "status_color", "srank", "div_good", "turnaround", "comment", "fair_txt")
     table = [{k: r[k] for k in keys} for r in results]
     charts = [{"id": r["id"], "ticker": r["ticker"], **r["chart"]} for r in results if r["chart"]["candles"]][:8]
     n_go = sum(1 for r in results if "เข้าได้" in r["status"])
@@ -601,7 +625,7 @@ function render(rows){
 render(ROWS);
 function openComment(tk){
   const r=ROWS.find(x=>x.ticker===tk); if(!r)return;
-  document.getElementById('modal-body').innerHTML=`<h2 style="margin:0 0 4px">${r.ticker} <span class="pill" style="background:${r.status_color};font-size:11px">${r.status}</span></h2><div class="sub" style="margin-bottom:12px">ราคา ${r.price.toFixed(2)} · ยีลด์ ${r.yield.toFixed(1)}% · ลงล้าน ~${Math.round(9000*r.yield).toLocaleString()} ฿/ปี</div><div style="font-size:13.5px;line-height:1.75">${r.comment||'—'}</div><div class="sub" style="margin-top:14px;font-size:11px">💬 คอมเมนต์สร้างอัตโนมัติจากงบ/ราคา (yfinance) • ไม่ใช่คำแนะนำลงทุน</div>`;
+  document.getElementById('modal-body').innerHTML=`<h2 style="margin:0 0 4px">${r.ticker} <span class="pill" style="background:${r.status_color};font-size:11px">${r.status}</span></h2><div class="sub" style="margin-bottom:12px">ราคา ${r.price.toFixed(2)} · ยีลด์ ${r.yield.toFixed(1)}% · ลงล้าน ~${Math.round(9000*r.yield).toLocaleString()} ฿/ปี</div><div style="font-size:13px;background:#1a2130;border-radius:8px;padding:8px 11px;margin-bottom:12px">🎯 <b>ราคาเหมาะสม (ประเมิน):</b> ${r.fair_txt||'—'}</div><div style="font-size:13.5px;line-height:1.75">${r.comment||'—'}</div><div class="sub" style="margin-top:14px;font-size:11px">💬 คอมเมนต์สร้างอัตโนมัติจากงบ/ราคา (yfinance) • ไม่ใช่คำแนะนำลงทุน</div>`;
   document.getElementById('modal').classList.add('show');
 }
 function closeModal(){document.getElementById('modal').classList.remove('show');}
