@@ -101,8 +101,16 @@ def _fmt_xd(dt):
 
 def _one_fund(tq):
     try:
-        info = yf.Ticker(tq).info
-        return tq, {f: info.get(f) for f in FUND_FIELDS}
+        tk = yf.Ticker(tq)
+        info = tk.info
+        d = {f: info.get(f) for f in FUND_FIELDS}
+        try:  # กำไรสุทธิรายปี ล่าสุด > ปีก่อน = ฟื้นจริงระดับทั้งปี (ไม่ใช่แค่ไตรมาส)
+            ni = tk.income_stmt.loc["Net Income"]
+            vals = [float(v) for _, v in ni.items() if v == v]   # newest first, ตัด NaN
+            d["ni_recovering"] = len(vals) >= 2 and vals[0] > vals[1]
+        except Exception:
+            d["ni_recovering"] = None
+        return tq, d
     except Exception:
         return tq, {}
 
@@ -243,8 +251,9 @@ def analyze(ticker, df, fund):
     margin = fund.get("profitMargins")
     trap = dyield >= 4 and ((payout or 0) > 1.0 or (epsg is not None and epsg <= -0.2)
                             or (margin is not None and margin < 0))
-    # Turnaround: ราคาโดนทุบ ≥20% จากจุดสูง 52 wk + กำไรเด้งกลับแรง ≥30%
-    turnaround = price <= high52 * 0.80 and epsg is not None and epsg >= 0.30
+    # Turnaround: ราคาโดนทุบ ≥20% + กำไรเด้ง ≥30% + กำไรรายปีล่าสุดสูงกว่าปีก่อน (ฟื้นจริง)
+    turnaround = (price <= high52 * 0.80 and epsg is not None and epsg >= 0.30
+                  and fund.get("ni_recovering") is True)
 
     # ---------- คะแนนจังหวะเข้า ----------
     score, reasons = 0.0, []
