@@ -503,6 +503,9 @@ def build_dashboard(results, market, out_path):
     html = HTML_TEMPLATE
     html = html.replace("/*__ROWS__*/", json.dumps(table, ensure_ascii=False))
     html = html.replace("/*__CHARTS__*/", json.dumps(charts, ensure_ascii=False))
+    now_ict = datetime.now(timezone.utc) + timedelta(hours=7)
+    updated = f"{now_ict.day} {TH_MON[now_ict.month]} {now_ict.year} {now_ict.hour:02d}:{now_ict.minute:02d} น."
+    html = html.replace("__UPDATED__", updated)
     html = html.replace("__MARKET__", market_banner(results, market))
     html = html.replace("__SCANNED__", str(len(results)))
     html = html.replace("__NGO__", str(n_go))
@@ -562,6 +565,7 @@ HTML_TEMPLATE = r"""<!DOCTYPE html>
 <div class="wrap">
   <h1>📈 SET Dividend + Technical + Fundamental Screener</h1>
   <div class="sub">หุ้นปันผลคุณภาพ + จังหวะเข้า + กรองงบการเงิน • ข้อมูล: yfinance • อินดิเคเตอร์คำนวณเอง</div>
+  <div style="color:var(--mut);font-size:11.5px;margin:-12px 0 16px">🕐 อัปเดตล่าสุด: <b style="color:#9aa4b0">__UPDATED__</b> (เวลาไทย) · อัปเดตอัตโนมัติทุกวันทำการหลังตลาดปิด</div>
   __MARKET__
   <div class="stats">
     <div class="stat"><b>__SCANNED__</b><span>หุ้นที่สแกน</span></div>
