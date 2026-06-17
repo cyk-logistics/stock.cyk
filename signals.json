@@ -4,10 +4,10 @@
    "ticker": "LH",
    "date": "2026-06-13",
    "entry": 3.64,
-   "last": 3.62,
-   "ret": -0.55,
-   "peak": 0.0,
-   "days": 3
+   "last": 3.72,
+   "ret": 2.2,
+   "peak": 2.2,
+   "days": 4
   }
  ],
  "closed": []
