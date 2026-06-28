@@ -1,0 +1,9 @@
+services:
+  screener:
+    build: .
+    volumes:
+      - .:/app          # mount ทั้ง project: signals.json อยู่กับ code ตาม hardcode
+      - ./site:/app/site  # output dashboard
+    # รันครั้งเดียวแล้วหยุด (one-shot) ไม่ใช่ service ที่รันค้างไว้
+    # สั่งรัน: docker compose run --rm screener
+    # หรือ:    docker compose run --rm screener python backtest.py
