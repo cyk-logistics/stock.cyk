@@ -4,3 +4,4 @@ __pycache__/
 dashboard.html
 site/
 .DS_Store
+screener.log
