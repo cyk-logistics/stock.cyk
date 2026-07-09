@@ -725,7 +725,7 @@ HTML_TEMPLATE = r"""<!DOCTYPE html>
   __TABS__
   <h1>__TITLE__</h1>
   <div class="sub">หุ้นปันผลคุณภาพ + จังหวะเข้า + กรองงบการเงิน • ข้อมูล: yfinance • อินดิเคเตอร์คำนวณเอง</div>
-  <div style="color:var(--mut);font-size:11.5px;margin:-12px 0 16px">🕐 อัปเดตล่าสุด: <b style="color:#9aa4b0">__UPDATED__</b> (เวลาไทย) · อัปเดตอัตโนมัติทุกวันทำการหลังตลาดปิด</div>
+  <div style="color:var(--mut);font-size:11.5px;margin:-12px 0 16px">🕐 อัปเดตล่าสุด: <b style="color:#9aa4b0">__UPDATED__</b> (เวลาไทย) · อัปเดตอัตโนมัติทุกวันทำการหลังตลาดปิด<span id="visitwrap" title="นับวันละ 1 ครั้งต่อเครื่อง/เบราว์เซอร์ (รวมทุกหน้า)"> · 👁 ผู้เข้าชม <b id="visits" style="color:#9aa4b0">…</b></span></div>
   __MARKET__
   __NOTICE__
   <div class="stats">
@@ -889,6 +889,22 @@ CHARTS.forEach(c=>{
   let _lw=el.clientWidth; new ResizeObserver(()=>{const w=el.clientWidth; if(w&&w!==_lw){_lw=w; chart.applyOptions({width:w});}}).observe(el);
 });
 </script>
+<script>
+// 👁 นับผู้เข้าชม (counterapi.dev ฟรี ไม่ต้องสมัคร) — นับวันละ 1 ครั้งต่อเครื่อง · บริการล่ม = ซ่อนเงียบๆ ไม่กระทบหน้าเว็บ
+(function(){
+  var el=document.getElementById('visits'), wrap=document.getElementById('visitwrap');
+  if(!el) return;
+  var today=new Date().toISOString().slice(0,10), seen=null;
+  try{ seen=localStorage.getItem('cyk_visit_day'); }catch(e){}
+  var base='https://api.counterapi.dev/v1/stock-cyk/site';
+  fetch(seen===today ? base+'/' : base+'/up').then(function(r){return r.json();}).then(function(d){
+    if(d && typeof d.count==='number'){
+      el.textContent=d.count.toLocaleString('th-TH');
+      try{ localStorage.setItem('cyk_visit_day',today); }catch(e){}
+    }else if(wrap){ wrap.style.display='none'; }
+  }).catch(function(){ if(wrap){ wrap.style.display='none'; } });
+})();
+</script>
 </body>
 </html>"""
 
@@ -935,7 +951,7 @@ TECH_TEMPLATE = r"""<!DOCTYPE html>
   __TABS__
   <h1>📈 SET Technical Screener — หุ้นเทคนิคสวย</h1>
   <div class="sub">คัดจากกราฟล้วนๆ ไม่สนปันผล/งบ — divergence · ย่อในขาขึ้น · MACD · แนวรับ EMA800 · วอลุ่ม</div>
-  <div style="color:var(--mut);font-size:11.5px;margin:-12px 0 16px">🕐 อัปเดตล่าสุด: <b style="color:#9aa4b0">__UPDATED__</b> (เวลาไทย) · อัปเดตอัตโนมัติทุกวันทำการหลังตลาดปิด</div>
+  <div style="color:var(--mut);font-size:11.5px;margin:-12px 0 16px">🕐 อัปเดตล่าสุด: <b style="color:#9aa4b0">__UPDATED__</b> (เวลาไทย) · อัปเดตอัตโนมัติทุกวันทำการหลังตลาดปิด<span id="visitwrap" title="นับวันละ 1 ครั้งต่อเครื่อง/เบราว์เซอร์ (รวมทุกหน้า)"> · 👁 ผู้เข้าชม <b id="visits" style="color:#9aa4b0">…</b></span></div>
   __MARKET__
   <div style="background:#2a2014;border:1px solid #6e4a1f;border-radius:10px;padding:11px 14px;margin-bottom:16px;font-size:13px;line-height:1.7">⚠️ <b style="color:#ffcf66">หน้านี้คือ "จังหวะเทรด" ไม่ใช่ลงทุนถือยาว</b> — backtest ระบบนี้ย้อนหลัง 5 ปี สัญญาณเทคนิคล้วนๆ <b>แพ้ซื้อแล้วถือเฉยๆ</b> (+2% vs +14% · ชนะ 44%) → ใช้ช่วยหาจังหวะเท่านั้น อย่าเชื่อ 100% + ตั้งจุดตัดขาดทุนทุกไม้</div>
   <div class="stats">
@@ -1029,6 +1045,22 @@ CHARTS.forEach(c=>{
   chart.timeScale().fitContent();
   let _lw=el.clientWidth; new ResizeObserver(()=>{const w=el.clientWidth; if(w&&w!==_lw){_lw=w; chart.applyOptions({width:w});}}).observe(el);
 });
+</script>
+<script>
+// 👁 นับผู้เข้าชม (counterapi.dev ฟรี ไม่ต้องสมัคร) — นับวันละ 1 ครั้งต่อเครื่อง · บริการล่ม = ซ่อนเงียบๆ ไม่กระทบหน้าเว็บ
+(function(){
+  var el=document.getElementById('visits'), wrap=document.getElementById('visitwrap');
+  if(!el) return;
+  var today=new Date().toISOString().slice(0,10), seen=null;
+  try{ seen=localStorage.getItem('cyk_visit_day'); }catch(e){}
+  var base='https://api.counterapi.dev/v1/stock-cyk/site';
+  fetch(seen===today ? base+'/' : base+'/up').then(function(r){return r.json();}).then(function(d){
+    if(d && typeof d.count==='number'){
+      el.textContent=d.count.toLocaleString('th-TH');
+      try{ localStorage.setItem('cyk_visit_day',today); }catch(e){}
+    }else if(wrap){ wrap.style.display='none'; }
+  }).catch(function(){ if(wrap){ wrap.style.display='none'; } });
+})();
 </script>
 </body>
 </html>"""
