@@ -28,6 +28,21 @@ TICKERS = [
     "KCE", "HANA", "WHA", "AWC", "LH", "AP", "SPALI",
 ]
 
+# กลุ่ม MAI — รายชื่อคัดมือ (~95 ตัวที่เป็นที่รู้จัก; SET API กัน bot ดึงรายชื่อทางการอัตโนมัติไม่ได้)
+# หมายเหตุ: บริษัทย้ายกระดาน MAI↔SET ได้ — ถ้าเจอตัวผิดกระดาน/ตกหล่น แก้ list นี้ตรงๆ
+MAI_TICKERS = [
+    "AU", "XO", "TACC", "TQR", "KUMWEL", "SICT", "IIG", "PROS", "ETC",
+    "ADD", "INSET", "CAZ", "PROEN", "TPS", "ARIP", "ATP30", "COLOR", "CMO",
+    "DOD", "ECF", "HARN", "KASET", "KIAT", "MBAX", "MGT", "NDR", "PIMO",
+    "QLT", "SAAM", "SALEE", "SE", "SONIC", "VL", "WINNER", "YGG", "ZIGA", "TMILL",
+    "SELIC", "STC", "STI", "NCAP", "MOONG", "ABM", "AF", "AKP", "APP", "AUCT",
+    "BGT", "BM", "BOL", "CHOW", "COMAN", "CPANEL", "DPAINT", "FLOYD", "FVC",
+    "HL", "ICN", "IMH", "K", "KJL", "KWM", "LDC", "LIT", "MASTER", "MITSIB",
+    "PHOL", "PLANET", "PPS", "PRAPAT", "SANKO", "TITLE", "TRT", "TRV", "UKEM", "VCOM",
+    "WARRIX", "WINMED", "CHIC", "CRD", "POLY", "JDF", "NV", "TAN", "BLESS", "DEXON",
+    "PLT", "SCM", "ADB", "SFT", "MENA", "PJW", "SECURE", "CIG",
+]
+
 
 # ---------- อินดิเคเตอร์ ----------
 def rsi(close, n=14):
@@ -103,7 +118,17 @@ def _one_fund(tq):
     try:
         tk = yf.Ticker(tq)
         info = tk.info
-        d = {f: info.get(f) for f in FUND_FIELDS}
+        d = {}
+        for f in FUND_FIELDS:
+            v = info.get(f)
+            if f != "exDividendDate" and v is not None:
+                try:   # yfinance บางตัวส่งเป็น string เช่น priceToBook='Infinity' (เจอกับหุ้น MAI) → ทิ้ง
+                    v = float(v)
+                    if not np.isfinite(v):
+                        v = None
+                except (TypeError, ValueError):
+                    v = None
+            d[f] = v
         try:  # กำไรสุทธิรายปี ล่าสุด > ปีก่อน = ฟื้นจริงระดับทั้งปี (ไม่ใช่แค่ไตรมาส)
             ni = tk.income_stmt.loc["Net Income"]
             vals = [float(v) for _, v in ni.items() if v == v]   # newest first, ตัด NaN
@@ -513,7 +538,7 @@ def fetch_set_index():
         return None
 
 
-def market_banner(results, market):
+def market_banner(results, market, label="🇹🇭 ภาพรวมตลาด SET"):
     n = len(results) or 1
     up_pct = round(sum(1 for r in results if r["trend"] == "ขาขึ้น") / n * 100)
     avg_rsi = round(sum(r["rsi"] for r in results) / n)
@@ -522,7 +547,13 @@ def market_banner(results, market):
     bear = sum(1 for r in results if r["bear_div"])
     chg1m = market["chg_1m"] if market else None
     if chg1m is None:
-        mood, mcol = "—", "#3a3f4b"
+        # ไม่มีดัชนี (เช่น กลุ่ม MAI — yfinance ไม่มี ^MAI) → วัดอารมณ์จาก breadth ของหุ้นที่สแกนแทน
+        if up_pct >= 55:
+            mood, mcol = "🐂 ขาขึ้น (จาก breadth)", "#0b6e4f"
+        elif up_pct < 40:
+            mood, mcol = "🐻 ขาลง (จาก breadth)", "#7a2222"
+        else:
+            mood, mcol = "↔ ออกข้าง/ผสม (จาก breadth)", "#5a4a1f"
     elif chg1m > 2 and up_pct >= 55:
         mood, mcol = "🐂 ขาขึ้น", "#0b6e4f"
     elif chg1m < -2 or up_pct < 40:
@@ -538,21 +569,22 @@ def market_banner(results, market):
         idx = (f'<b style="font-size:22px">{market["level"]:,.0f}</b><span class="lbl"> จุด</span> · '
                f'<span style="color:{col1m}">1ด {sgn(market["chg_1m"])}</span> · 1ปี {sgn(market["chg_1y"])} · ห่าง high {sgn(market["from_high"])}')
     else:
-        idx = '<span class="lbl">(ดึง SET Index ไม่ได้)</span>'
-    return (f'<div class="market"><div class="mk-top"><b>🇹🇭 ภาพรวมตลาด SET</b>'
+        idx = '<span class="lbl">(ไม่มีข้อมูลดัชนีกลุ่มนี้ — ดูจาก breadth ด้านล่างแทน)</span>'
+    return (f'<div class="market"><div class="mk-top"><b>{label}</b>'
             f'<span class="pill" style="background:{mcol}">{mood}</span></div>'
             f'<div class="mk-idx">{idx}</div>'
             f'<div class="mk-br">Breadth: ขาขึ้น <b>{up_pct}%</b> · RSI เฉลี่ย <b>{avg_rsi}</b> · oversold {os_} · overbought {ob} · bear div {bear}{caution}</div></div>')
 
 
 SIGNALS_FILE = Path(__file__).parent / "signals.json"
+SIGNALS_MAI_FILE = Path(__file__).parent / "signals_mai.json"
 TRACK_DAYS = 60   # ติดตามผลสัญญาณ 60 วันปฏิทิน แล้วปิดบันทึกผล
 
 
-def track_signals(results):
+def track_signals(results, path=SIGNALS_FILE):
     """บันทึก/อัปเดต track record ของสัญญาณ 🟢 เข้าได้ — วัดผลว่าระบบแม่นจริงไหม"""
     try:
-        data = json.loads(SIGNALS_FILE.read_text(encoding="utf-8"))
+        data = json.loads(path.read_text(encoding="utf-8"))
     except Exception:
         data = {"open": [], "closed": []}
     today = (datetime.now(timezone.utc) + timedelta(hours=7)).date()
@@ -582,11 +614,30 @@ def track_signals(results):
                                  "entry": r["price"], "last": r["price"],
                                  "ret": 0.0, "peak": 0.0, "days": 0})
 
-    SIGNALS_FILE.write_text(json.dumps(data, ensure_ascii=False, indent=1), encoding="utf-8")
+    path.write_text(json.dumps(data, ensure_ascii=False, indent=1), encoding="utf-8")
     return data
 
 
-def build_dashboard(results, market, signals, out_path):
+def tabs_html(active):
+    tabs = [("div", "index.html", "💰 SET ปันผล (ถือยาว)"),
+            ("tech", "technical.html", "📈 SET เทคนิค (จังหวะเทรด)"),
+            ("mai", "mai.html", "🚀 MAI (หุ้นเล็กโตเร็ว)")]
+    return ('<div class="tabs">'
+            + "".join(f'<a class="tab{" active" if k == active else ""}" href="{h}">{t}</a>' for k, h, t in tabs)
+            + "</div>")
+
+
+MAI_NOTICE = ('<div style="background:#2a2014;border:1px solid #6e4a1f;border-radius:10px;'
+              'padding:11px 14px;margin-bottom:16px;font-size:13px;line-height:1.7">'
+              '⚠️ <b style="color:#ffcf66">MAI = หุ้นเล็ก ความเสี่ยงสูงกว่า SET มาก</b> — '
+              'สภาพคล่องต่ำ สเปรดกว้าง ราคาโดนลาก/ทุบแรงได้ง่าย · งบบางตัวข้อมูลไม่ครบ (n/a) · '
+              'รายชื่อคัดมือ ~95 ตัวที่เป็นที่รู้จัก อาจไม่ครบทั้งกระดาน · '
+              'อย่าใส่เงินก้อนใหญ่ในหุ้น MAI ตัวเดียว</div>')
+
+
+def build_dashboard(results, market, signals, out_path,
+                    title="📈 SET Dividend + Technical + Fundamental Screener",
+                    tabs="", notice="", mlabel="🇹🇭 ภาพรวมตลาด SET"):
     keys = ("ticker", "price", "yield", "payout", "roe", "de", "epsg", "pe",
             "health", "health_color", "rsi", "trend", "score", "reasons", "id", "bear_div", "trap", "div_cut",
             "xd_last", "xd_next", "status", "status_color", "srank", "div_good", "turnaround", "comment", "fair_txt")
@@ -605,7 +656,10 @@ def build_dashboard(results, market, signals, out_path):
     updated = f"{now_ict.day} {TH_MON[now_ict.month]} {now_ict.year} {now_ict.hour:02d}:{now_ict.minute:02d} น."
     html = html.replace("__UPDATED__", updated)
     html = html.replace("/*__SIGNALS__*/", json.dumps(signals, ensure_ascii=False))
-    html = html.replace("__MARKET__", market_banner(results, market))
+    html = html.replace("__TITLE__", title)
+    html = html.replace("__TABS__", tabs)
+    html = html.replace("__NOTICE__", notice)
+    html = html.replace("__MARKET__", market_banner(results, market, mlabel))
     html = html.replace("__SCANNED__", str(len(results)))
     html = html.replace("__NGO__", str(n_go))
     html = html.replace("__NWAIT__", str(n_wait))
@@ -662,20 +716,18 @@ HTML_TEMPLATE = r"""<!DOCTYPE html>
 <html lang="th">
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
-<title>SET Dividend Screener</title>
+<title>__TITLE__</title>
 <script src="https://unpkg.com/lightweight-charts@4.1.3/dist/lightweight-charts.standalone.production.js"></script>
 <style>/*__CSS__*/</style>
 </head>
 <body>
 <div class="wrap">
-  <div class="tabs">
-    <a class="tab active" href="index.html">💰 ปันผลคุณภาพ (ถือยาว)</a>
-    <a class="tab" href="technical.html">📈 เทคนิคสวย (จังหวะเทรด)</a>
-  </div>
-  <h1>📈 SET Dividend + Technical + Fundamental Screener</h1>
+  __TABS__
+  <h1>__TITLE__</h1>
   <div class="sub">หุ้นปันผลคุณภาพ + จังหวะเข้า + กรองงบการเงิน • ข้อมูล: yfinance • อินดิเคเตอร์คำนวณเอง</div>
   <div style="color:var(--mut);font-size:11.5px;margin:-12px 0 16px">🕐 อัปเดตล่าสุด: <b style="color:#9aa4b0">__UPDATED__</b> (เวลาไทย) · อัปเดตอัตโนมัติทุกวันทำการหลังตลาดปิด</div>
   __MARKET__
+  __NOTICE__
   <div class="stats">
     <div class="stat"><b>__SCANNED__</b><span>หุ้นที่สแกน</span></div>
     <div class="stat"><b class="up">__NGO__</b><span>🟢 เข้าได้ตอนนี้</span></div>
@@ -855,6 +907,7 @@ def build_technical(results, market, out_path):
 
     html = TECH_TEMPLATE
     html = html.replace("/*__CSS__*/", CSS)
+    html = html.replace("__TABS__", tabs_html("tech"))
     html = html.replace("/*__ROWS__*/", json.dumps(table, ensure_ascii=False))
     html = html.replace("/*__CHARTS__*/", json.dumps(charts, ensure_ascii=False))
     now_ict = datetime.now(timezone.utc) + timedelta(hours=7)
@@ -879,10 +932,7 @@ TECH_TEMPLATE = r"""<!DOCTYPE html>
 </head>
 <body>
 <div class="wrap">
-  <div class="tabs">
-    <a class="tab" href="index.html">💰 ปันผลคุณภาพ (ถือยาว)</a>
-    <a class="tab active" href="technical.html">📈 เทคนิคสวย (จังหวะเทรด)</a>
-  </div>
+  __TABS__
   <h1>📈 SET Technical Screener — หุ้นเทคนิคสวย</h1>
   <div class="sub">คัดจากกราฟล้วนๆ ไม่สนปันผล/งบ — divergence · ย่อในขาขึ้น · MACD · แนวรับ EMA800 · วอลุ่ม</div>
   <div style="color:var(--mut);font-size:11.5px;margin:-12px 0 16px">🕐 อัปเดตล่าสุด: <b style="color:#9aa4b0">__UPDATED__</b> (เวลาไทย) · อัปเดตอัตโนมัติทุกวันทำการหลังตลาดปิด</div>
@@ -1009,7 +1059,22 @@ if __name__ == "__main__":
     n_open = len(signals["open"])
     if n_open:
         print(f"📊 track record: เปิดติดตาม {n_open} สัญญาณ · ปิดแล้ว {len(signals['closed'])}")
-    build_dashboard(res, market, signals, args.out)
+    build_dashboard(res, market, signals, args.out, tabs=tabs_html("div"))
     tech_out = str(Path(args.out).with_name("technical.html"))
     build_technical(res, market, tech_out)
     print(f"\n✅ สร้าง {args.out} + {tech_out} แล้ว ({len(res)} หุ้น)")
+
+    # ---------- หน้า 3: กลุ่ม MAI ----------
+    mai_tk = MAI_TICKERS[:args.limit] if args.limit else MAI_TICKERS
+    print(f"\n🚀 สแกนกลุ่ม MAI {len(mai_tk)} ตัว ...")
+    res_mai = run(mai_tk)
+    if res_mai:
+        signals_mai = track_signals(res_mai, SIGNALS_MAI_FILE)
+        mai_out = str(Path(args.out).with_name("mai.html"))
+        build_dashboard(res_mai, None, signals_mai, mai_out,
+                        title="🚀 MAI Dividend + Technical Screener",
+                        tabs=tabs_html("mai"), notice=MAI_NOTICE,
+                        mlabel="🚀 ภาพรวมกลุ่ม MAI (จากหุ้นที่สแกน)")
+        print(f"✅ สร้าง {mai_out} แล้ว ({len(res_mai)} หุ้น MAI)")
+    else:
+        print("⚠ กลุ่ม MAI ดึงข้อมูลไม่ได้ — ข้ามหน้า mai.html รอบนี้")
