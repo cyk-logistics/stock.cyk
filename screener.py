@@ -230,6 +230,7 @@ def analyze(ticker, df, fund):
     high52 = float(high.tail(252).max())
     bull_div, bull_idx = detect_bull_div(low, r)
     bear_div, bear_idx = detect_bear_div(high, r)
+    macd_x = bool(macd_line.iloc[-1] > macd_sig.iloc[-1] and macd_line.iloc[-2] <= macd_sig.iloc[-2])
 
     # สถานะเข้า (ไฟสัญญาณ) — actionable ลดหลั่น
     if bull_div and above20:
@@ -275,7 +276,7 @@ def analyze(ticker, df, fund):
         score += 20; reasons.append("ย่อในขาขึ้น (EMA50)")
     if price <= low52 * 1.10:
         score += 15; reasons.append("ใกล้ Low 52 สัปดาห์")
-    if bool(macd_line.iloc[-1] > macd_sig.iloc[-1] and macd_line.iloc[-2] <= macd_sig.iloc[-2]):
+    if macd_x:
         score += 10; reasons.append("MACD ตัดขึ้น")
     # คุณภาพ + มูลค่า (ดันตัว "น่าสนใจโดยรวม" ขึ้นบน ไม่ใช่แค่ตัวที่ย่อแรง)
     if fg_pts is not None and fg_pts >= 2:
@@ -311,6 +312,60 @@ def analyze(ticker, df, fund):
         for x in fg_reasons:
             reasons.append("⚠ " + x)
     score = round(max(0, min(score, 100)), 0)
+
+    # ---------- คะแนนเทคนิคล้วน (หน้า "เทคนิคสวย" — ไม่สนปันผล/งบ) ----------
+    rsi_rising = len(r) > 3 and rsi_now > float(r.iloc[-3])
+    ema_stack = e20 > e50 > e200                                # EMA เรียงตัวขาขึ้นสวย
+    pullback = uptrend and e50 * 0.95 <= price <= e50 * 1.03    # ย่อลงมาโซน EMA50 ในขาขึ้น
+    vol_spike = False
+    if "Volume" in df and len(df) > 21:
+        _v = df["Volume"].astype(float)
+        _v20 = float(_v.tail(21).iloc[:-1].mean())
+        vol_spike = bool(np.isfinite(_v.iloc[-1]) and _v20 > 0 and float(_v.iloc[-1]) >= 1.5 * _v20
+                         and price > float(close.iloc[-2]))
+    tscore, treasons = 0.0, []
+    if bull_div and above20:
+        tscore += 30; treasons.append("🟢 Bull Div ยืนยัน (เหนือ EMA20)")
+    elif bull_div:
+        tscore += 12; treasons.append("🟡 Bull Div รอยืนยัน")
+    if uptrend:
+        tscore += 15; treasons.append("ขาขึ้น (เหนือ EMA200)")
+    else:
+        tscore -= 15; treasons.append("⚠ ขาลง (ใต้ EMA200)")
+    if ema_stack:
+        tscore += 10; treasons.append("EMA เรียงสวย 20>50>200")
+    if pullback:
+        tscore += 18; treasons.append("ย่อลงโซน EMA50 (จุดเข้าขาขึ้น)")
+    if macd_x:
+        tscore += 15; treasons.append("MACD ตัดขึ้น")
+    if rsi_now < 35:
+        tscore += 10; treasons.append(f"RSI oversold ({rsi_now:.0f})")
+    elif rsi_now < 55 and rsi_rising:
+        tscore += 8; treasons.append("RSI กำลังฟื้นตัว")
+    if rsi_now > 70:
+        tscore -= 10; treasons.append(f"⚠ RSI ร้อนเกิน ({rsi_now:.0f})")
+    if near800:
+        tscore += 12; treasons.append("🟣 ที่แนวรับใหญ่ EMA800")
+    if price < bbl:
+        tscore += 6; treasons.append("หลุดกรอบล่าง BB")
+    if vol_spike:
+        tscore += 8; treasons.append("วอลุ่มเข้าหนุน (≥1.5 เท่า)")
+    if bear_div:
+        tscore -= 25; treasons.append("🔴 Bearish Divergence")
+    tscore = round(max(0, min(tscore, 100)), 0)
+
+    if not bear_div and ((bull_div and above20) or (pullback and macd_x)):
+        tstatus, tcolor, trank = "🟢 น่าเข้า", "#0b6e4f", 5
+    elif not bear_div and (bull_div or pullback):
+        tstatus, tcolor, trank = "🟡 ใกล้จุดเข้า", "#6e5a1f", 4
+    elif bear_div:
+        tstatus, tcolor, trank = "🔴 เลี่ยง", "#7a2222", 1
+    elif near800:
+        tstatus, tcolor, trank = "🟣 ที่แนวรับ", "#5a2d6e", 3
+    elif rsi_now < 35:
+        tstatus, tcolor, trank = "🔵 oversold", "#1f4e7a", 2
+    else:
+        tstatus, tcolor, trank = "⚪ เฝ้าดู", "#3a3f4b", 0
 
     # ===== คอมเมนต์งบ (สร้างอัตโนมัติเป็นภาษาคน) =====
     cm = [f"งบ{fg_label}"] if fg_label != "n/a" else ["ข้อมูลงบจำกัด"]
@@ -413,6 +468,7 @@ def analyze(ticker, df, fund):
         "status": status, "status_color": scolor, "srank": srank, "div_good": div_good, "turnaround": turnaround,
         "comment": comment, "fair_txt": fair_txt,
         "score": score, "reasons": reasons,
+        "tscore": tscore, "tstatus": tstatus, "tstatus_color": tcolor, "trank": trank, "treasons": treasons,
         "chart": {"candles": candles, "ema20": l20, "ema50": l50, "ema200": l200, "ema800": l800, "markers": markers},
     }
 
@@ -542,6 +598,7 @@ def build_dashboard(results, market, signals, out_path):
     n_warn = sum(1 for r in results if r["bear_div"] or r["trap"] or r["div_cut"])
 
     html = HTML_TEMPLATE
+    html = html.replace("/*__CSS__*/", CSS)
     html = html.replace("/*__ROWS__*/", json.dumps(table, ensure_ascii=False))
     html = html.replace("/*__CHARTS__*/", json.dumps(charts, ensure_ascii=False))
     now_ict = datetime.now(timezone.utc) + timedelta(hours=7)
@@ -557,17 +614,15 @@ def build_dashboard(results, market, signals, out_path):
     Path(out_path).write_text(html, encoding="utf-8")
 
 
-HTML_TEMPLATE = r"""<!DOCTYPE html>
-<html lang="th">
-<head>
-<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
-<title>SET Dividend Screener</title>
-<script src="https://unpkg.com/lightweight-charts@4.1.3/dist/lightweight-charts.standalone.production.js"></script>
-<style>
+CSS = r"""
   :root{--bg:#0e1117;--card:#161b22;--bd:#222a35;--tx:#d1d4dc;--mut:#7d8590;--grn:#26a69a;--red:#ef5350;--amb:#f0a000;}
   *{box-sizing:border-box} body{margin:0;background:var(--bg);color:var(--tx);font-family:-apple-system,"Segoe UI",Roboto,sans-serif}
   .wrap{max-width:1280px;margin:0 auto;padding:24px}
   h1{font-size:20px;margin:0 0 4px} .sub{color:var(--mut);font-size:13px;margin-bottom:18px}
+  .tabs{display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap}
+  .tab{padding:9px 16px;border-radius:10px;border:1px solid var(--bd);background:var(--card);color:var(--mut);text-decoration:none;font-size:14px;font-weight:600}
+  .tab:hover{color:var(--tx)}
+  .tab.active{color:#eaeef4;border-color:#3a4a63;background:#1c2436}
   .stats{display:flex;gap:12px;margin-bottom:20px;flex-wrap:wrap}
   .stat{background:var(--card);border:1px solid var(--bd);border-radius:10px;padding:12px 16px;min-width:110px}
   .stat b{display:block;font-size:22px} .stat span{color:var(--mut);font-size:12px}
@@ -601,10 +656,22 @@ HTML_TEMPLATE = r"""<!DOCTYPE html>
   .chart-head{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:8px;gap:8px;flex-wrap:wrap}
   .chart-head b{font-size:15px} .chart-head .meta{color:var(--mut);font-size:11.5px}
   .chart{height:300px} .foot{color:var(--mut);font-size:11px;margin-top:24px;line-height:1.7}
-</style>
+"""
+
+HTML_TEMPLATE = r"""<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SET Dividend Screener</title>
+<script src="https://unpkg.com/lightweight-charts@4.1.3/dist/lightweight-charts.standalone.production.js"></script>
+<style>/*__CSS__*/</style>
 </head>
 <body>
 <div class="wrap">
+  <div class="tabs">
+    <a class="tab active" href="index.html">💰 ปันผลคุณภาพ (ถือยาว)</a>
+    <a class="tab" href="technical.html">📈 เทคนิคสวย (จังหวะเทรด)</a>
+  </div>
   <h1>📈 SET Dividend + Technical + Fundamental Screener</h1>
   <div class="sub">หุ้นปันผลคุณภาพ + จังหวะเข้า + กรองงบการเงิน • ข้อมูล: yfinance • อินดิเคเตอร์คำนวณเอง</div>
   <div style="color:var(--mut);font-size:11.5px;margin:-12px 0 16px">🕐 อัปเดตล่าสุด: <b style="color:#9aa4b0">__UPDATED__</b> (เวลาไทย) · อัปเดตอัตโนมัติทุกวันทำการหลังตลาดปิด</div>
@@ -774,6 +841,149 @@ CHARTS.forEach(c=>{
 </html>"""
 
 
+def build_technical(results, market, out_path):
+    """หน้า 2: หุ้นเทคนิคสวย — เรียงตามคะแนนกราฟล้วนๆ (ไม่สนปันผล/งบ)"""
+    res = sorted(results, key=lambda x: (x["tscore"], x["trank"]), reverse=True)
+    keys = ("ticker", "id", "price", "rsi", "trend", "tscore", "tstatus", "tstatus_color", "trank",
+            "treasons", "bear_div", "yield", "health", "comment", "fair_txt")
+    table = [{k: r[k] for k in keys} for r in res]
+    charts = [{"id": r["id"], "ticker": r["ticker"], **r["chart"]} for r in res if r["chart"]["candles"]][:8]
+    n_go = sum(1 for r in res if "น่าเข้า" in r["tstatus"])
+    n_near = sum(1 for r in res if "ใกล้จุดเข้า" in r["tstatus"])
+    n_sup = sum(1 for r in res if "ที่แนวรับ" in r["tstatus"])
+    n_avoid = sum(1 for r in res if "เลี่ยง" in r["tstatus"])
+
+    html = TECH_TEMPLATE
+    html = html.replace("/*__CSS__*/", CSS)
+    html = html.replace("/*__ROWS__*/", json.dumps(table, ensure_ascii=False))
+    html = html.replace("/*__CHARTS__*/", json.dumps(charts, ensure_ascii=False))
+    now_ict = datetime.now(timezone.utc) + timedelta(hours=7)
+    updated = f"{now_ict.day} {TH_MON[now_ict.month]} {now_ict.year} {now_ict.hour:02d}:{now_ict.minute:02d} น."
+    html = html.replace("__UPDATED__", updated)
+    html = html.replace("__MARKET__", market_banner(results, market))
+    html = html.replace("__SCANNED__", str(len(res)))
+    html = html.replace("__NGO__", str(n_go))
+    html = html.replace("__NNEAR__", str(n_near))
+    html = html.replace("__NSUP__", str(n_sup))
+    html = html.replace("__NAVOID__", str(n_avoid))
+    Path(out_path).write_text(html, encoding="utf-8")
+
+
+TECH_TEMPLATE = r"""<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SET Technical Screener — หุ้นเทคนิคสวย</title>
+<script src="https://unpkg.com/lightweight-charts@4.1.3/dist/lightweight-charts.standalone.production.js"></script>
+<style>/*__CSS__*/</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="tabs">
+    <a class="tab" href="index.html">💰 ปันผลคุณภาพ (ถือยาว)</a>
+    <a class="tab active" href="technical.html">📈 เทคนิคสวย (จังหวะเทรด)</a>
+  </div>
+  <h1>📈 SET Technical Screener — หุ้นเทคนิคสวย</h1>
+  <div class="sub">คัดจากกราฟล้วนๆ ไม่สนปันผล/งบ — divergence · ย่อในขาขึ้น · MACD · แนวรับ EMA800 · วอลุ่ม</div>
+  <div style="color:var(--mut);font-size:11.5px;margin:-12px 0 16px">🕐 อัปเดตล่าสุด: <b style="color:#9aa4b0">__UPDATED__</b> (เวลาไทย) · อัปเดตอัตโนมัติทุกวันทำการหลังตลาดปิด</div>
+  __MARKET__
+  <div style="background:#2a2014;border:1px solid #6e4a1f;border-radius:10px;padding:11px 14px;margin-bottom:16px;font-size:13px;line-height:1.7">⚠️ <b style="color:#ffcf66">หน้านี้คือ "จังหวะเทรด" ไม่ใช่ลงทุนถือยาว</b> — backtest ระบบนี้ย้อนหลัง 5 ปี สัญญาณเทคนิคล้วนๆ <b>แพ้ซื้อแล้วถือเฉยๆ</b> (+2% vs +14% · ชนะ 44%) → ใช้ช่วยหาจังหวะเท่านั้น อย่าเชื่อ 100% + ตั้งจุดตัดขาดทุนทุกไม้</div>
+  <div class="stats">
+    <div class="stat"><b>__SCANNED__</b><span>หุ้นที่สแกน</span></div>
+    <div class="stat"><b class="up">__NGO__</b><span>🟢 น่าเข้า (เทคนิค)</span></div>
+    <div class="stat"><b style="color:#e0b020">__NNEAR__</b><span>🟡 ใกล้จุดเข้า</span></div>
+    <div class="stat"><b style="color:#c89aff">__NSUP__</b><span>🟣 ที่แนวรับใหญ่</span></div>
+    <div class="stat"><b class="down">__NAVOID__</b><span>🔴 เลี่ยง (bear div)</span></div>
+  </div>
+  <div id="entrycall"></div>
+  <div id="modal" class="modal" onclick="if(event.target===this)closeModal()"><div class="modal-box"><span class="modal-close" onclick="closeModal()">✕</span><div id="modal-body"></div></div></div>
+
+  <h2>📋 ตารางเทคนิค (เรียงตามความสวยของกราฟ)</h2>
+  <table id="tbl"><thead><tr>
+    <th data-k="ticker">หุ้น</th>
+    <th data-k="trank">สถานะ</th>
+    <th class="num" data-k="price">ราคา</th>
+    <th class="num" data-k="rsi">RSI</th>
+    <th data-k="trend">เทรนด์</th>
+    <th class="num" data-k="tscore">คะแนนเทคนิค</th>
+    <th data-k="treasons">สัญญาณกราฟ</th>
+  </tr></thead><tbody></tbody></table>
+
+  <h2>กราฟคะแนนเทคนิคสูงสุด (Top 8)</h2>
+  <div class="grid" id="charts"></div>
+
+  <div class="foot">
+    ⚠ <b>สำคัญ:</b> หน้านี้คัดจากกราฟอย่างเดียว ไม่ได้กรองงบ/ปันผล — หุ้นกราฟสวยแต่งบแย่ก็ติดอันดับได้ → กด 💬 ดูคอมเมนต์งบก่อนตัดสินใจเสมอ<br>
+    🟢 <b>น่าเข้า</b> = Bull Div ยืนยัน (เหนือ EMA20) หรือ ขาขึ้น+ย่อถึง EMA50+MACD ตัดขึ้น • 🟡 <b>ใกล้จุดเข้า</b> = เจอ setup แต่ยังไม่ครบเงื่อนไข • 🔴 <b>เลี่ยง</b> = bearish divergence<br>
+    📐 เส้นบนกราฟ: <span style="color:#00bcd4">EMA20</span> · <span style="color:#f0a000">EMA50</span> · <span style="color:#2962ff">EMA200</span> · <span style="color:#a050d0">EMA800 (แนวรับใหญ่)</span><br>
+    ข้อมูล yfinance ไม่ใช่ realtime • เป็นสัญญาณจากระบบ ไม่ใช่คำแนะนำลงทุน — กำหนดขนาดไม้ + จุดตัดขาดทุนเองทุกครั้ง
+  </div>
+</div>
+
+<script>
+const ROWS = /*__ROWS__*/;
+const CHARTS = /*__CHARTS__*/;
+function scoreColor(s){ if(s>=70) return '#0b6e4f'; if(s>=50) return '#1f7a4d'; if(s>=30) return '#5a4a1f'; return '#3a3f4b'; }
+function badge(r){ let c='badge'; if(r.includes('🔴'))c='badge bear'; else if(r.includes('🟢'))c='badge bull'; else if(r.includes('🟣'))c='badge turn'; else if(r.includes('⚠'))c='badge warn'; return `<span class="${c}">${r}</span>`; }
+const tb = document.querySelector('#tbl tbody');
+function render(rows){
+  tb.innerHTML = rows.map(r=>`<tr style="${r.bear_div?'background:rgba(239,83,80,.05)':''}">
+    <td><b style="cursor:pointer;color:#58a6ff" onclick="openComment('${r.ticker}')">${r.ticker} 💬</b></td>
+    <td><span class="pill" style="background:${r.tstatus_color}">${r.tstatus}</span></td>
+    <td class="num">${r.price.toFixed(2)}</td>
+    <td class="num ${r.rsi<35?'up':r.rsi>70?'down':''}">${r.rsi.toFixed(0)}</td>
+    <td class="${r.trend==='ขาขึ้น'?'up':'down'}">${r.trend}</td>
+    <td class="num"><span class="score" style="background:${scoreColor(r.tscore)}">${r.tscore}</span></td>
+    <td>${r.treasons.map(badge).join('')}</td>
+  </tr>`).join('');
+}
+render(ROWS);
+function openComment(tk){
+  const r=ROWS.find(x=>x.ticker===tk); if(!r)return;
+  document.getElementById('modal-body').innerHTML=`<h2 style="margin:0 0 4px">${r.ticker} <span class="pill" style="background:${r.tstatus_color};font-size:11px">${r.tstatus}</span></h2><div class="sub" style="margin-bottom:12px">ราคา ${r.price.toFixed(2)} · RSI ${r.rsi.toFixed(0)} · ${r.trend} · ยีลด์ ${r.yield.toFixed(1)}%</div><div style="font-size:13px;background:#1a2130;border-radius:8px;padding:8px 11px;margin-bottom:12px">🎯 <b>ราคาเหมาะสม (ประเมิน):</b> ${r.fair_txt||'—'}</div><div style="font-size:13.5px;line-height:1.75">${r.comment||'—'}</div><div class="sub" style="margin-top:14px;font-size:11px">💬 คอมเมนต์สร้างอัตโนมัติจากงบ/ราคา (yfinance) • ไม่ใช่คำแนะนำลงทุน</div>`;
+  document.getElementById('modal').classList.add('show');
+}
+function closeModal(){document.getElementById('modal').classList.remove('show');}
+const entries=ROWS.filter(r=>r.tstatus.indexOf('น่าเข้า')>=0);
+document.getElementById('entrycall').innerHTML = entries.length ? `<div style="background:#10261b;border:1px solid #2c6e4f;border-radius:10px;padding:12px 14px;margin:6px 0 16px;font-size:13px">🟢 <b style="color:#5fe0c8">เทคนิคน่าเข้าตอนนี้ (${entries.length} ตัว)</b>${entries.map(r=>`<div style="margin-top:8px"><b style="cursor:pointer;color:#58a6ff" onclick="openComment('${r.ticker}')">${r.ticker} 💬</b> <span style="color:var(--mut)">คะแนนเทคนิค ${r.tscore} · RSI ${r.rsi.toFixed(0)} · งบ${r.health}</span><br><span style="font-size:12.5px;line-height:1.6">${r.treasons.filter(x=>!x.includes('⚠')).slice(0,3).join(' · ')}</span></div>`).join('')}<div style="color:var(--mut);font-size:11px;margin-top:9px">สัญญาณ ≠ คำแนะนำซื้อ — ตั้งจุดตัดขาดทุนก่อนเข้าเสมอ</div></div>` : '';
+let asc = {};
+document.querySelectorAll('#tbl th').forEach(th=>{
+  th.onclick = ()=>{ const k=th.dataset.k; asc[k]=!asc[k];
+    const s=[...ROWS].sort((a,b)=>{ let x=a[k],y=b[k];
+      if(k==='treasons'){x=a[k].length;y=b[k].length;}
+      if(x===null||x===undefined)x=-Infinity; if(y===null||y===undefined)y=-Infinity;
+      if(typeof x==='string') return asc[k]?x.localeCompare(y):y.localeCompare(x);
+      return asc[k]?x-y:y-x; });
+    render(s); };
+});
+const host = document.getElementById('charts');
+CHARTS.forEach(c=>{
+  const row = ROWS.find(r=>r.id===c.id) || {};
+  const card=document.createElement('div'); card.className='chart-card';
+  card.innerHTML = `<div class="chart-head"><b>${c.ticker}</b>
+     <span class="meta">${row.tstatus||''} · RSI ${row.rsi!=null?row.rsi.toFixed(0):'—'} · ${row.trend||''} · คะแนนเทคนิค ${row.tscore||0}</span></div>
+     <div class="chart" id="c_${c.id}"></div>`;
+  host.appendChild(card);
+  const el = card.querySelector('.chart');
+  const chart = LightweightCharts.createChart(el,{ width:el.clientWidth, height:300,
+    layout:{background:{color:'#161b22'},textColor:'#d1d4dc'},
+    grid:{vertLines:{color:'#1c2230'},horzLines:{color:'#1c2230'}},
+    timeScale:{borderColor:'#2a2e39'}, rightPriceScale:{borderColor:'#2a2e39'} });
+  const cs=chart.addCandlestickSeries({upColor:'#26a69a',downColor:'#ef5350',borderVisible:false,wickUpColor:'#26a69a',wickDownColor:'#ef5350'});
+  cs.setData(c.candles);
+  const e20=chart.addLineSeries({color:'#00bcd4',lineWidth:1,priceLineVisible:false,lastValueVisible:false}); e20.setData(c.ema20||[]);
+  const e50=chart.addLineSeries({color:'#f0a000',lineWidth:1,priceLineVisible:false,lastValueVisible:false}); e50.setData(c.ema50);
+  const e200=chart.addLineSeries({color:'#2962ff',lineWidth:1,priceLineVisible:false,lastValueVisible:false}); e200.setData(c.ema200);
+  const e800=chart.addLineSeries({color:'#a050d0',lineWidth:2,priceLineVisible:false,lastValueVisible:false}); e800.setData(c.ema800||[]);
+  if(c.markers&&c.markers.length) cs.setMarkers(c.markers);
+  chart.timeScale().fitContent();
+  let _lw=el.clientWidth; new ResizeObserver(()=>{const w=el.clientWidth; if(w&&w!==_lw){_lw=w; chart.applyOptions({width:w});}}).observe(el);
+});
+</script>
+</body>
+</html>"""
+
+
 if __name__ == "__main__":
     ap = argparse.ArgumentParser()
     ap.add_argument("--limit", type=int, default=0)
@@ -800,4 +1010,6 @@ if __name__ == "__main__":
     if n_open:
         print(f"📊 track record: เปิดติดตาม {n_open} สัญญาณ · ปิดแล้ว {len(signals['closed'])}")
     build_dashboard(res, market, signals, args.out)
-    print(f"\n✅ สร้าง {args.out} แล้ว ({len(res)} หุ้น)")
+    tech_out = str(Path(args.out).with_name("technical.html"))
+    build_technical(res, market, tech_out)
+    print(f"\n✅ สร้าง {args.out} + {tech_out} แล้ว ({len(res)} หุ้น)")
