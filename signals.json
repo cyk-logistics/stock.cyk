@@ -4,19 +4,19 @@
    "ticker": "LH",
    "date": "2026-06-13",
    "entry": 3.64,
-   "last": 3.72,
-   "ret": 2.2,
+   "last": 3.74,
+   "ret": 2.75,
    "peak": 4.95,
-   "days": 26
+   "days": 27
   },
   {
    "ticker": "IRPC",
    "date": "2026-07-02",
    "entry": 1.83,
-   "last": 1.84,
-   "ret": 0.55,
+   "last": 1.85,
+   "ret": 1.09,
    "peak": 3.83,
-   "days": 7
+   "days": 8
   },
   {
    "ticker": "PTTGC",
@@ -25,7 +25,7 @@
    "last": 34.25,
    "ret": 0.74,
    "peak": 1.47,
-   "days": 6
+   "days": 7
   },
   {
    "ticker": "TU",
@@ -34,7 +34,7 @@
    "last": 11.8,
    "ret": 0.85,
    "peak": 1.71,
-   "days": 1
+   "days": 2
   }
  ],
  "closed": []

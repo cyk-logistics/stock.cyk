@@ -4,9 +4,18 @@
    "ticker": "POLY",
    "date": "2026-07-09",
    "entry": 6.85,
-   "last": 6.9,
-   "ret": 0.73,
+   "last": 6.8,
+   "ret": -0.73,
    "peak": 0.73,
+   "days": 1
+  },
+  {
+   "ticker": "CHOW",
+   "date": "2026-07-10",
+   "entry": 1.41,
+   "last": 1.41,
+   "ret": 0.0,
+   "peak": 0.0,
    "days": 0
   }
  ],
