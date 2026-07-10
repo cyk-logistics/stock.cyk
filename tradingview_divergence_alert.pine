@@ -12,9 +12,14 @@ obLevel     = input.int(60, "Bear: RSI สูงกว่า")
 confirmLen  = input.int(20, "EMA ยืนยันเข้า")
 confirmBars = input.int(8,  "รอยืนยันภายใน N แท่ง")
 supportPct  = input.float(2.0, "ระยะใกล้แนวรับ EMA800 (%)")
+pullLoPct   = input.float(5.0, "ย่อซื้อ: ต่ำกว่า EMA50 ได้ไม่เกิน (%)")
+pullHiPct   = input.float(3.0, "ย่อซื้อ: สูงกว่า EMA50 ได้ไม่เกิน (%)")
+volMult     = input.float(1.5, "วอลุ่มหนุน: กี่เท่าของเฉลี่ย 20 วัน")
 
 osc    = ta.rsi(close, rsiLen)
 emaC   = ta.ema(close, confirmLen)
+ema50  = ta.ema(close, 50)
+ema200 = ta.ema(close, 200)
 ema800 = ta.ema(close, 800)
 
 hline(70, "OB", color=color.new(color.red, 50))
@@ -32,7 +37,7 @@ bullDiv = plFound and low[lbR] < ta.valuewhen(plFound, low[lbR], 1) and osc[lbR]
 phFound = not na(ta.pivothigh(osc, lbL, lbR))
 bearDiv = phFound and high[lbR] > ta.valuewhen(phFound, high[lbR], 1) and osc[lbR] < ta.valuewhen(phFound, osc[lbR], 1) and inRange(phFound[1])
 
-// ===== ยืนยันเข้า/ออก =====
+// ===== ยืนยันเข้า/ออก (จาก divergence) =====
 var int armedB = 0
 var int armedS = 0
 if bullDiv and osc[lbR] <= osLevel
@@ -50,6 +55,16 @@ if sell
 else if armedS > 0
     armedS := armedS - 1
 
+// ===== ย่อซื้อในขาขึ้น (ตรงกับหน้า "เทคนิคสวย" บนเว็บ) =====
+// ขาขึ้น (เหนือ EMA200) + ราคาย่อลงมาโซน EMA50 + MACD เพิ่งตัดขึ้น (+ เช็ควอลุ่มหนุนเป็นโบนัส)
+[macdLine, macdSig, _] = ta.macd(close, 12, 26, 9)
+macdX    = ta.crossover(macdLine, macdSig)
+uptrend  = close > ema200
+pullZone = close >= ema50 * (1 - pullLoPct / 100) and close <= ema50 * (1 + pullHiPct / 100)
+volAvg   = ta.sma(volume, 20)
+volBoost = not na(volume) and not na(volAvg[1]) and volAvg[1] > 0 and volume >= volMult * volAvg[1] and close > close[1]
+pbBuy    = uptrend and pullZone and macdX
+
 // ===== แนวรับใหญ่ EMA800 =====
 near800   = math.abs(close - ema800) / ema800 <= supportPct / 100
 atSupport = near800 and not near800[1]   // เพิ่งเข้าโซนแนวรับ (เตือนครั้งเดียว)
@@ -61,27 +76,36 @@ plotshape(bullDiv, "Bull setup", style=shape.circle, location=location.absolute,
 plotshape(bearDiv, "Bear setup", style=shape.circle, location=location.absolute, offset=-lbR, color=color.new(color.red, 30), size=size.tiny)
 
 // ===== Plot บนกราฟราคา =====
-plot(emaC,   "Confirm EMA",          color=color.new(color.aqua, 0), force_overlay=true)
+plot(emaC,   "Confirm EMA (20)",     color=color.new(color.aqua, 0), force_overlay=true)
+plot(ema50,  "EMA50",                color=color.new(color.orange, 0), force_overlay=true)
+plot(ema200, "EMA200 (เทรนด์)",      color=color.new(color.blue, 0), force_overlay=true)
 plot(ema800, "EMA800 (แนวรับใหญ่)",  color=color.new(color.purple, 0), linewidth=2, force_overlay=true)
-plotshape(buy,  "BUY",  style=shape.labelup,   location=location.belowbar, text="BUY",  color=color.lime, textcolor=color.black, size=size.small, force_overlay=true)
-plotshape(sell, "SELL", style=shape.labeldown, location=location.abovebar, text="SELL", color=color.red,  textcolor=color.white, size=size.small, force_overlay=true)
+plotshape(buy,   "BUY",     style=shape.labelup,    location=location.belowbar, text="BUY",  color=color.lime,   textcolor=color.black, size=size.small, force_overlay=true)
+plotshape(sell,  "SELL",    style=shape.labeldown,  location=location.abovebar, text="SELL", color=color.red,    textcolor=color.white, size=size.small, force_overlay=true)
+plotshape(pbBuy, "ย่อซื้อ", style=shape.labelup,    location=location.belowbar, text="ย่อซื้อ", color=color.teal, textcolor=color.white, size=size.small, force_overlay=true)
 plotshape(atSupport, "At EMA800", style=shape.diamond, location=location.belowbar, color=color.purple, size=size.small, force_overlay=true)
 
-plot(buy       ? 1 : 0, "Buy Signal",  display=display.data_window)
-plot(sell      ? 1 : 0, "Sell Signal", display=display.data_window)
-plot(atSupport ? 1 : 0, "At Support",  display=display.data_window)
+plot(buy       ? 1 : 0, "Buy Signal",   display=display.data_window)
+plot(sell      ? 1 : 0, "Sell Signal",  display=display.data_window)
+plot(pbBuy     ? 1 : 0, "Dip-Buy",      display=display.data_window)
+plot(atSupport ? 1 : 0, "At Support",   display=display.data_window)
 
 // ===== Discord alerts =====
+volTxt  = volBoost ? " + วอลุ่มหนุน 💥" : ""
 buyMsg  = '{"content": "🟢 **เข้าซื้อ (ยืนยัน)** ' + syminfo.ticker + ' @ ' + str.tostring(close, format.mintick) + ' | Bull Div + ปิดเหนือ EMA' + str.tostring(confirmLen) + ' | TF ' + timeframe.period + '"}'
 sellMsg = '{"content": "🔴 **ออก/ระวัง (ยืนยัน)** ' + syminfo.ticker + ' @ ' + str.tostring(close, format.mintick) + ' | Bear Div + ปิดใต้ EMA' + str.tostring(confirmLen) + ' | TF ' + timeframe.period + '"}'
+pbMsg   = '{"content": "🟢 **น่าเข้า (ย่อซื้อในขาขึ้น)** ' + syminfo.ticker + ' @ ' + str.tostring(close, format.mintick) + ' | ย่อโซน EMA50 + MACD ตัดขึ้น' + volTxt + ' | TF ' + timeframe.period + '"}'
 supMsg  = '{"content": "🟣 **ถึงแนวรับสำคัญ EMA800** ' + syminfo.ticker + ' @ ' + str.tostring(close, format.mintick) + ' | TF ' + timeframe.period + '"}'
 if buy
     alert(buyMsg, alert.freq_once_per_bar_close)
 if sell
     alert(sellMsg, alert.freq_once_per_bar_close)
+if pbBuy
+    alert(pbMsg, alert.freq_once_per_bar_close)
 if atSupport
     alert(supMsg, alert.freq_once_per_bar_close)
 
 alertcondition(buy,       "Buy (confirmed)",   "เข้าซื้อยืนยันแล้ว")
 alertcondition(sell,      "Sell (confirmed)",  "สัญญาณออกยืนยันแล้ว")
+alertcondition(pbBuy,     "Dip-Buy (uptrend)", "ย่อซื้อในขาขึ้น: โซน EMA50 + MACD ตัดขึ้น")
 alertcondition(atSupport, "At EMA800 support", "ราคาถึงแนวรับสำคัญ EMA800")
