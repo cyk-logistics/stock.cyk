@@ -7,7 +7,7 @@
    "last": 6.9,
    "ret": 0.73,
    "peak": 0.73,
-   "days": 4
+   "days": 5
   },
   {
    "ticker": "CHOW",
@@ -16,7 +16,7 @@
    "last": 1.37,
    "ret": -2.84,
    "peak": 0.0,
-   "days": 3
+   "days": 4
   },
   {
    "ticker": "K",
@@ -25,7 +25,7 @@
    "last": 1.0,
    "ret": 0.0,
    "peak": 0.0,
-   "days": 0
+   "days": 1
   },
   {
    "ticker": "TPS",
@@ -34,7 +34,7 @@
    "last": 3.2,
    "ret": 0.0,
    "peak": 0.0,
-   "days": 0
+   "days": 1
   }
  ],
  "closed": []
