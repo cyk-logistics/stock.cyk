@@ -104,7 +104,9 @@ def detect_bear_div(high, r, left=5, right=5, lookback=70):
 
 # ---------- งบการเงิน ----------
 FUND_FIELDS = ["payoutRatio", "returnOnEquity", "debtToEquity", "profitMargins",
-               "trailingPE", "priceToBook", "earningsGrowth", "revenueGrowth", "exDividendDate"]
+               "trailingPE", "priceToBook", "earningsGrowth", "revenueGrowth", "exDividendDate",
+               "sector", "industry"]
+STR_FIELDS = {"exDividendDate", "sector", "industry"}   # ฟิลด์ที่ไม่ใช่ตัวเลข ไม่ต้อง coerce
 
 TH_MON = ["", "ม.ค.", "ก.พ.", "มี.ค.", "เม.ย.", "พ.ค.", "มิ.ย.",
           "ก.ค.", "ส.ค.", "ก.ย.", "ต.ค.", "พ.ย.", "ธ.ค."]
@@ -121,7 +123,7 @@ def _one_fund(tq):
         d = {}
         for f in FUND_FIELDS:
             v = info.get(f)
-            if f != "exDividendDate" and v is not None:
+            if f not in STR_FIELDS and v is not None:
                 try:   # yfinance บางตัวส่งเป็น string เช่น priceToBook='Infinity' (เจอกับหุ้น MAI) → ทิ้ง
                     v = float(v)
                     if not np.isfinite(v):
@@ -192,6 +194,23 @@ def pct(v, mul=100):
     return None if v is None else round(v * mul, 1)
 
 
+# ---------- กลุ่มธุรกิจ (จาก yfinance sector/industry → ป้ายไทย) ----------
+SECTOR_TH = {
+    "Financial Services": "การเงิน", "Energy": "พลังงาน", "Utilities": "สาธารณูปโภค",
+    "Basic Materials": "วัสดุ/ปิโตรฯ", "Industrials": "อุตสาหกรรม",
+    "Consumer Cyclical": "ค้าปลีก/บริการ", "Consumer Defensive": "สินค้าจำเป็น",
+    "Healthcare": "การแพทย์", "Real Estate": "อสังหาฯ",
+    "Technology": "เทคโนโลยี", "Communication Services": "สื่อสาร",
+}
+
+
+def sector_th(fund):
+    if "Bank" in (fund.get("industry") or ""):
+        return "แบงก์"                       # แยกแบงก์ออกจากการเงิน (ลิสซิ่ง/บัตร)
+    s = fund.get("sector")
+    return SECTOR_TH.get(s, s or "อื่นๆ")
+
+
 # ---------- วิเคราะห์หุ้น 1 ตัว ----------
 def analyze(ticker, df, fund):
     df = df.dropna(how="all")
@@ -253,6 +272,8 @@ def analyze(ticker, df, fund):
     uptrend = price > e200
     low52 = float(low.tail(252).min())
     high52 = float(high.tail(252).max())
+    _c = close.dropna()
+    chg1m = (price / float(_c.iloc[-22]) - 1) * 100 if len(_c) > 22 else 0.0
     bull_div, bull_idx = detect_bull_div(low, r)
     bear_div, bear_idx = detect_bear_div(high, r)
     macd_x = bool(macd_line.iloc[-1] > macd_sig.iloc[-1] and macd_line.iloc[-2] <= macd_sig.iloc[-2])
@@ -493,6 +514,7 @@ def analyze(ticker, df, fund):
         "status": status, "status_color": scolor, "srank": srank, "div_good": div_good, "turnaround": turnaround,
         "comment": comment, "fair_txt": fair_txt,
         "score": score, "reasons": reasons,
+        "sector": sector_th(fund), "chg1m": round(chg1m, 1), "sec_heat": "",
         "tscore": tscore, "tstatus": tstatus, "tstatus_color": tcolor, "trank": trank, "treasons": treasons,
         "chart": {"candles": candles, "ema20": l20, "ema50": l50, "ema200": l200, "ema800": l800, "markers": markers},
     }
@@ -521,6 +543,45 @@ def run(tickers):
             results.append(res)
     results.sort(key=lambda x: x["score"], reverse=True)
     return results
+
+
+def apply_sector_heat(results):
+    """สรุปแรงเงินรายกลุ่มธุรกิจ + ปรับคะแนน — บทเรียน BBL: เงินไหลเข้าทั้งกลุ่มลากราคาแรงกว่าพื้นฐานรายตัว"""
+    groups = {}
+    for r in results:
+        groups.setdefault(r["sector"], []).append(r)
+    stats = []
+    for sec, rs in groups.items():
+        n = len(rs)
+        avg1m = sum(x["chg1m"] for x in rs) / n
+        breadth = round(sum(1 for x in rs if x["trend"] == "ขาขึ้น") / n * 100)
+        avg_rsi = round(sum(x["rsi"] for x in rs) / n)
+        if avg1m >= 5 and breadth >= 60:
+            heat, hcol = "🔥 ร้อนแรง", "#7a3a12"
+        elif avg1m >= 2 or breadth >= 55:
+            heat, hcol = "🌤 ขาขึ้น", "#0b6e4f"
+        elif avg1m <= -3 or breadth <= 35:
+            heat, hcol = "🌧 อ่อนแรง", "#7a2222"
+        else:
+            heat, hcol = "⛅ กลางๆ", "#3a3f4b"
+        stats.append({"sector": sec, "n": n, "avg1m": round(avg1m, 1),
+                      "breadth": breadth, "rsi": avg_rsi, "heat": heat, "color": hcol})
+        scorable = n >= 3 and sec != "อื่นๆ"   # กลุ่มเล็กเกิน/จับฉ่าย ไม่เอามาบวกลบคะแนน
+        for x in rs:
+            x["sec_heat"] = heat
+            if not scorable:
+                continue
+            if heat.startswith("🔥"):
+                x["score"] = min(100.0, x["score"] + 6)
+                x["reasons"].append(f"🔥 กลุ่ม{sec}กำลังร้อน (เงินไหลเข้า)")
+                x["comment"] += f" · 🔥 กลุ่ม{sec}ร้อนแรง (เฉลี่ย 1ด {avg1m:+.0f}%)"
+            elif heat.startswith("🌧"):
+                x["score"] = max(0.0, x["score"] - 6)
+                x["reasons"].append(f"⚠ กลุ่ม{sec}อ่อนแรง")
+                x["comment"] += f" · 🌧 กลุ่ม{sec}อ่อนแรง (เฉลี่ย 1ด {avg1m:+.0f}%)"
+    stats.sort(key=lambda s: s["avg1m"], reverse=True)
+    results.sort(key=lambda x: x["score"], reverse=True)   # คะแนนขยับ → เรียงใหม่
+    return stats
 
 
 def fetch_set_index():
@@ -637,10 +698,11 @@ MAI_NOTICE = ('<div style="background:#2a2014;border:1px solid #6e4a1f;border-ra
 
 def build_dashboard(results, market, signals, out_path,
                     title="📈 SET Dividend + Technical + Fundamental Screener",
-                    tabs="", notice="", mlabel="🇹🇭 ภาพรวมตลาด SET"):
+                    tabs="", notice="", mlabel="🇹🇭 ภาพรวมตลาด SET", secstats=None):
     keys = ("ticker", "price", "yield", "payout", "roe", "de", "epsg", "pe",
             "health", "health_color", "rsi", "trend", "score", "reasons", "id", "bear_div", "trap", "div_cut",
-            "xd_last", "xd_next", "status", "status_color", "srank", "div_good", "turnaround", "comment", "fair_txt")
+            "xd_last", "xd_next", "status", "status_color", "srank", "div_good", "turnaround", "comment", "fair_txt",
+            "sector", "sec_heat", "chg1m")
     table = [{k: r[k] for k in keys} for r in results]
     charts = [{"id": r["id"], "ticker": r["ticker"], **r["chart"]} for r in results if r["chart"]["candles"]][:8]
     n_go = sum(1 for r in results if "เข้าได้" in r["status"])
@@ -659,6 +721,21 @@ def build_dashboard(results, market, signals, out_path,
     html = html.replace("__TITLE__", title)
     html = html.replace("__TABS__", tabs)
     html = html.replace("__NOTICE__", notice)
+    sec_html = ""
+    if secstats:
+        _rows = "".join(
+            f'<tr><td><b>{s["sector"]}</b></td><td class="num">{s["n"]}</td>'
+            f'<td class="num" style="color:{"#5fe0c8" if s["avg1m"] >= 0 else "#ff8a8a"}">{s["avg1m"]:+.1f}%</td>'
+            f'<td class="num">{s["breadth"]}%</td><td class="num">{s["rsi"]}</td>'
+            f'<td><span class="pill" style="background:{s["color"]}">{s["heat"]}</span></td></tr>'
+            for s in secstats)
+        sec_html = ('<h2>🔥 แรงเงินรายกลุ่มธุรกิจ (เรียงแรง→อ่อน)</h2>'
+                    '<div class="sub" style="margin:-6px 0 10px">คำนวณจากหุ้นที่สแกน: ราคาเปลี่ยน 1 เดือนเฉลี่ย + % ของกลุ่มที่อยู่ขาขึ้น — '
+                    'หุ้นในกลุ่ม 🔥 ได้ +6 คะแนน / กลุ่ม 🌧 โดนหัก −6 (เงินไหลเข้าทั้งกลุ่มลากราคาได้แรงกว่าพื้นฐานรายตัว)</div>'
+                    '<table style="max-width:760px"><thead><tr><th>กลุ่ม</th><th class="num">หุ้น</th>'
+                    '<th class="num">1 เดือน</th><th class="num">ขาขึ้น%</th><th class="num">RSI เฉลี่ย</th><th>สถานะกลุ่ม</th></tr></thead>'
+                    f'<tbody>{_rows}</tbody></table>')
+    html = html.replace("__SECTORS__", sec_html)
     html = html.replace("__MARKET__", market_banner(results, market, mlabel))
     html = html.replace("__SCANNED__", str(len(results)))
     html = html.replace("__NGO__", str(n_go))
@@ -746,10 +823,13 @@ HTML_TEMPLATE = r"""<!DOCTYPE html>
   <h2>📊 ผลสัญญาณที่เคยแนะนำ — วัดผลจริง</h2>
   <div id="track"></div>
 
+  __SECTORS__
+
   <h2>📋 ตารางทั้งหมด</h2>
   <table id="tbl"><thead><tr>
     <th data-k="ticker">หุ้น</th>
     <th data-k="srank">สถานะ</th>
+    <th data-k="sector">กลุ่ม</th>
     <th class="num" data-k="price">ราคา</th>
     <th class="num" data-k="yield">ปันผล%</th>
     <th class="num" data-k="yield">ปันผล/ปี (ลงล้าน)</th>
@@ -771,7 +851,8 @@ HTML_TEMPLATE = r"""<!DOCTYPE html>
     🟢 <b>Bull Div ✅ ยืนยัน</b> = เจอ divergence + ราคาปิดเหนือ EMA20 (กรอง "มีดร่วง" → เข้าได้) • 🟡 <b>รอยืนยัน</b> = เจอ div แต่ราคายังไม่เหนือ EMA20 • 🔴 <b>Bearish Divergence</b> = ระวังกลับหัว<br>
     💰 <b>สุขภาพงบ</b> ดูจาก payout ratio, ROE, margin, การเติบโตกำไร • <b>dividend trap</b> = ปันผลสูงแต่งบทรุด • <b>เคยตัดปันผล</b> = ในอดีต 5 ปีเคยลดปันผลแรง >50% (ไม่สม่ำเสมอ)<br>
     📅 <b>XD ล่าสุด</b> = วันขึ้นเครื่องหมาย XD ครั้งหลังสุด (yfinance) • <b>คาดถัดไป</b> = ประมาณจากรอบเดิม ไม่ใช่วันประกาศจริง → เช็กวัน XD จริงที่ set.or.th<br>
-    🟣 <b>EMA800 (เส้นม่วง)</b> = ค่าเฉลี่ยยาว = แนวรับใหญ่ระยะยาว • <b>ใกล้แนวรับใหญ่</b> = ราคาเข้าใกล้ EMA800 (±3%) = โซนเสี่ยง-ผลตอบแทนน่าสนใจ
+    🟣 <b>EMA800 (เส้นม่วง)</b> = ค่าเฉลี่ยยาว = แนวรับใหญ่ระยะยาว • <b>ใกล้แนวรับใหญ่</b> = ราคาเข้าใกล้ EMA800 (±3%) = โซนเสี่ยง-ผลตอบแทนน่าสนใจ<br>
+    🔥 <b>กลุ่มร้อนแรง</b> = ราคาเฉลี่ยทั้งกลุ่ม 1 เดือน ≥ +5% และ ≥60% ของกลุ่มอยู่ขาขึ้น (+6 คะแนน) • 🌧 <b>กลุ่มอ่อนแรง</b> = เฉลี่ย ≤ −3% หรือขาขึ้น ≤35% (−6) • คิดจากหุ้นที่ระบบสแกนเท่านั้น
   </div>
 </div>
 
@@ -780,13 +861,14 @@ const ROWS = /*__ROWS__*/;
 const CHARTS = /*__CHARTS__*/;
 const f1 = (v)=> v===null||v===undefined ? '—' : (+v).toFixed(1);
 function scoreColor(s){ if(s>=70) return '#0b6e4f'; if(s>=50) return '#1f7a4d'; if(s>=30) return '#5a4a1f'; return '#3a3f4b'; }
-function badge(r){ let c='badge'; if(r.includes('🔴'))c='badge bear'; else if(r.includes('🟢'))c='badge bull'; else if(r.includes('💎'))c='badge gem'; else if(r.includes('🔄'))c='badge turn'; else if(r.includes('⚠'))c='badge warn'; return `<span class="${c}">${r}</span>`; }
+function badge(r){ let c='badge'; if(r.includes('🔴'))c='badge bear'; else if(r.includes('🟢'))c='badge bull'; else if(r.includes('💎'))c='badge gem'; else if(r.includes('🔄'))c='badge turn'; else if(r.includes('🔥'))c='badge gem'; else if(r.includes('⚠'))c='badge warn'; return `<span class="${c}">${r}</span>`; }
 
 const tb = document.querySelector('#tbl tbody');
 function render(rows){
   tb.innerHTML = rows.map(r=>`<tr style="${r.bear_div||r.trap||r.div_cut?'background:rgba(239,83,80,.05)':''}">
     <td><b style="cursor:pointer;color:#58a6ff" onclick="openComment('${r.ticker}')">${r.ticker} 💬</b></td>
     <td><span class="pill" style="background:${r.status_color}">${r.status}</span></td>
+    <td style="white-space:nowrap;font-size:11px;color:var(--mut)" title="${r.sec_heat||''}">${r.sector||'—'}${(r.sec_heat||'').startsWith('🔥')?' 🔥':(r.sec_heat||'').startsWith('🌧')?' 🌧':''}</td>
     <td class="num">${r.price.toFixed(2)}</td>
     <td class="num ${r.yield>=4?'up':''}">${r.yield.toFixed(2)}</td>
     <td class="num">${Math.round(9000*r.yield).toLocaleString()}<br><span style="color:var(--mut);font-size:10px">≈${Math.round(750*r.yield).toLocaleString()}/ด.</span></td>
@@ -803,7 +885,7 @@ function render(rows){
 render(ROWS);
 function openComment(tk){
   const r=ROWS.find(x=>x.ticker===tk); if(!r)return;
-  document.getElementById('modal-body').innerHTML=`<h2 style="margin:0 0 4px">${r.ticker} <span class="pill" style="background:${r.status_color};font-size:11px">${r.status}</span></h2><div class="sub" style="margin-bottom:12px">ราคา ${r.price.toFixed(2)} · ยีลด์ ${r.yield.toFixed(1)}% · ลงล้าน ~${Math.round(9000*r.yield).toLocaleString()} ฿/ปี</div><div style="font-size:13px;background:#1a2130;border-radius:8px;padding:8px 11px;margin-bottom:12px">🎯 <b>ราคาเหมาะสม (ประเมิน):</b> ${r.fair_txt||'—'}</div><div style="font-size:13.5px;line-height:1.75">${r.comment||'—'}</div><div class="sub" style="margin-top:14px;font-size:11px">💬 คอมเมนต์สร้างอัตโนมัติจากงบ/ราคา (yfinance) • ไม่ใช่คำแนะนำลงทุน</div>`;
+  document.getElementById('modal-body').innerHTML=`<h2 style="margin:0 0 4px">${r.ticker} <span class="pill" style="background:${r.status_color};font-size:11px">${r.status}</span></h2><div class="sub" style="margin-bottom:12px">ราคา ${r.price.toFixed(2)} · ยีลด์ ${r.yield.toFixed(1)}% · กลุ่ม ${r.sector||'—'} ${r.sec_heat||''} · ลงล้าน ~${Math.round(9000*r.yield).toLocaleString()} ฿/ปี</div><div style="font-size:13px;background:#1a2130;border-radius:8px;padding:8px 11px;margin-bottom:12px">🎯 <b>ราคาเหมาะสม (ประเมิน):</b> ${r.fair_txt||'—'}</div><div style="font-size:13.5px;line-height:1.75">${r.comment||'—'}</div><div class="sub" style="margin-top:14px;font-size:11px">💬 คอมเมนต์สร้างอัตโนมัติจากงบ/ราคา (yfinance) • ไม่ใช่คำแนะนำลงทุน</div>`;
   document.getElementById('modal').classList.add('show');
 }
 function closeModal(){document.getElementById('modal').classList.remove('show');}
@@ -1087,11 +1169,13 @@ if __name__ == "__main__":
         print(f"{r['ticker']:<8}{r['price']:>8.2f}{r['yield']:>6.1f}{pay:>6}{eg:>8}{r['health']:>10}{r['score']:>7.0f}  {sig}")
 
     market = fetch_set_index()
+    secstats = apply_sector_heat(res)
+    print("🔥 กลุ่มแรงสุด:", " · ".join(f"{s['sector']} {s['avg1m']:+.1f}%" for s in secstats[:3]))
     signals = track_signals(res)
     n_open = len(signals["open"])
     if n_open:
         print(f"📊 track record: เปิดติดตาม {n_open} สัญญาณ · ปิดแล้ว {len(signals['closed'])}")
-    build_dashboard(res, market, signals, args.out, tabs=tabs_html("div"))
+    build_dashboard(res, market, signals, args.out, tabs=tabs_html("div"), secstats=secstats)
     tech_out = str(Path(args.out).with_name("technical.html"))
     build_technical(res, market, tech_out)
     print(f"\n✅ สร้าง {args.out} + {tech_out} แล้ว ({len(res)} หุ้น)")
@@ -1101,12 +1185,13 @@ if __name__ == "__main__":
     print(f"\n🚀 สแกนกลุ่ม MAI {len(mai_tk)} ตัว ...")
     res_mai = run(mai_tk)
     if res_mai:
+        secstats_mai = apply_sector_heat(res_mai)
         signals_mai = track_signals(res_mai, SIGNALS_MAI_FILE)
         mai_out = str(Path(args.out).with_name("mai.html"))
         build_dashboard(res_mai, None, signals_mai, mai_out,
                         title="🚀 MAI Dividend + Technical Screener",
                         tabs=tabs_html("mai"), notice=MAI_NOTICE,
-                        mlabel="🚀 ภาพรวมกลุ่ม MAI (จากหุ้นที่สแกน)")
+                        mlabel="🚀 ภาพรวมกลุ่ม MAI (จากหุ้นที่สแกน)", secstats=secstats_mai)
         print(f"✅ สร้าง {mai_out} แล้ว ({len(res_mai)} หุ้น MAI)")
     else:
         print("⚠ กลุ่ม MAI ดึงข้อมูลไม่ได้ — ข้ามหน้า mai.html รอบนี้")
