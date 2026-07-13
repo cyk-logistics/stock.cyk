@@ -10,6 +10,7 @@ SET Dividend + Technical + Fundamental Screener
 """
 import argparse
 import json
+import os
 from datetime import datetime, timezone, timedelta
 from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
@@ -679,6 +680,54 @@ def track_signals(results, path=SIGNALS_FILE):
     return data
 
 
+WARN_FILE = Path(__file__).parent / "warnings.json"
+
+
+def collect_warnings(results):
+    """รวมหุ้นที่มี 'สัญญาณไม่ดี' — bear div / dividend trap / ราคาวิ่งแรงสวนงบอ่อน"""
+    out = []
+    for r in results:
+        items = []
+        if r["bear_div"]:
+            items.append(("bear", "🔴 Bearish divergence — โมเมนตัมขาขึ้นอ่อนแรง ระวังกลับหัว"))
+        if r["trap"]:
+            items.append(("trap", "⚠ เสี่ยง dividend trap — ยีลด์สูงแต่งบไม่หนุน"))
+        weak = r["health"] == "อ่อนแอ" or (r["epsg"] is not None and r["epsg"] <= -15)
+        if weak and r["chg1m"] >= 10:
+            items.append(("runup", f"🌧 วิ่ง {r['chg1m']:+.0f}%/เดือน ทั้งที่งบอ่อน — ขึ้นตามกระแสกลุ่ม ระวังขายข่าว/ปรับฐาน"))
+        if items:
+            out.append({"ticker": r["ticker"], "price": r["price"], "items": items})
+    return out
+
+
+def notify_warnings(all_warns):
+    """ยิง Discord เฉพาะ 'เตือนที่เพิ่งเกิดใหม่' (เทียบกับ warnings.json รอบก่อน) — กันสแปมซ้ำทุกวัน"""
+    try:
+        prev = json.loads(WARN_FILE.read_text(encoding="utf-8"))
+    except Exception:
+        prev = {}
+    new_msgs = []
+    for w in all_warns:
+        for code, txt in w["items"]:
+            if code not in prev.get(w["ticker"], []):
+                new_msgs.append(f"**{w['ticker']}** @ {w['price']:,.2f} — {txt}")
+    cur = {w["ticker"]: sorted(c for c, _ in w["items"]) for w in all_warns}
+    WARN_FILE.write_text(json.dumps(cur, ensure_ascii=False, indent=1), encoding="utf-8")
+    hook = os.environ.get("DISCORD_WEBHOOK", "").strip()
+    if not (hook and new_msgs):
+        return len(new_msgs), False
+    body = "🚨 **เตือนสัญญาณไม่ดี — stock.cyk**\n" + "\n".join("• " + m for m in new_msgs[:15])
+    if len(new_msgs) > 15:
+        body += f"\n… และอีก {len(new_msgs) - 15} รายการ"
+    body += "\n👉 https://cyk-logistics.github.io/stock.cyk/"
+    try:
+        import requests
+        requests.post(hook, json={"content": body}, timeout=10).raise_for_status()
+        return len(new_msgs), True
+    except Exception:
+        return len(new_msgs), False
+
+
 def tabs_html(active):
     tabs = [("div", "index.html", "💰 SET ปันผล (ถือยาว)"),
             ("tech", "technical.html", "📈 SET เทคนิค (จังหวะเทรด)"),
@@ -698,7 +747,7 @@ MAI_NOTICE = ('<div style="background:#2a2014;border:1px solid #6e4a1f;border-ra
 
 def build_dashboard(results, market, signals, out_path,
                     title="📈 SET Dividend + Technical + Fundamental Screener",
-                    tabs="", notice="", mlabel="🇹🇭 ภาพรวมตลาด SET", secstats=None):
+                    tabs="", notice="", mlabel="🇹🇭 ภาพรวมตลาด SET", secstats=None, warns=None):
     keys = ("ticker", "price", "yield", "payout", "roe", "de", "epsg", "pe",
             "health", "health_color", "rsi", "trend", "score", "reasons", "id", "bear_div", "trap", "div_cut",
             "xd_last", "xd_next", "status", "status_color", "srank", "div_good", "turnaround", "comment", "fair_txt",
@@ -736,6 +785,19 @@ def build_dashboard(results, market, signals, out_path,
                     '<th class="num">1 เดือน</th><th class="num">ขาขึ้น%</th><th class="num">RSI เฉลี่ย</th><th>สถานะกลุ่ม</th></tr></thead>'
                     f'<tbody>{_rows}</tbody></table>')
     html = html.replace("__SECTORS__", sec_html)
+    warn_html = ""
+    if warns:
+        _w = []
+        for w in warns:
+            head = ('<div style="margin-top:8px"><b style="cursor:pointer;color:#58a6ff" onclick="openComment(\''
+                    + w["ticker"] + '\')">' + w["ticker"] + ' 💬</b> <span style="color:var(--mut)">@ '
+                    + f"{w['price']:,.2f}" + "</span>")
+            body = "".join('<br><span style="font-size:12.5px;line-height:1.6">' + t + "</span>" for _, t in w["items"])
+            _w.append(head + body + "</div>")
+        warn_html = ('<div style="background:#2a1416;border:1px solid #6e2c2c;border-radius:10px;padding:12px 14px;margin:6px 0;font-size:13px">'
+                     f'🚨 <b style="color:#ff8a8a">สัญญาณไม่ดีตอนนี้ ({len(warns)} ตัว)</b>' + "".join(_w)
+                     + '<div style="color:var(--mut);font-size:11px;margin-top:9px">เตือนอัตโนมัติ: bearish divergence · dividend trap · ราคาวิ่งสวนงบอ่อน — ไม่ใช่คำสั่งขาย ใช้ประกอบการตัดสินใจ + เตือนใหม่ยิงเข้า Discord</div></div>')
+    html = html.replace("__WARNS__", warn_html)
     html = html.replace("__MARKET__", market_banner(results, market, mlabel))
     html = html.replace("__SCANNED__", str(len(results)))
     html = html.replace("__NGO__", str(n_go))
@@ -815,6 +877,7 @@ HTML_TEMPLATE = r"""<!DOCTYPE html>
 
   <div id="entrycall"></div>
   <div id="turncall"></div>
+  __WARNS__
   <div id="modal" class="modal" onclick="if(event.target===this)closeModal()"><div class="modal-box"><span class="modal-close" onclick="closeModal()">✕</span><div id="modal-body"></div></div></div>
   <h2 style="margin-top:26px">🏆 Top 5 น่าจัด — ปันผลคุณภาพ + คะแนนสูงสุด</h2>
   <div class="sub" style="margin:-6px 0 12px">ลงทุน 1 ล้านบาท → ปันผล <b>ต่อปี</b> (สุทธิหลังหักภาษี 10%) • จ่ายจริงปีละ 1–2 ครั้งตามวัน XD ไม่ใช่รายเดือน • คัดจากหุ้น 💎 งบแข็งแรง</div>
@@ -1175,7 +1238,8 @@ if __name__ == "__main__":
     n_open = len(signals["open"])
     if n_open:
         print(f"📊 track record: เปิดติดตาม {n_open} สัญญาณ · ปิดแล้ว {len(signals['closed'])}")
-    build_dashboard(res, market, signals, args.out, tabs=tabs_html("div"), secstats=secstats)
+    warns_set = collect_warnings(res)
+    build_dashboard(res, market, signals, args.out, tabs=tabs_html("div"), secstats=secstats, warns=warns_set)
     tech_out = str(Path(args.out).with_name("technical.html"))
     build_technical(res, market, tech_out)
     print(f"\n✅ สร้าง {args.out} + {tech_out} แล้ว ({len(res)} หุ้น)")
@@ -1184,14 +1248,20 @@ if __name__ == "__main__":
     mai_tk = MAI_TICKERS[:args.limit] if args.limit else MAI_TICKERS
     print(f"\n🚀 สแกนกลุ่ม MAI {len(mai_tk)} ตัว ...")
     res_mai = run(mai_tk)
+    warns_mai = []
     if res_mai:
         secstats_mai = apply_sector_heat(res_mai)
         signals_mai = track_signals(res_mai, SIGNALS_MAI_FILE)
+        warns_mai = collect_warnings(res_mai)
         mai_out = str(Path(args.out).with_name("mai.html"))
         build_dashboard(res_mai, None, signals_mai, mai_out,
                         title="🚀 MAI Dividend + Technical Screener",
                         tabs=tabs_html("mai"), notice=MAI_NOTICE,
-                        mlabel="🚀 ภาพรวมกลุ่ม MAI (จากหุ้นที่สแกน)", secstats=secstats_mai)
+                        mlabel="🚀 ภาพรวมกลุ่ม MAI (จากหุ้นที่สแกน)", secstats=secstats_mai, warns=warns_mai)
         print(f"✅ สร้าง {mai_out} แล้ว ({len(res_mai)} หุ้น MAI)")
     else:
         print("⚠ กลุ่ม MAI ดึงข้อมูลไม่ได้ — ข้ามหน้า mai.html รอบนี้")
+
+    n_new, sent = notify_warnings(warns_set + warns_mai)
+    print(f"🚨 สัญญาณไม่ดี: SET {len(warns_set)} · MAI {len(warns_mai)} ตัว · ใหม่วันนี้ {n_new} · "
+          f"Discord: {'ส่งแล้ว ✅' if sent else ('ยังไม่ตั้ง webhook' if not os.environ.get('DISCORD_WEBHOOK') else 'ไม่มีเตือนใหม่/ส่งไม่สำเร็จ')}")
