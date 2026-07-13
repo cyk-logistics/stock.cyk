@@ -4,17 +4,35 @@
    "ticker": "POLY",
    "date": "2026-07-09",
    "entry": 6.85,
-   "last": 6.85,
-   "ret": 0.0,
+   "last": 6.9,
+   "ret": 0.73,
    "peak": 0.73,
-   "days": 1
+   "days": 4
   },
   {
    "ticker": "CHOW",
    "date": "2026-07-10",
    "entry": 1.41,
-   "last": 1.4,
-   "ret": -0.71,
+   "last": 1.37,
+   "ret": -2.84,
+   "peak": 0.0,
+   "days": 3
+  },
+  {
+   "ticker": "K",
+   "date": "2026-07-13",
+   "entry": 1.0,
+   "last": 1.0,
+   "ret": 0.0,
+   "peak": 0.0,
+   "days": 0
+  },
+  {
+   "ticker": "TPS",
+   "date": "2026-07-13",
+   "entry": 3.2,
+   "last": 3.2,
+   "ret": 0.0,
    "peak": 0.0,
    "days": 0
   }
