@@ -794,7 +794,8 @@ def build_dashboard(results, market, signals, out_path,
                     + f"{w['price']:,.2f}" + "</span>")
             body = "".join('<br><span style="font-size:12.5px;line-height:1.6">' + t + "</span>" for _, t in w["items"])
             _w.append(head + body + "</div>")
-        warn_html = ('<div style="background:#2a1416;border:1px solid #6e2c2c;border-radius:10px;padding:12px 14px;margin:6px 0;font-size:13px">'
+        warn_html = ('<h2>🚨 สัญญาณไม่ดี — เช็คก่อนถือต่อ/ก่อนซื้อ</h2>'
+                     '<div style="background:#2a1416;border:1px solid #6e2c2c;border-radius:10px;padding:12px 14px;margin:6px 0;font-size:13px">'
                      f'🚨 <b style="color:#ff8a8a">สัญญาณไม่ดีตอนนี้ ({len(warns)} ตัว)</b>' + "".join(_w)
                      + '<div style="color:var(--mut);font-size:11px;margin-top:9px">เตือนอัตโนมัติ: bearish divergence · dividend trap · ราคาวิ่งสวนงบอ่อน — ไม่ใช่คำสั่งขาย ใช้ประกอบการตัดสินใจ + เตือนใหม่ยิงเข้า Discord</div></div>')
     html = html.replace("__WARNS__", warn_html)
@@ -877,7 +878,6 @@ HTML_TEMPLATE = r"""<!DOCTYPE html>
 
   <div id="entrycall"></div>
   <div id="turncall"></div>
-  __WARNS__
   <div id="modal" class="modal" onclick="if(event.target===this)closeModal()"><div class="modal-box"><span class="modal-close" onclick="closeModal()">✕</span><div id="modal-body"></div></div></div>
   <h2 style="margin-top:26px">🏆 Top 5 น่าจัด — ปันผลคุณภาพ + คะแนนสูงสุด</h2>
   <div class="sub" style="margin:-6px 0 12px">ลงทุน 1 ล้านบาท → ปันผล <b>ต่อปี</b> (สุทธิหลังหักภาษี 10%) • จ่ายจริงปีละ 1–2 ครั้งตามวัน XD ไม่ใช่รายเดือน • คัดจากหุ้น 💎 งบแข็งแรง</div>
@@ -908,6 +908,8 @@ HTML_TEMPLATE = r"""<!DOCTYPE html>
 
   <h2>กราฟหุ้นน่าสนใจ (เรียงตามคะแนน)</h2>
   <div class="grid" id="charts"></div>
+
+  __WARNS__
 
   <div class="foot">
     ⚠ <b>คำเตือน:</b> เป็น "สัญญาณ" ไม่ใช่คำแนะนำซื้อขาย • ควร backtest + ศึกษางบจริงก่อนลงเงิน • ข้อมูล yfinance ไม่ใช่ realtime<br>
