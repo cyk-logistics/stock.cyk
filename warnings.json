@@ -2,9 +2,6 @@
  "BH": [
   "bear"
  ],
- "PTTEP": [
-  "trap"
- ],
  "BBL": [
   "bear"
  ],
@@ -21,10 +18,16 @@
  "AWC": [
   "bear"
  ],
- "CBG": [
+ "HMPRO": [
   "runup"
  ],
  "EGCO": [
+  "trap"
+ ],
+ "CBG": [
+  "runup"
+ ],
+ "PTTEP": [
   "trap"
  ],
  "OR": [
@@ -46,37 +49,31 @@
  "KIAT": [
   "trap"
  ],
- "JDF": [
-  "trap"
- ],
  "APP": [
-  "trap"
- ],
- "BLESS": [
-  "runup"
- ],
- "K": [
   "trap"
  ],
  "TPS": [
   "trap"
  ],
- "WARRIX": [
+ "KWM": [
+  "runup"
+ ],
+ "JDF": [
   "trap"
  ],
  "CAZ": [
   "runup"
  ],
- "CMO": [
-  "runup"
- ],
  "BGT": [
   "runup"
  ],
- "DPAINT": [
+ "BLESS": [
   "runup"
  ],
  "SFT": [
+  "trap"
+ ],
+ "K": [
   "trap"
  ],
  "PJW": [
@@ -94,6 +91,9 @@
  "KUMWEL": [
   "bear"
  ],
+ "IIG": [
+  "runup"
+ ],
  "ADD": [
   "trap"
  ],
@@ -107,18 +107,20 @@
   "bear"
  ],
  "AUCT": [
-  "runup",
   "trap"
  ],
  "BM": [
   "runup",
   "trap"
  ],
- "KWM": [
+ "COMAN": [
   "runup"
  ],
  "MASTER": [
   "bear"
+ ],
+ "WARRIX": [
+  "trap"
  ],
  "WINMED": [
   "runup"
