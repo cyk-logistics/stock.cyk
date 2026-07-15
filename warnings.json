@@ -12,12 +12,6 @@
  "CRC": [
   "bear"
  ],
- "SCB": [
-  "runup"
- ],
- "AWC": [
-  "bear"
- ],
  "HMPRO": [
   "runup"
  ],
@@ -27,17 +21,20 @@
  "CBG": [
   "runup"
  ],
+ "AWC": [
+  "bear"
+ ],
  "PTTEP": [
   "trap"
  ],
  "OR": [
   "trap"
  ],
- "BANPU": [
-  "trap"
- ],
  "BGRIM": [
   "runup"
+ ],
+ "SCGP": [
+  "bear"
  ],
  "KCE": [
   "bear",
@@ -46,7 +43,13 @@
  "WHA": [
   "bear"
  ],
+ "KJL": [
+  "runup"
+ ],
  "KIAT": [
+  "trap"
+ ],
+ "JDF": [
   "trap"
  ],
  "APP": [
@@ -57,9 +60,6 @@
  ],
  "KWM": [
   "runup"
- ],
- "JDF": [
-  "trap"
  ],
  "CAZ": [
   "runup"
@@ -73,25 +73,35 @@
  "SFT": [
   "trap"
  ],
- "K": [
-  "trap"
- ],
- "PJW": [
-  "trap"
- ],
  "DOD": [
   "trap"
  ],
- "AU": [
+ "K": [
   "trap"
  ],
  "XO": [
   "bear"
  ],
+ "NV": [
+  "bear",
+  "runup"
+ ],
+ "SCM": [
+  "runup"
+ ],
+ "PJW": [
+  "trap"
+ ],
+ "AU": [
+  "trap"
+ ],
  "KUMWEL": [
   "bear"
  ],
  "IIG": [
+  "runup"
+ ],
+ "PROS": [
   "runup"
  ],
  "ADD": [
@@ -113,21 +123,11 @@
   "runup",
   "trap"
  ],
- "COMAN": [
-  "runup"
- ],
  "MASTER": [
   "bear"
  ],
  "WARRIX": [
   "trap"
- ],
- "WINMED": [
-  "runup"
- ],
- "NV": [
-  "bear",
-  "runup"
  ],
  "TAN": [
   "trap"
