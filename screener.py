@@ -245,7 +245,7 @@ def analyze(ticker, df, fund):
         freq = max(1, min(int(round(float(fyc.median()))) if len(fyc) else 1, 4))
     else:
         freq = 1
-    xd_last, xd_next = "—", "—"
+    xd_last, xd_next, xd_days = "—", "—", None
     xts = fund.get("exDividendDate")
     if xts:
         try:
@@ -256,6 +256,7 @@ def analyze(ticker, df, fund):
             while nd < now:
                 nd += step
             xd_last, xd_next = _fmt_xd(ld), _fmt_xd(nd)
+            xd_days = (nd - now).days   # อีกกี่วันถึงรอบ XD ถัดไป (ประมาณ)
         except Exception:
             pass
 
@@ -511,7 +512,7 @@ def analyze(ticker, df, fund):
         "epsg": pct(epsg), "pe": None if fund.get("trailingPE") is None else round(fund["trailingPE"], 1),
         "health": fg_label, "health_color": fg_color,
         "bull_div": bull_div, "bear_div": bear_div, "trap": trap, "div_cut": div_cut,
-        "xd_last": xd_last, "xd_next": xd_next,
+        "xd_last": xd_last, "xd_next": xd_next, "xd_days": xd_days,
         "status": status, "status_color": scolor, "srank": srank, "div_good": div_good, "turnaround": turnaround,
         "comment": comment, "fair_txt": fair_txt,
         "score": score, "reasons": reasons,
@@ -750,7 +751,7 @@ def build_dashboard(results, market, signals, out_path,
                     tabs="", notice="", mlabel="🇹🇭 ภาพรวมตลาด SET", secstats=None, warns=None):
     keys = ("ticker", "price", "yield", "payout", "roe", "de", "epsg", "pe",
             "health", "health_color", "rsi", "trend", "score", "reasons", "id", "bear_div", "trap", "div_cut",
-            "xd_last", "xd_next", "status", "status_color", "srank", "div_good", "turnaround", "comment", "fair_txt",
+            "xd_last", "xd_next", "xd_days", "status", "status_color", "srank", "div_good", "turnaround", "comment", "fair_txt",
             "sector", "sec_heat", "chg1m")
     table = [{k: r[k] for k in keys} for r in results]
     charts = [{"id": r["id"], "ticker": r["ticker"], **r["chart"]} for r in results if r["chart"]["candles"]][:8]
@@ -799,6 +800,33 @@ def build_dashboard(results, market, signals, out_path,
                      f'🚨 <b style="color:#ff8a8a">สัญญาณไม่ดีตอนนี้ ({len(warns)} ตัว)</b>' + "".join(_w)
                      + '<div style="color:var(--mut);font-size:11px;margin-top:9px">เตือนอัตโนมัติ: bearish divergence · dividend trap · ราคาวิ่งสวนงบอ่อน — ไม่ใช่คำสั่งขาย ใช้ประกอบการตัดสินใจ + เตือนใหม่ยิงเข้า Discord</div></div>')
     html = html.replace("__WARNS__", warn_html)
+    xd_html = ""
+    upcoming = [r for r in results
+                if r.get("xd_days") is not None and 0 <= r["xd_days"] <= 60 and r["yield"] > 0]
+    upcoming.sort(key=lambda r: r["xd_days"])
+    if upcoming:
+        _x = []
+        for r in upcoming:
+            note = []
+            if r["div_good"]:
+                note.append('<span class="badge gem" style="border-color:#7a6a1f;color:#ffe08a">💎 ปันผลเด่น</span>')
+            if r["trap"]:
+                note.append('<span class="badge warn">⚠ เสี่ยง trap</span>')
+            if r["div_cut"]:
+                note.append('<span class="badge warn">⚠ เคยตัดปันผล</span>')
+            _x.append('<tr><td><b style="cursor:pointer;color:#58a6ff" onclick="openComment(\'' + r["ticker"] + '\')">'
+                      + r["ticker"] + ' 💬</b></td>'
+                      + f'<td style="white-space:nowrap">~{r["xd_next"]}</td>'
+                      + f'<td class="num"><b style="color:{"#5fe0c8" if r["xd_days"] <= 14 else "#d1d4dc"}">{r["xd_days"]}</b></td>'
+                      + f'<td class="num">{r["yield"]:.1f}%</td>'
+                      + f'<td class="num">{9000 * r["yield"]:,.0f}</td>'
+                      + "<td>" + ("".join(note) or "—") + "</td></tr>")
+        xd_html = ('<h2>📅 ใกล้รอบปันผล — คาด XD ภายใน ~60 วัน</h2>'
+                   '<div class="sub" style="margin:-6px 0 10px">⚠️ วัน XD เป็นการ<b>ประมาณจากรอบจ่ายเดิม</b> ไม่ใช่ประกาศจริง — เช็ควันจริงที่ set.or.th ก่อนเสมอ • ต้องถือหุ้น<b>ก่อน</b>วัน XD จึงได้ปันผลรอบนั้น • ราคามักย่อหลัง XD ใกล้เคียงเงินปันผล</div>'
+                   '<table style="max-width:820px"><thead><tr><th>หุ้น</th><th>คาด XD</th><th class="num">อีก~กี่วัน</th>'
+                   '<th class="num">ยีลด์/ปี</th><th class="num">ปันผล/ปี (ลงล้าน)</th><th>หมายเหตุ</th></tr></thead>'
+                   '<tbody>' + "".join(_x) + "</tbody></table>")
+    html = html.replace("__XD__", xd_html)
     html = html.replace("__MARKET__", market_banner(results, market, mlabel))
     html = html.replace("__SCANNED__", str(len(results)))
     html = html.replace("__NGO__", str(n_go))
@@ -882,6 +910,8 @@ HTML_TEMPLATE = r"""<!DOCTYPE html>
   <h2 style="margin-top:26px">🏆 Top 5 น่าจัด — ปันผลคุณภาพ + คะแนนสูงสุด</h2>
   <div class="sub" style="margin:-6px 0 12px">ลงทุน 1 ล้านบาท → ปันผล <b>ต่อปี</b> (สุทธิหลังหักภาษี 10%) • จ่ายจริงปีละ 1–2 ครั้งตามวัน XD ไม่ใช่รายเดือน • คัดจากหุ้น 💎 งบแข็งแรง</div>
   <div id="top5" class="top5"></div>
+
+  __XD__
 
   <h2>📊 ผลสัญญาณที่เคยแนะนำ — วัดผลจริง</h2>
   <div id="track"></div>
