@@ -5,6 +5,12 @@
  "BBL": [
   "bear"
  ],
+ "PTTGC": [
+  "runup"
+ ],
+ "AWC": [
+  "bear"
+ ],
  "CPF": [
   "runup",
   "trap"
@@ -12,26 +18,26 @@
  "CRC": [
   "bear"
  ],
- "HMPRO": [
+ "SCB": [
   "runup"
- ],
- "EGCO": [
-  "trap"
  ],
  "CBG": [
   "runup"
  ],
- "AWC": [
-  "bear"
- ],
  "PTTEP": [
   "trap"
+ ],
+ "EGCO": [
+  "trap"
+ ],
+ "IVL": [
+  "runup"
  ],
  "OR": [
   "trap"
  ],
- "BGRIM": [
-  "runup"
+ "BANPU": [
+  "trap"
  ],
  "SCGP": [
   "bear"
@@ -42,6 +48,9 @@
  ],
  "WHA": [
   "bear"
+ ],
+ "SFT": [
+  "trap"
  ],
  "KJL": [
   "runup"
@@ -67,26 +76,14 @@
  "BGT": [
   "runup"
  ],
- "BLESS": [
-  "runup"
- ],
- "SFT": [
-  "trap"
+ "XO": [
+  "bear"
  ],
  "DOD": [
   "trap"
  ],
- "K": [
-  "trap"
- ],
- "XO": [
-  "bear"
- ],
  "NV": [
   "bear",
-  "runup"
- ],
- "SCM": [
   "runup"
  ],
  "PJW": [
@@ -101,9 +98,6 @@
  "IIG": [
   "runup"
  ],
- "PROS": [
-  "runup"
- ],
  "ADD": [
   "trap"
  ],
@@ -113,14 +107,14 @@
  "ECF": [
   "runup"
  ],
- "ZIGA": [
-  "bear"
- ],
  "AUCT": [
   "trap"
  ],
  "BM": [
   "runup",
+  "trap"
+ ],
+ "K": [
   "trap"
  ],
  "MASTER": [
@@ -129,10 +123,10 @@
  "WARRIX": [
   "trap"
  ],
+ "WINMED": [
+  "runup"
+ ],
  "TAN": [
   "trap"
- ],
- "MENA": [
-  "runup"
  ]
 }
