@@ -49,19 +49,19 @@
  "WHA": [
   "bear"
  ],
- "SFT": [
+ "KIAT": [
   "trap"
  ],
  "KJL": [
   "runup"
  ],
- "KIAT": [
-  "trap"
- ],
  "JDF": [
   "trap"
  ],
  "APP": [
+  "trap"
+ ],
+ "DOD": [
   "trap"
  ],
  "TPS": [
@@ -76,11 +76,14 @@
  "BGT": [
   "runup"
  ],
+ "SFT": [
+  "trap"
+ ],
+ "K": [
+  "trap"
+ ],
  "XO": [
   "bear"
- ],
- "DOD": [
-  "trap"
  ],
  "NV": [
   "bear",
@@ -112,9 +115,6 @@
  ],
  "BM": [
   "runup",
-  "trap"
- ],
- "K": [
   "trap"
  ],
  "MASTER": [
