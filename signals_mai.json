@@ -4,19 +4,19 @@
    "ticker": "POLY",
    "date": "2026-07-09",
    "entry": 6.85,
-   "last": 6.85,
-   "ret": 0.0,
+   "last": 6.8,
+   "ret": -0.73,
    "peak": 1.46,
-   "days": 7
+   "days": 8
   },
   {
    "ticker": "CHOW",
    "date": "2026-07-10",
    "entry": 1.41,
-   "last": 1.38,
-   "ret": -2.13,
+   "last": 1.37,
+   "ret": -2.84,
    "peak": 0.0,
-   "days": 6
+   "days": 7
   },
   {
    "ticker": "K",
@@ -25,16 +25,16 @@
    "last": 0.98,
    "ret": -2.0,
    "peak": 0.0,
-   "days": 3
+   "days": 4
   },
   {
    "ticker": "TPS",
    "date": "2026-07-13",
    "entry": 3.2,
-   "last": 3.22,
-   "ret": 0.63,
+   "last": 3.18,
+   "ret": -0.62,
    "peak": 1.87,
-   "days": 3
+   "days": 4
   },
   {
    "ticker": "MOONG",
@@ -43,7 +43,7 @@
    "last": 2.4,
    "ret": 3.45,
    "peak": 3.45,
-   "days": 1
+   "days": 2
   }
  ],
  "closed": []

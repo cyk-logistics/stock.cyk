@@ -1,15 +1,12 @@
 {
- "BH": [
-  "bear"
- ],
  "BBL": [
   "bear"
  ],
  "PTTGC": [
   "runup"
  ],
- "AWC": [
-  "bear"
+ "BGRIM": [
+  "runup"
  ],
  "CPF": [
   "runup",
@@ -18,11 +15,17 @@
  "CRC": [
   "bear"
  ],
+ "BH": [
+  "bear"
+ ],
  "SCB": [
   "runup"
  ],
  "CBG": [
   "runup"
+ ],
+ "AWC": [
+  "bear"
  ],
  "PTTEP": [
   "trap"
@@ -42,11 +45,10 @@
  "SCGP": [
   "bear"
  ],
- "KCE": [
-  "bear",
-  "runup"
- ],
  "WHA": [
+  "bear"
+ ],
+ "KCE": [
   "bear"
  ],
  "KIAT": [
@@ -61,12 +63,6 @@
  "APP": [
   "trap"
  ],
- "DOD": [
-  "trap"
- ],
- "TPS": [
-  "trap"
- ],
  "KWM": [
   "runup"
  ],
@@ -79,6 +75,9 @@
  "SFT": [
   "trap"
  ],
+ "DOD": [
+  "trap"
+ ],
  "K": [
   "trap"
  ],
@@ -86,10 +85,15 @@
   "bear"
  ],
  "NV": [
-  "bear",
+  "bear"
+ ],
+ "SCM": [
   "runup"
  ],
  "PJW": [
+  "trap"
+ ],
+ "TPS": [
   "trap"
  ],
  "AU": [
@@ -122,9 +126,6 @@
  ],
  "WARRIX": [
   "trap"
- ],
- "WINMED": [
-  "runup"
  ],
  "TAN": [
   "trap"
