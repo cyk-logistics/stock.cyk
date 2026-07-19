@@ -1,0 +1,7 @@
+fastapi==0.116.1
+uvicorn==0.35.0
+lunar-python==1.4.8
+anthropic>=0.60.0
+python-multipart==0.0.20
+pytest==8.4.1
+httpx==0.28.1

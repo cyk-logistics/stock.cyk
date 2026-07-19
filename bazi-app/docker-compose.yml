@@ -1,0 +1,14 @@
+# docker-compose สำหรับ Container Manager ของ Synology DSM
+# วิธีใช้: ดู README_TH.md หัวข้อ "วิธี deploy บน Synology"
+services:
+  bazi:
+    build: .
+    container_name: bazi-app
+    ports:
+      - "8080:8080"           # เปิดเว็บที่ http://<IP ของ NAS>:8080
+    env_file:
+      - .env                  # ใส่ ANTHROPIC_API_KEY ในไฟล์ .env (ก๊อปจาก .env.example)
+    volumes:
+      - ./data:/srv/bazi/data   # เก็บ cache (SQLite) ไว้บน NAS — ลบ container ข้อมูลไม่หาย
+      - ./logs:/srv/bazi/logs   # เก็บ log ไว้บน NAS — เวลาพังเอาไฟล์นี้ไปให้ Claude Code ดู
+    restart: unless-stopped
