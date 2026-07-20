@@ -7,25 +7,25 @@
    "last": 6.8,
    "ret": -0.73,
    "peak": 1.46,
-   "days": 8
+   "days": 11
   },
   {
    "ticker": "CHOW",
    "date": "2026-07-10",
    "entry": 1.41,
-   "last": 1.37,
-   "ret": -2.84,
+   "last": 1.39,
+   "ret": -1.42,
    "peak": 0.0,
-   "days": 7
+   "days": 10
   },
   {
    "ticker": "K",
    "date": "2026-07-13",
    "entry": 1.0,
-   "last": 0.98,
-   "ret": -2.0,
+   "last": 0.96,
+   "ret": -4.0,
    "peak": 0.0,
-   "days": 4
+   "days": 7
   },
   {
    "ticker": "TPS",
@@ -34,16 +34,16 @@
    "last": 3.18,
    "ret": -0.62,
    "peak": 1.87,
-   "days": 4
+   "days": 7
   },
   {
    "ticker": "MOONG",
    "date": "2026-07-15",
    "entry": 2.32,
-   "last": 2.4,
-   "ret": 3.45,
-   "peak": 3.45,
-   "days": 2
+   "last": 2.42,
+   "ret": 4.31,
+   "peak": 4.31,
+   "days": 5
   }
  ],
  "closed": []
