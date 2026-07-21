@@ -15,14 +15,8 @@
  "CRC": [
   "bear"
  ],
- "SCB": [
-  "runup"
- ],
  "CBG": [
   "runup"
- ],
- "SCGP": [
-  "bear"
  ],
  "BGRIM": [
   "runup"
@@ -31,6 +25,7 @@
   "bear"
  ],
  "PTTEP": [
+  "runup",
   "trap"
  ],
  "EGCO": [
@@ -45,6 +40,9 @@
  ],
  "BANPU": [
   "trap"
+ ],
+ "SCGP": [
+  "bear"
  ],
  "KCE": [
   "bear"
@@ -61,17 +59,14 @@
  "KIAT": [
   "trap"
  ],
- "KWM": [
-  "runup"
- ],
- "MENA": [
-  "runup"
- ],
  "APP": [
   "trap"
  ],
- "SFT": [
+ "TPS": [
   "trap"
+ ],
+ "KWM": [
+  "runup"
  ],
  "JDF": [
   "trap"
@@ -79,27 +74,10 @@
  "BLESS": [
   "runup"
  ],
- "CAZ": [
-  "bear",
-  "runup"
- ],
- "ATP30": [
-  "trap"
- ],
- "VL": [
-  "bear"
- ],
- "BM": [
-  "runup",
-  "trap"
- ],
- "K": [
+ "SFT": [
   "trap"
  ],
  "DOD": [
-  "trap"
- ],
- "TPS": [
   "trap"
  ],
  "AU": [
@@ -114,10 +92,29 @@
  "ADD": [
   "trap"
  ],
+ "CAZ": [
+  "bear",
+  "runup"
+ ],
+ "ATP30": [
+  "trap"
+ ],
  "ECF": [
   "runup"
  ],
+ "VL": [
+  "bear"
+ ],
  "AUCT": [
+  "trap"
+ ],
+ "BM": [
+  "trap"
+ ],
+ "FVC": [
+  "runup"
+ ],
+ "K": [
   "trap"
  ],
  "MASTER": [
@@ -134,5 +131,8 @@
  ],
  "TAN": [
   "trap"
+ ],
+ "SCM": [
+  "runup"
  ]
 }
