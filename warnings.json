@@ -41,20 +41,17 @@
  "BANPU": [
   "trap"
  ],
+ "HMPRO": [
+  "bear"
+ ],
  "SCGP": [
   "bear"
  ],
  "KCE": [
-  "bear"
- ],
- "WHA": [
-  "bear"
+  "runup"
  ],
  "PJW": [
   "trap"
- ],
- "KJL": [
-  "runup"
  ],
  "KIAT": [
   "trap"
@@ -71,13 +68,25 @@
  "JDF": [
   "trap"
  ],
+ "SICT": [
+  "runup"
+ ],
+ "BOL": [
+  "bear"
+ ],
  "BLESS": [
   "runup"
  ],
  "SFT": [
   "trap"
  ],
+ "ATP30": [
+  "trap"
+ ],
  "DOD": [
+  "trap"
+ ],
+ "K": [
   "trap"
  ],
  "AU": [
@@ -96,9 +105,6 @@
   "bear",
   "runup"
  ],
- "ATP30": [
-  "trap"
- ],
  "ECF": [
   "runup"
  ],
@@ -109,12 +115,6 @@
   "trap"
  ],
  "BM": [
-  "trap"
- ],
- "FVC": [
-  "runup"
- ],
- "K": [
   "trap"
  ],
  "MASTER": [
@@ -131,8 +131,5 @@
  ],
  "TAN": [
   "trap"
- ],
- "SCM": [
-  "runup"
  ]
 }
