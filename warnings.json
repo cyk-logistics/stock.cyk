@@ -2,9 +2,6 @@
  "BH": [
   "bear"
  ],
- "BBL": [
-  "bear"
- ],
  "PTTGC": [
   "runup"
  ],
@@ -17,12 +14,6 @@
  ],
  "CBG": [
   "runup"
- ],
- "BGRIM": [
-  "runup"
- ],
- "AWC": [
-  "bear"
  ],
  "PTTEP": [
   "runup",
@@ -39,7 +30,11 @@
   "trap"
  ],
  "BANPU": [
+  "runup",
   "trap"
+ ],
+ "BGRIM": [
+  "runup"
  ],
  "HMPRO": [
   "bear"
@@ -47,13 +42,16 @@
  "SCGP": [
   "bear"
  ],
- "KCE": [
-  "runup"
- ],
  "PJW": [
   "trap"
  ],
  "KIAT": [
+  "trap"
+ ],
+ "KJL": [
+  "runup"
+ ],
+ "DOD": [
   "trap"
  ],
  "APP": [
@@ -65,11 +63,11 @@
  "KWM": [
   "runup"
  ],
+ "SECURE": [
+  "bear"
+ ],
  "JDF": [
   "trap"
- ],
- "SICT": [
-  "runup"
  ],
  "BOL": [
   "bear"
@@ -80,20 +78,14 @@
  "SFT": [
   "trap"
  ],
- "ATP30": [
-  "trap"
- ],
- "DOD": [
-  "trap"
- ],
- "K": [
-  "trap"
- ],
  "AU": [
   "trap"
  ],
  "XO": [
   "bear"
+ ],
+ "SICT": [
+  "runup"
  ],
  "IIG": [
   "runup"
@@ -104,6 +96,9 @@
  "CAZ": [
   "bear",
   "runup"
+ ],
+ "ATP30": [
+  "trap"
  ],
  "ECF": [
   "runup"
@@ -117,8 +112,8 @@
  "BM": [
   "trap"
  ],
- "MASTER": [
-  "bear"
+ "K": [
+  "trap"
  ],
  "WARRIX": [
   "trap"
@@ -130,6 +125,7 @@
   "bear"
  ],
  "TAN": [
+  "bear",
   "trap"
  ]
 }
