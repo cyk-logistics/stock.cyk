@@ -511,7 +511,7 @@ def analyze(ticker, df, fund):
         "de": None if fund.get("debtToEquity") is None else round(fund["debtToEquity"] / 100, 2),
         "epsg": pct(epsg), "pe": None if fund.get("trailingPE") is None else round(fund["trailingPE"], 1),
         "health": fg_label, "health_color": fg_color,
-        "bull_div": bull_div, "bear_div": bear_div, "trap": trap, "div_cut": div_cut,
+        "bull_div": bull_div, "bear_div": bear_div, "above20": bool(above20), "trap": trap, "div_cut": div_cut,
         "xd_last": xd_last, "xd_next": xd_next, "xd_days": xd_days,
         "status": status, "status_color": scolor, "srank": srank, "div_good": div_good, "turnaround": turnaround,
         "comment": comment, "fair_txt": fair_txt,
@@ -652,6 +652,7 @@ def track_signals(results, path=SIGNALS_FILE):
         data = {"open": [], "closed": []}
     today = (datetime.now(timezone.utc) + timedelta(hours=7)).date()
     prices = {r["ticker"]: r["price"] for r in results}
+    by_t = {r["ticker"]: r for r in results}
     go_now = {r["ticker"] for r in results if "เข้าได้" in r["status"]}
     open_tickers = {s["ticker"] for s in data["open"]}
 
@@ -663,6 +664,26 @@ def track_signals(results, path=SIGNALS_FILE):
             s["ret"] = round((p / s["entry"] - 1) * 100, 2)
             s["peak"] = max(s.get("peak", 0.0), s["ret"])
         s["days"] = (today - datetime.strptime(s["date"], "%Y-%m-%d").date()).days
+        # ===== คำแนะนำออกรายตัว (กติกาเดียวกับที่ใช้สอน: เข้าเพราะเหนือ EMA20 → หลุด = ออก) =====
+        r = by_t.get(s["ticker"])
+        hard, soft = [], []
+        if r:
+            if r["bear_div"]:
+                hard.append("เจอ bear divergence")
+            if not r.get("above20", True):
+                hard.append("ปิดใต้ EMA20 (เหตุผลตอนเข้าหมดแล้ว)")
+            if s["ret"] <= -8:
+                hard.append(f"ขาดทุน {s['ret']:.1f}% เกินจุดตัด −8%")
+            if s.get("peak", 0) >= 5 and s["peak"] - s["ret"] >= 6:
+                soft.append(f"กำไรไหลกลับจากจุดสูง (เคย +{s['peak']:.1f}% เหลือ {s['ret']:+.1f}%)")
+            if r["rsi"] >= 70:
+                soft.append(f"RSI ร้อน ({r['rsi']:.0f}) — พิจารณาแบ่งขายล็อกกำไร")
+        if hard:
+            s["exit_st"], s["exit"] = "🔴 ควรออก", " · ".join(hard + soft)
+        elif soft:
+            s["exit_st"], s["exit"] = "🟡 ระวัง/แบ่งขาย", " · ".join(soft)
+        else:
+            s["exit_st"], s["exit"] = "🟢 ถือต่อได้", ""
         if s["days"] >= TRACK_DAYS:
             s["exit_date"] = today.isoformat()
             s["win"] = s["ret"] > 0
@@ -712,7 +733,10 @@ def notify_warnings(all_warns):
         for code, txt in w["items"]:
             if code not in prev.get(w["ticker"], []):
                 new_msgs.append(f"**{w['ticker']}** @ {w['price']:,.2f} — {txt}")
-    cur = {w["ticker"]: sorted(c for c, _ in w["items"]) for w in all_warns}
+    cur = {}
+    for w in all_warns:   # ticker อาจโผล่ทั้งฝั่งเตือนทั่วไปและฝั่งสัญญาณออก → รวม codes
+        cur.setdefault(w["ticker"], set()).update(c for c, _ in w["items"])
+    cur = {k: sorted(v) for k, v in cur.items()}
     WARN_FILE.write_text(json.dumps(cur, ensure_ascii=False, indent=1), encoding="utf-8")
     hook = os.environ.get("DISCORD_WEBHOOK", "").strip()
     if not (hook and new_msgs):
@@ -1013,11 +1037,11 @@ const SIG = /*__SIGNALS__*/;
   }
   const winners=open.filter(s=>s.ret>0.5);
   const winBanner=winners.length?`<div style="background:#10261b;border:1px solid #2c6e4f;border-radius:10px;padding:10px 14px;margin-bottom:10px;font-size:13px">📈 <b style="color:#5fe0c8">สัญญาณที่แนะนำไว้กำลังกำไร:</b> ${winners.map(s=>`${s.ticker} <b style="color:var(--grn)">+${s.ret.toFixed(1)}%</b> <span style="color:var(--mut)">(แนะนำ ${s.date} @${s.entry.toFixed(2)})</span>`).join(' · ')}</div>`:'';
-  const row=(s)=>`<tr><td><b>${s.ticker}</b></td><td style="color:var(--mut)">${s.date}</td><td class="num">${s.entry.toFixed(2)}</td><td class="num">${(s.last??s.entry).toFixed(2)}</td><td class="num" style="font-weight:700;color:${s.ret>0?'var(--grn)':s.ret<0?'var(--red)':'var(--mut)'}">${s.ret>0?'+':''}${s.ret.toFixed(1)}%</td><td class="num" style="color:var(--mut)">${s.days}</td></tr>`;
+  const row=(s)=>`<tr><td><b>${s.ticker}</b></td><td style="color:var(--mut)">${s.date}</td><td class="num">${s.entry.toFixed(2)}</td><td class="num">${(s.last??s.entry).toFixed(2)}</td><td class="num" style="font-weight:700;color:${s.ret>0?'var(--grn)':s.ret<0?'var(--red)':'var(--mut)'}">${s.ret>0?'+':''}${s.ret.toFixed(1)}%</td><td class="num" style="color:var(--mut)">${s.days}</td><td style="font-size:12px;white-space:normal;min-width:150px">${s.exit_st||'—'}${s.exit?'<br><span style="color:var(--mut);font-size:11px">'+s.exit+'</span>':''}</td></tr>`;
   const wins=closed.filter(s=>s.win).length;
   const avg=closed.length?closed.reduce((a,s)=>a+s.ret,0)/closed.length:0;
   const sum=closed.length?`<div class="sub" style="margin:8px 0 0">ปิดติดตามแล้ว ${closed.length} สัญญาณ · ชนะ ${wins} (${Math.round(wins/closed.length*100)}%) · เฉลี่ย ${avg>0?'+':''}${avg.toFixed(1)}%</div>`:'';
-  el.innerHTML=winBanner+`<table><thead><tr><th>หุ้น</th><th>วันแนะนำ</th><th class="num">ราคาแนะนำ</th><th class="num">ล่าสุด</th><th class="num">ผลตอบแทน</th><th class="num">ถือมา(วัน)</th></tr></thead><tbody>${open.map(row).join('')||'<tr><td colspan="6" style="color:var(--mut)">ไม่มีสัญญาณเปิดอยู่</td></tr>'}</tbody></table>`+sum+`<div class="sub" style="margin-top:6px;font-size:11px">ติดตามอัตโนมัติ 60 วันนับจากวันแนะนำ · วัดจากราคาปิด ไม่รวมปันผล/ค่าคอม · ไม่ใช่คำแนะนำซื้อขาย</div>`;
+  el.innerHTML=winBanner+`<table><thead><tr><th>หุ้น</th><th>วันแนะนำ</th><th class="num">ราคาแนะนำ</th><th class="num">ล่าสุด</th><th class="num">ผลตอบแทน</th><th class="num">ถือมา(วัน)</th><th>คำแนะนำออก</th></tr></thead><tbody>${open.map(row).join('')||'<tr><td colspan="7" style="color:var(--mut)">ไม่มีสัญญาณเปิดอยู่</td></tr>'}</tbody></table>`+sum+`<div class="sub" style="margin-top:6px;font-size:11px">ติดตามอัตโนมัติ 60 วันนับจากวันแนะนำ · วัดจากราคาปิด ไม่รวมปันผล/ค่าคอม · <b>คำแนะนำออก:</b> 🔴 = หลุดเงื่อนไขตอนเข้า (ใต้ EMA20 / bear div / ขาดทุนเกิน 8%) · 🟡 = RSI ร้อน/กำไรไหลกลับ พิจารณาแบ่งขาย · อัปเดตทุกเย็น + ตัวที่เปลี่ยนเป็น 🔴 ยิงเข้า Discord · ไม่ใช่คำสั่งซื้อขาย</div>`;
 })();
 const picks=[...ROWS].filter(r=>r.div_good).sort((a,b)=>b.score-a.score).slice(0,5);
 document.getElementById('top5').innerHTML = picks.map((r,i)=>{
@@ -1271,6 +1295,7 @@ if __name__ == "__main__":
     if n_open:
         print(f"📊 track record: เปิดติดตาม {n_open} สัญญาณ · ปิดแล้ว {len(signals['closed'])}")
     warns_set = collect_warnings(res)
+    open_all = list(signals["open"])
     build_dashboard(res, market, signals, args.out, tabs=tabs_html("div"), secstats=secstats, warns=warns_set)
     tech_out = str(Path(args.out).with_name("technical.html"))
     build_technical(res, market, tech_out)
@@ -1284,6 +1309,7 @@ if __name__ == "__main__":
     if res_mai:
         secstats_mai = apply_sector_heat(res_mai)
         signals_mai = track_signals(res_mai, SIGNALS_MAI_FILE)
+        open_all += signals_mai["open"]
         warns_mai = collect_warnings(res_mai)
         mai_out = str(Path(args.out).with_name("mai.html"))
         build_dashboard(res_mai, None, signals_mai, mai_out,
@@ -1294,6 +1320,9 @@ if __name__ == "__main__":
     else:
         print("⚠ กลุ่ม MAI ดึงข้อมูลไม่ได้ — ข้ามหน้า mai.html รอบนี้")
 
-    n_new, sent = notify_warnings(warns_set + warns_mai)
+    exit_warns = [{"ticker": s["ticker"], "price": s.get("last", s["entry"]),
+                   "items": [("exit", "🚪 สัญญาณออก (หุ้นที่เคยแนะนำ): " + s["exit"])]}
+                  for s in open_all if s.get("exit_st", "").startswith("🔴")]
+    n_new, sent = notify_warnings(warns_set + warns_mai + exit_warns)
     print(f"🚨 สัญญาณไม่ดี: SET {len(warns_set)} · MAI {len(warns_mai)} ตัว · ใหม่วันนี้ {n_new} · "
           f"Discord: {'ส่งแล้ว ✅' if sent else ('ยังไม่ตั้ง webhook' if not os.environ.get('DISCORD_WEBHOOK') else 'ไม่มีเตือนใหม่/ส่งไม่สำเร็จ')}")
