@@ -30,6 +30,7 @@ jobs:
       - name: สแกนหุ้น + สร้างหน้าเว็บ
         env:
           DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
+          STOCK_LINE_HOOK: ${{ secrets.STOCK_LINE_HOOK }}
         run: |
           mkdir -p site
           EXTRA=""

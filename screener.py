@@ -741,19 +741,30 @@ def notify_warnings(all_warns):
         cur.setdefault(w["ticker"], set()).update(c for c, _ in w["items"])
     cur = {k: sorted(v) for k, v in cur.items()}
     WARN_FILE.write_text(json.dumps(cur, ensure_ascii=False, indent=1), encoding="utf-8")
-    hook = os.environ.get("DISCORD_WEBHOOK", "").strip()
-    if not (hook and new_msgs):
-        return len(new_msgs), False
-    body = "🚨 **เตือนสัญญาณไม่ดี — stock.cyk**\n" + "\n".join("• " + m for m in new_msgs[:15])
-    if len(new_msgs) > 15:
-        body += f"\n… และอีก {len(new_msgs) - 15} รายการ"
-    body += "\n👉 https://cyk-logistics.github.io/stock.cyk/"
-    try:
-        import requests
-        requests.post(hook, json={"content": body}, timeout=10).raise_for_status()
-        return len(new_msgs), True
-    except Exception:
-        return len(new_msgs), False
+    sent_dc = sent_line = False
+    if new_msgs:
+        listing = "\n".join("• " + m for m in new_msgs[:15])
+        more = f"\n… และอีก {len(new_msgs) - 15} รายการ" if len(new_msgs) > 15 else ""
+        url = "https://cyk-logistics.github.io/stock.cyk/"
+        hook = os.environ.get("DISCORD_WEBHOOK", "").strip()
+        if hook:
+            body = "🚨 **เตือนสัญญาณไม่ดี — stock.cyk**\n" + listing + more + "\n👉 " + url
+            try:
+                import requests
+                requests.post(hook, json={"content": body}, timeout=10).raise_for_status()
+                sent_dc = True
+            except Exception:
+                pass
+        line_hook = os.environ.get("STOCK_LINE_HOOK", "").strip()
+        if line_hook:   # สะพาน n8n → LINE DM (n8n ถือ token เอง ระบบนี้ไม่เห็น token)
+            plain = "🚨 เตือนสัญญาณหุ้น stock.cyk\n" + (listing + more).replace("**", "") + "\nดูเพิ่ม: " + url
+            try:
+                import requests
+                requests.post(line_hook, json={"text": plain}, timeout=10).raise_for_status()
+                sent_line = True
+            except Exception:
+                pass
+    return len(new_msgs), sent_dc, sent_line
 
 
 def tabs_html(active):
@@ -1350,6 +1361,7 @@ if __name__ == "__main__":
         exit_warns = [{"ticker": s["ticker"], "price": s.get("last", s["entry"]),
                        "items": [("exit", "🚪 สัญญาณออก (หุ้นที่เคยแนะนำ): " + s["exit"])]}
                       for s in open_all if s.get("exit_st", "").startswith("🔴")]
-        n_new, sent = notify_warnings(warns_set + warns_mai + exit_warns)
+        n_new, sent_dc, sent_line = notify_warnings(warns_set + warns_mai + exit_warns)
+        _st = lambda on, env: ('ส่งแล้ว ✅' if on else ('ยังไม่ตั้ง' if not os.environ.get(env) else 'ไม่มีใหม่/พลาด'))
         print(f"🚨 สัญญาณไม่ดี: SET {len(warns_set)} · MAI {len(warns_mai)} ตัว · ใหม่วันนี้ {n_new} · "
-              f"Discord: {'ส่งแล้ว ✅' if sent else ('ยังไม่ตั้ง webhook' if not os.environ.get('DISCORD_WEBHOOK') else 'ไม่มีเตือนใหม่/ส่งไม่สำเร็จ')}")
+              f"Discord: {_st(sent_dc, 'DISCORD_WEBHOOK')} · LINE: {_st(sent_line, 'STOCK_LINE_HOOK')}")
