@@ -3,6 +3,7 @@ name: Build & Deploy SET Screener
 on:
   schedule:
     - cron: '30 10 * * 1-5'   # ~17:30 ICT วันธรรมดา (หลังตลาด SET ปิด) — เวลาเป็น UTC
+    - cron: '35 5 * * 1-5'    # ~12:35 ICT พักเที่ยง — อัปเดตหน้าเว็บอย่างเดียว (--intraday)
   workflow_dispatch:           # กดรันเองได้จากหน้า Actions
   push:
     branches: [ main ]
@@ -31,7 +32,9 @@ jobs:
           DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
         run: |
           mkdir -p site
-          python screener.py --out site/index.html
+          EXTRA=""
+          if [ "${{ github.event.schedule }}" = "35 5 * * 1-5" ]; then EXTRA="--intraday"; fi
+          python screener.py --out site/index.html $EXTRA
       - name: บันทึก track record กลับ repo
         run: |
           git config user.name "github-actions[bot]"

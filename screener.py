@@ -644,8 +644,10 @@ SIGNALS_MAI_FILE = Path(__file__).parent / "signals_mai.json"
 TRACK_DAYS = 60   # ติดตามผลสัญญาณ 60 วันปฏิทิน แล้วปิดบันทึกผล
 
 
-def track_signals(results, path=SIGNALS_FILE):
-    """บันทึก/อัปเดต track record ของสัญญาณ 🟢 เข้าได้ — วัดผลว่าระบบแม่นจริงไหม"""
+def track_signals(results, path=SIGNALS_FILE, persist=True):
+    """บันทึก/อัปเดต track record ของสัญญาณ 🟢 เข้าได้ — วัดผลว่าระบบแม่นจริงไหม
+    persist=False (รอบพักเที่ยง): อัปเดตตัวเลขไว้โชว์อย่างเดียว ไม่เขียนไฟล์/ไม่เพิ่มสัญญาณใหม่
+    (สัญญาณใหม่ต้องรอราคาปิดจริงรอบเย็น กันสัญญาณหลอกจากราคากลางวัน)"""
     try:
         data = json.loads(path.read_text(encoding="utf-8"))
     except Exception:
@@ -692,17 +694,18 @@ def track_signals(results, path=SIGNALS_FILE):
             still_open.append(s)
     data["open"] = still_open
 
-    for r in results:
-        if r["ticker"] in go_now and r["ticker"] not in open_tickers:
-            data["open"].append({"ticker": r["ticker"], "date": today.isoformat(),
-                                 "entry": r["price"], "last": r["price"],
-                                 "ret": 0.0, "peak": 0.0, "days": 0})
-
-    path.write_text(json.dumps(data, ensure_ascii=False, indent=1), encoding="utf-8")
+    if persist:
+        for r in results:
+            if r["ticker"] in go_now and r["ticker"] not in open_tickers:
+                data["open"].append({"ticker": r["ticker"], "date": today.isoformat(),
+                                     "entry": r["price"], "last": r["price"],
+                                     "ret": 0.0, "peak": 0.0, "days": 0})
+        path.write_text(json.dumps(data, ensure_ascii=False, indent=1), encoding="utf-8")
     return data
 
 
 WARN_FILE = Path(__file__).parent / "warnings.json"
+UPDATE_NOTE = ""   # รอบพักเที่ยงจะถูกตั้งเป็นหมายเหตุ "ราคาระหว่างวัน"
 
 
 def collect_warnings(results):
@@ -790,7 +793,7 @@ def build_dashboard(results, market, signals, out_path,
     html = html.replace("/*__CHARTS__*/", json.dumps(charts, ensure_ascii=False))
     now_ict = datetime.now(timezone.utc) + timedelta(hours=7)
     updated = f"{now_ict.day} {TH_MON[now_ict.month]} {now_ict.year} {now_ict.hour:02d}:{now_ict.minute:02d} น."
-    html = html.replace("__UPDATED__", updated)
+    html = html.replace("__UPDATED__", updated + UPDATE_NOTE)
     html = html.replace("/*__SIGNALS__*/", json.dumps(signals, ensure_ascii=False))
     html = html.replace("__TITLE__", title)
     html = html.replace("__TABS__", tabs)
@@ -917,7 +920,7 @@ HTML_TEMPLATE = r"""<!DOCTYPE html>
   __TABS__
   <h1>__TITLE__</h1>
   <div class="sub">หุ้นปันผลคุณภาพ + จังหวะเข้า + กรองงบการเงิน • ข้อมูล: yfinance • อินดิเคเตอร์คำนวณเอง</div>
-  <div style="color:var(--mut);font-size:11.5px;margin:-12px 0 16px">🕐 อัปเดตล่าสุด: <b style="color:#9aa4b0">__UPDATED__</b> (เวลาไทย) · อัปเดตอัตโนมัติทุกวันทำการหลังตลาดปิด<span id="visitwrap" title="นับวันละ 1 ครั้งต่อเครื่อง/เบราว์เซอร์ (รวมทุกหน้า)"> · 👁 ผู้เข้าชม <b id="visits" style="color:#9aa4b0">…</b></span></div>
+  <div style="color:var(--mut);font-size:11.5px;margin:-12px 0 16px">🕐 อัปเดตล่าสุด: <b style="color:#9aa4b0">__UPDATED__</b> (เวลาไทย) · อัปเดตอัตโนมัติวันละ 2 รอบ: พักเที่ยง (~12:40) + หลังปิดตลาด (~17:30)<span id="visitwrap" title="นับวันละ 1 ครั้งต่อเครื่อง/เบราว์เซอร์ (รวมทุกหน้า)"> · 👁 ผู้เข้าชม <b id="visits" style="color:#9aa4b0">…</b></span></div>
   __MARKET__
   __NOTICE__
   <div class="stats">
@@ -1129,7 +1132,7 @@ def build_technical(results, market, out_path):
     html = html.replace("/*__CHARTS__*/", json.dumps(charts, ensure_ascii=False))
     now_ict = datetime.now(timezone.utc) + timedelta(hours=7)
     updated = f"{now_ict.day} {TH_MON[now_ict.month]} {now_ict.year} {now_ict.hour:02d}:{now_ict.minute:02d} น."
-    html = html.replace("__UPDATED__", updated)
+    html = html.replace("__UPDATED__", updated + UPDATE_NOTE)
     html = html.replace("__MARKET__", market_banner(results, market))
     html = html.replace("__SCANNED__", str(len(res)))
     html = html.replace("__NGO__", str(n_go))
@@ -1152,7 +1155,7 @@ TECH_TEMPLATE = r"""<!DOCTYPE html>
   __TABS__
   <h1>📈 SET Technical Screener — หุ้นเทคนิคสวย</h1>
   <div class="sub">คัดจากกราฟล้วนๆ ไม่สนปันผล/งบ — divergence · ย่อในขาขึ้น · MACD · แนวรับ EMA800 · วอลุ่ม</div>
-  <div style="color:var(--mut);font-size:11.5px;margin:-12px 0 16px">🕐 อัปเดตล่าสุด: <b style="color:#9aa4b0">__UPDATED__</b> (เวลาไทย) · อัปเดตอัตโนมัติทุกวันทำการหลังตลาดปิด<span id="visitwrap" title="นับวันละ 1 ครั้งต่อเครื่อง/เบราว์เซอร์ (รวมทุกหน้า)"> · 👁 ผู้เข้าชม <b id="visits" style="color:#9aa4b0">…</b></span></div>
+  <div style="color:var(--mut);font-size:11.5px;margin:-12px 0 16px">🕐 อัปเดตล่าสุด: <b style="color:#9aa4b0">__UPDATED__</b> (เวลาไทย) · อัปเดตอัตโนมัติวันละ 2 รอบ: พักเที่ยง (~12:40) + หลังปิดตลาด (~17:30)<span id="visitwrap" title="นับวันละ 1 ครั้งต่อเครื่อง/เบราว์เซอร์ (รวมทุกหน้า)"> · 👁 ผู้เข้าชม <b id="visits" style="color:#9aa4b0">…</b></span></div>
   __MARKET__
   <div style="background:#2a2014;border:1px solid #6e4a1f;border-radius:10px;padding:11px 14px;margin-bottom:16px;font-size:13px;line-height:1.7">⚠️ <b style="color:#ffcf66">หน้านี้คือ "จังหวะเทรด" ไม่ใช่ลงทุนถือยาว</b> — backtest ระบบนี้ย้อนหลัง 5 ปี สัญญาณเทคนิคล้วนๆ <b>แพ้ซื้อแล้วถือเฉยๆ</b> (+2% vs +14% · ชนะ 44%) → ใช้ช่วยหาจังหวะเท่านั้น อย่าเชื่อ 100% + ตั้งจุดตัดขาดทุนทุกไม้</div>
   <div class="stats">
@@ -1271,7 +1274,11 @@ if __name__ == "__main__":
     ap = argparse.ArgumentParser()
     ap.add_argument("--limit", type=int, default=0)
     ap.add_argument("--out", default="dashboard.html")
+    ap.add_argument("--intraday", action="store_true",
+                    help="รอบพักเที่ยง: อัปเดตหน้าเว็บอย่างเดียว ไม่บันทึกสัญญาณ/ไม่ยิงเตือน (ราคายังไม่ปิดแท่ง)")
     args = ap.parse_args()
+    if args.intraday:
+        UPDATE_NOTE = " · ⏸ รอบพักเที่ยง — ราคาระหว่างวัน ยังไม่ปิดตลาด"
 
     tk = TICKERS[:args.limit] if args.limit else TICKERS
     res = run(tk)
@@ -1290,7 +1297,7 @@ if __name__ == "__main__":
     market = fetch_set_index()
     secstats = apply_sector_heat(res)
     print("🔥 กลุ่มแรงสุด:", " · ".join(f"{s['sector']} {s['avg1m']:+.1f}%" for s in secstats[:3]))
-    signals = track_signals(res)
+    signals = track_signals(res, persist=not args.intraday)
     n_open = len(signals["open"])
     if n_open:
         print(f"📊 track record: เปิดติดตาม {n_open} สัญญาณ · ปิดแล้ว {len(signals['closed'])}")
@@ -1308,7 +1315,7 @@ if __name__ == "__main__":
     warns_mai = []
     if res_mai:
         secstats_mai = apply_sector_heat(res_mai)
-        signals_mai = track_signals(res_mai, SIGNALS_MAI_FILE)
+        signals_mai = track_signals(res_mai, SIGNALS_MAI_FILE, persist=not args.intraday)
         open_all += signals_mai["open"]
         warns_mai = collect_warnings(res_mai)
         mai_out = str(Path(args.out).with_name("mai.html"))
@@ -1320,9 +1327,12 @@ if __name__ == "__main__":
     else:
         print("⚠ กลุ่ม MAI ดึงข้อมูลไม่ได้ — ข้ามหน้า mai.html รอบนี้")
 
-    exit_warns = [{"ticker": s["ticker"], "price": s.get("last", s["entry"]),
-                   "items": [("exit", "🚪 สัญญาณออก (หุ้นที่เคยแนะนำ): " + s["exit"])]}
-                  for s in open_all if s.get("exit_st", "").startswith("🔴")]
-    n_new, sent = notify_warnings(warns_set + warns_mai + exit_warns)
-    print(f"🚨 สัญญาณไม่ดี: SET {len(warns_set)} · MAI {len(warns_mai)} ตัว · ใหม่วันนี้ {n_new} · "
-          f"Discord: {'ส่งแล้ว ✅' if sent else ('ยังไม่ตั้ง webhook' if not os.environ.get('DISCORD_WEBHOOK') else 'ไม่มีเตือนใหม่/ส่งไม่สำเร็จ')}")
+    if args.intraday:
+        print("⏸ รอบพักเที่ยง: อัปเดตหน้าเว็บอย่างเดียว — ไม่บันทึกสัญญาณ/สถานะเตือน ไม่ยิง Discord (รอราคาปิดรอบเย็น)")
+    else:
+        exit_warns = [{"ticker": s["ticker"], "price": s.get("last", s["entry"]),
+                       "items": [("exit", "🚪 สัญญาณออก (หุ้นที่เคยแนะนำ): " + s["exit"])]}
+                      for s in open_all if s.get("exit_st", "").startswith("🔴")]
+        n_new, sent = notify_warnings(warns_set + warns_mai + exit_warns)
+        print(f"🚨 สัญญาณไม่ดี: SET {len(warns_set)} · MAI {len(warns_mai)} ตัว · ใหม่วันนี้ {n_new} · "
+              f"Discord: {'ส่งแล้ว ✅' if sent else ('ยังไม่ตั้ง webhook' if not os.environ.get('DISCORD_WEBHOOK') else 'ไม่มีเตือนใหม่/ส่งไม่สำเร็จ')}")
