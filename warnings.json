@@ -2,18 +2,21 @@
  "CPN": [
   "bear"
  ],
- "CRC": [
-  "bear"
- ],
  "PTTGC": [
   "runup"
- ],
- "WHA": [
-  "trap"
  ],
  "CPF": [
   "runup",
   "trap"
+ ],
+ "WHA": [
+  "trap"
+ ],
+ "CRC": [
+  "bear"
+ ],
+ "CBG": [
+  "runup"
  ],
  "PTTEP": [
   "runup",
@@ -56,9 +59,6 @@
   "exit",
   "trap"
  ],
- "DOD": [
-  "trap"
- ],
  "APP": [
   "trap"
  ],
@@ -93,7 +93,7 @@
  "XO": [
   "bear"
  ],
- "IIG": [
+ "SICT": [
   "runup"
  ],
  "ADD": [
@@ -104,6 +104,9 @@
   "runup"
  ],
  "ATP30": [
+  "trap"
+ ],
+ "DOD": [
   "trap"
  ],
  "ECF": [
@@ -125,8 +128,7 @@
   "runup"
  ],
  "NV": [
-  "bear",
-  "runup"
+  "bear"
  ],
  "TAN": [
   "bear",
