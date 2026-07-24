@@ -113,6 +113,7 @@
   "trap"
  ],
  "K": [
+  "exit",
   "trap"
  ],
  "WARRIX": [
@@ -127,5 +128,8 @@
  "TAN": [
   "bear",
   "trap"
+ ],
+ "LH": [
+  "exit"
  ]
 }
