@@ -735,7 +735,8 @@ def diff_new_warnings(all_warns):
     for w in all_warns:
         for code, txt in w["items"]:
             if code not in prev.get(w["ticker"], []):
-                new_msgs.append(f"{w['ticker']} @ {w['price']:,.2f} — {txt}")
+                short = txt.split(" — ")[0].split(" · ")[0].strip()
+                new_msgs.append(f"{w['ticker']} {short}")
     cur = {}
     for w in all_warns:   # ticker อาจโผล่หลายฝั่ง → รวม codes
         cur.setdefault(w["ticker"], set()).update(c for c, _ in w["items"])
@@ -749,47 +750,58 @@ def _dig_line(res, want):
     out = []
     for r in res:
         if want(r):
-            out.append(r["ticker"] + ("💎" if r.get("div_good") else ""))
+            out.append(r["ticker"] + (" 💎" if r.get("div_good") else ""))
     return out
 
 
 def build_digest(res_set, res_mai, market, open_signals, new_msgs):
-    """สรุปประจำวันสำหรับ LINE/Discord — ส่งทุกเย็นแม้ไม่มีอะไรใหม่ (ตามที่ผู้ใช้ขอ)"""
+    """สรุปประจำวันสำหรับ LINE/Discord — จัดหน้าให้อ่านง่ายบนมือถือ (บล็อก + เว้นบรรทัด)"""
     now = datetime.now(timezone.utc) + timedelta(hours=7)
-    L = [f"📊 stock.cyk · สรุป {now.day} {TH_MON[now.month]} (เย็น)"]
+    BAR = "━━━━━━━━━━━━━━"
+    L = [f"📊 stock.cyk — สรุปเย็น {now.day} {TH_MON[now.month]}"]
     if market:
-        c1 = market.get("chg_1m")
-        mood = "🐂 ขาขึ้น" if (c1 or 0) > 1 else ("🐻 ขาลง" if (c1 or 0) < -1 else "↔ ออกข้าง")
-        L.append(f"🇹🇭 SET {market['level']:,.0f} · 1ด {c1:+.1f}% · {mood}")
+        c1 = market.get("chg_1m") or 0
+        mood = "🐂 ขาขึ้น" if c1 > 1 else ("🐻 ขาลง" if c1 < -1 else "↔ ออกข้าง")
+        L.append(f"🇹🇭 SET {market['level']:,.0f}  ({c1:+.1f}%/เดือน)  {mood}")
+    L.append(BAR)
 
+    # 🟢 สัญญาณเข้า
     ent_set = _dig_line(res_set, lambda r: "เข้าได้" in r["status"])
     ent_mai = _dig_line(res_mai, lambda r: "เข้าได้" in r["status"])
-    if ent_set or ent_mai:
-        s = "🟢 เข้าได้ตอนนี้: " + (", ".join(ent_set) if ent_set else "—")
-        if ent_mai:
-            s += "  | MAI: " + ", ".join(ent_mai[:6])
-        L.append(s)
-        L.append("   (💎=ปันผลคุณภาพ · ดูจังหวะ+จุดตัดขาดทุนบนเว็บก่อน)")
-    else:
-        L.append("🟢 เข้าได้ตอนนี้: ไม่มี — ตลาดยังไม่มีจังหวะ (รอเงินสดถูกที่)")
+    L.append("🟢 เข้าซื้อได้ตอนนี้")
+    if ent_set:
+        L += ["   • " + t for t in ent_set[:8]]
+        if len(ent_set) > 8:
+            L.append(f"   • …อีก {len(ent_set) - 8} ตัว")
+    if ent_mai:
+        L.append("   ▸ MAI: " + ", ".join(ent_mai[:6]))
+    if not (ent_set or ent_mai):
+        L.append("   — ยังไม่มีจังหวะ (รอเงินสดถูกที่)")
+    L.append("   💎 = ปันผลคุณภาพ")
 
+    # 📅 ใกล้ปันผล (โชว์เฉพาะเมื่อมี)
     xd = sorted([r for r in res_set if r.get("xd_days") is not None and 0 <= r["xd_days"] <= 10 and r["yield"] > 0],
                 key=lambda r: r["xd_days"])
     if xd:
-        L.append("📅 ใกล้ขึ้น XD ≤10วัน: " + ", ".join(f"{r['ticker']}(~{r['xd_next']})" for r in xd[:6]))
+        L += ["", "📅 ใกล้ขึ้น XD (≤10 วัน)"]
+        L += [f"   • {r['ticker']}  ~{r['xd_next']}" for r in xd[:6]]
 
+    # 🚪 ควรออก (โชว์เฉพาะเมื่อมี)
     exits = [s["ticker"] for s in open_signals if s.get("exit_st", "").startswith("🔴")]
     if exits:
-        L.append("🚪 หุ้นแนะนำที่ควรออก: " + ", ".join(exits))
+        L += ["", "🚪 หุ้นแนะนำ — ควรพิจารณาออก", "   • " + " · ".join(exits[:10])]
 
+    # ⚠️ เตือนใหม่
+    L.append("")
     if new_msgs:
-        L.append(f"⚠️ เตือนใหม่ ({len(new_msgs)}): " + " ; ".join(new_msgs[:4]))
-        if len(new_msgs) > 4:
-            L.append(f"   …และอีก {len(new_msgs) - 4} รายการ")
+        L.append(f"⚠️ เตือนใหม่ ({len(new_msgs)})")
+        L += ["   • " + m for m in new_msgs[:6]]
+        if len(new_msgs) > 6:
+            L.append(f"   • …อีก {len(new_msgs) - 6} รายการ")
     else:
-        L.append("⚠️ เตือนใหม่: ไม่มี")
+        L.append("⚠️ เตือนใหม่ — ไม่มี")
 
-    L.append("👉 https://cyk-logistics.github.io/stock.cyk/")
+    L += [BAR, "👉 ดูเต็ม + กราฟ", "https://cyk-logistics.github.io/stock.cyk/"]
     return "\n".join(L)
 
 
