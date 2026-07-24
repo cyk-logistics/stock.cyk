@@ -2,15 +2,18 @@
  "CPN": [
   "bear"
  ],
+ "CRC": [
+  "bear"
+ ],
  "PTTGC": [
   "runup"
+ ],
+ "WHA": [
+  "trap"
  ],
  "CPF": [
   "runup",
   "trap"
- ],
- "CRC": [
-  "bear"
  ],
  "PTTEP": [
   "runup",
@@ -31,10 +34,8 @@
   "trap"
  ],
  "BGRIM": [
-  "bear"
- ],
- "WHA": [
-  "trap"
+  "bear",
+  "runup"
  ],
  "HMPRO": [
   "bear"
@@ -70,10 +71,10 @@
  "JDF": [
   "trap"
  ],
- "BOL": [
+ "TITLE": [
   "bear"
  ],
- "TITLE": [
+ "BOL": [
   "bear"
  ],
  "BLESS": [
@@ -124,7 +125,8 @@
   "runup"
  ],
  "NV": [
-  "bear"
+  "bear",
+  "runup"
  ],
  "TAN": [
   "bear",
