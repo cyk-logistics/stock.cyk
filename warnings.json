@@ -5,22 +5,22 @@
  "PTTGC": [
   "runup"
  ],
- "CPF": [
-  "runup",
+ "WHA": [
   "trap"
  ],
- "WHA": [
+ "CPF": [
+  "runup",
   "trap"
  ],
  "CRC": [
   "bear"
  ],
- "CBG": [
-  "runup"
- ],
  "PTTEP": [
   "runup",
   "trap"
+ ],
+ "CBG": [
+  "runup"
  ],
  "EGCO": [
   "runup",
@@ -57,6 +57,9 @@
  ],
  "K": [
   "exit",
+  "trap"
+ ],
+ "DOD": [
   "trap"
  ],
  "APP": [
@@ -106,9 +109,6 @@
  "ATP30": [
   "trap"
  ],
- "DOD": [
-  "trap"
- ],
  "ECF": [
   "runup"
  ],
@@ -144,6 +144,9 @@
   "exit"
  ],
  "LDC": [
+  "exit"
+ ],
+ "CHIC": [
   "exit"
  ]
 }
