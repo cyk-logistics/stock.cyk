@@ -725,8 +725,8 @@ def collect_warnings(results):
     return out
 
 
-def notify_warnings(all_warns):
-    """ยิง Discord เฉพาะ 'เตือนที่เพิ่งเกิดใหม่' (เทียบกับ warnings.json รอบก่อน) — กันสแปมซ้ำทุกวัน"""
+def diff_new_warnings(all_warns):
+    """คืนรายการ 'เตือนที่เพิ่งเกิดใหม่' (เทียบ warnings.json รอบก่อน) + อัปเดตไฟล์สถานะ"""
     try:
         prev = json.loads(WARN_FILE.read_text(encoding="utf-8"))
     except Exception:
@@ -735,36 +735,84 @@ def notify_warnings(all_warns):
     for w in all_warns:
         for code, txt in w["items"]:
             if code not in prev.get(w["ticker"], []):
-                new_msgs.append(f"**{w['ticker']}** @ {w['price']:,.2f} — {txt}")
+                new_msgs.append(f"{w['ticker']} @ {w['price']:,.2f} — {txt}")
     cur = {}
-    for w in all_warns:   # ticker อาจโผล่ทั้งฝั่งเตือนทั่วไปและฝั่งสัญญาณออก → รวม codes
+    for w in all_warns:   # ticker อาจโผล่หลายฝั่ง → รวม codes
         cur.setdefault(w["ticker"], set()).update(c for c, _ in w["items"])
     cur = {k: sorted(v) for k, v in cur.items()}
     WARN_FILE.write_text(json.dumps(cur, ensure_ascii=False, indent=1), encoding="utf-8")
-    sent_dc = sent_line = False
+    return new_msgs
+
+
+def _dig_line(res, want):
+    """ดึงชื่อหุ้นตามเงื่อนไข + ติด 💎 ถ้าเป็นปันผลคุณภาพ"""
+    out = []
+    for r in res:
+        if want(r):
+            out.append(r["ticker"] + ("💎" if r.get("div_good") else ""))
+    return out
+
+
+def build_digest(res_set, res_mai, market, open_signals, new_msgs):
+    """สรุปประจำวันสำหรับ LINE/Discord — ส่งทุกเย็นแม้ไม่มีอะไรใหม่ (ตามที่ผู้ใช้ขอ)"""
+    now = datetime.now(timezone.utc) + timedelta(hours=7)
+    L = [f"📊 stock.cyk · สรุป {now.day} {TH_MON[now.month]} (เย็น)"]
+    if market:
+        c1 = market.get("chg_1m")
+        mood = "🐂 ขาขึ้น" if (c1 or 0) > 1 else ("🐻 ขาลง" if (c1 or 0) < -1 else "↔ ออกข้าง")
+        L.append(f"🇹🇭 SET {market['level']:,.0f} · 1ด {c1:+.1f}% · {mood}")
+
+    ent_set = _dig_line(res_set, lambda r: "เข้าได้" in r["status"])
+    ent_mai = _dig_line(res_mai, lambda r: "เข้าได้" in r["status"])
+    if ent_set or ent_mai:
+        s = "🟢 เข้าได้ตอนนี้: " + (", ".join(ent_set) if ent_set else "—")
+        if ent_mai:
+            s += "  | MAI: " + ", ".join(ent_mai[:6])
+        L.append(s)
+        L.append("   (💎=ปันผลคุณภาพ · ดูจังหวะ+จุดตัดขาดทุนบนเว็บก่อน)")
+    else:
+        L.append("🟢 เข้าได้ตอนนี้: ไม่มี — ตลาดยังไม่มีจังหวะ (รอเงินสดถูกที่)")
+
+    xd = sorted([r for r in res_set if r.get("xd_days") is not None and 0 <= r["xd_days"] <= 10 and r["yield"] > 0],
+                key=lambda r: r["xd_days"])
+    if xd:
+        L.append("📅 ใกล้ขึ้น XD ≤10วัน: " + ", ".join(f"{r['ticker']}(~{r['xd_next']})" for r in xd[:6]))
+
+    exits = [s["ticker"] for s in open_signals if s.get("exit_st", "").startswith("🔴")]
+    if exits:
+        L.append("🚪 หุ้นแนะนำที่ควรออก: " + ", ".join(exits))
+
     if new_msgs:
-        listing = "\n".join("• " + m for m in new_msgs[:15])
-        more = f"\n… และอีก {len(new_msgs) - 15} รายการ" if len(new_msgs) > 15 else ""
-        url = "https://cyk-logistics.github.io/stock.cyk/"
-        hook = os.environ.get("DISCORD_WEBHOOK", "").strip()
-        if hook:
-            body = "🚨 **เตือนสัญญาณไม่ดี — stock.cyk**\n" + listing + more + "\n👉 " + url
-            try:
-                import requests
-                requests.post(hook, json={"content": body}, timeout=10).raise_for_status()
-                sent_dc = True
-            except Exception:
-                pass
-        line_hook = os.environ.get("STOCK_LINE_HOOK", "").strip()
-        if line_hook:   # สะพาน n8n → LINE DM (n8n ถือ token เอง ระบบนี้ไม่เห็น token)
-            plain = "🚨 เตือนสัญญาณหุ้น stock.cyk\n" + (listing + more).replace("**", "") + "\nดูเพิ่ม: " + url
-            try:
-                import requests
-                requests.post(line_hook, json={"text": plain}, timeout=10).raise_for_status()
-                sent_line = True
-            except Exception:
-                pass
-    return len(new_msgs), sent_dc, sent_line
+        L.append(f"⚠️ เตือนใหม่ ({len(new_msgs)}): " + " ; ".join(new_msgs[:4]))
+        if len(new_msgs) > 4:
+            L.append(f"   …และอีก {len(new_msgs) - 4} รายการ")
+    else:
+        L.append("⚠️ เตือนใหม่: ไม่มี")
+
+    L.append("👉 https://cyk-logistics.github.io/stock.cyk/")
+    return "\n".join(L)
+
+
+def send_alert(text):
+    """ส่งข้อความไป Discord + LINE (n8n) — คืน (sent_dc, sent_line)"""
+    sent_dc = sent_line = False
+    hook = os.environ.get("DISCORD_WEBHOOK", "").strip()
+    if hook:
+        try:
+            import requests
+            requests.post(hook, json={"content": text}, timeout=10).raise_for_status()
+            sent_dc = True
+        except Exception:
+            pass
+    line_hook = os.environ.get("STOCK_LINE_HOOK", "").strip()
+    if line_hook:   # สะพาน n8n → LINE DM (n8n ถือ token เอง ระบบนี้ไม่เห็น token)
+        try:
+            import requests
+            requests.post(line_hook, json={"text": text}, timeout=10).raise_for_status()
+            sent_line = True
+        except Exception:
+            pass
+    return sent_dc, sent_line
 
 
 def tabs_html(active):
@@ -1341,6 +1389,7 @@ if __name__ == "__main__":
     print(f"\n🚀 สแกนกลุ่ม MAI {len(mai_tk)} ตัว ...")
     res_mai = run(mai_tk)
     warns_mai = []
+    res_mai = res_mai or []
     if res_mai:
         secstats_mai = apply_sector_heat(res_mai)
         signals_mai = track_signals(res_mai, SIGNALS_MAI_FILE, persist=not args.intraday)
@@ -1356,12 +1405,15 @@ if __name__ == "__main__":
         print("⚠ กลุ่ม MAI ดึงข้อมูลไม่ได้ — ข้ามหน้า mai.html รอบนี้")
 
     if args.intraday:
-        print("⏸ รอบพักเที่ยง: อัปเดตหน้าเว็บอย่างเดียว — ไม่บันทึกสัญญาณ/สถานะเตือน ไม่ยิง Discord (รอราคาปิดรอบเย็น)")
+        print("⏸ รอบพักเที่ยง: อัปเดตหน้าเว็บอย่างเดียว — ไม่บันทึกสัญญาณ/ไม่ส่งสรุป (รอราคาปิดรอบเย็น)")
     else:
         exit_warns = [{"ticker": s["ticker"], "price": s.get("last", s["entry"]),
-                       "items": [("exit", "🚪 สัญญาณออก (หุ้นที่เคยแนะนำ): " + s["exit"])]}
+                       "items": [("exit", "🚪 " + s["exit"])]}
                       for s in open_all if s.get("exit_st", "").startswith("🔴")]
-        n_new, sent_dc, sent_line = notify_warnings(warns_set + warns_mai + exit_warns)
-        _st = lambda on, env: ('ส่งแล้ว ✅' if on else ('ยังไม่ตั้ง' if not os.environ.get(env) else 'ไม่มีใหม่/พลาด'))
-        print(f"🚨 สัญญาณไม่ดี: SET {len(warns_set)} · MAI {len(warns_mai)} ตัว · ใหม่วันนี้ {n_new} · "
+        new_msgs = diff_new_warnings(warns_set + warns_mai + exit_warns)
+        digest = build_digest(res, res_mai, market, open_all, new_msgs)
+        sent_dc, sent_line = send_alert(digest)
+        _st = lambda on, env: ('ส่งแล้ว ✅' if on else ('ยังไม่ตั้ง' if not os.environ.get(env) else 'พลาด'))
+        print(f"\n📤 สรุปประจำวัน — เตือนใหม่ {len(new_msgs)} · "
               f"Discord: {_st(sent_dc, 'DISCORD_WEBHOOK')} · LINE: {_st(sent_line, 'STOCK_LINE_HOOK')}")
+        print("─" * 40 + "\n" + digest + "\n" + "─" * 40)
