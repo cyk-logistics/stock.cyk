@@ -781,7 +781,23 @@ def build_dashboard(results, market, signals, out_path,
             "xd_last", "xd_next", "xd_days", "status", "status_color", "srank", "div_good", "turnaround", "comment", "fair_txt",
             "sector", "sec_heat", "chg1m")
     table = [{k: r[k] for k in keys} for r in results]
-    charts = [{"id": r["id"], "ticker": r["ticker"], **r["chart"]} for r in results if r["chart"]["candles"]][:8]
+    # กราฟ: เลือกตามที่ระบบ "แนะนำ/ติดตาม" จริง ไม่ใช่แค่คะแนนสูง — จะได้ตรงกับตารางแนะนำ
+    by_tk, order, why = {r["ticker"]: r for r in results}, [], {}
+
+    def _add(tk, tag):
+        if tk in by_tk and tk not in why:
+            order.append(by_tk[tk]); why[tk] = tag
+    for r in results:
+        if "เข้าได้" in r["status"]:
+            _add(r["ticker"], "🟢 สัญญาณเข้าตอนนี้")
+    for s in (signals.get("open") or []):
+        _add(s["ticker"], "📊 กำลังติดตามผล")
+    for r in sorted([x for x in results if x["div_good"]], key=lambda x: x["score"], reverse=True)[:5]:
+        _add(r["ticker"], "🏆 Top 5 น่าจัด")
+    for r in results:
+        _add(r["ticker"], "คะแนนรวมสูง")
+    charts = [{"id": r["id"], "ticker": r["ticker"], "why": why[r["ticker"]], **r["chart"]}
+              for r in order if r["chart"]["candles"]][:8]
     n_go = sum(1 for r in results if "เข้าได้" in r["status"])
     n_wait = sum(1 for r in results if "รอยืนยัน" in r["status"])
     n_div = sum(1 for r in results if r["div_good"])
@@ -963,7 +979,8 @@ HTML_TEMPLATE = r"""<!DOCTYPE html>
     <th data-k="reasons">สัญญาณ</th>
   </tr></thead><tbody></tbody></table>
 
-  <h2>กราฟหุ้นน่าสนใจ (เรียงตามคะแนน)</h2>
+  <h2>กราฟหุ้นที่ระบบแนะนำ/กำลังติดตาม</h2>
+  <div class="sub" style="margin:-6px 0 12px">เรียงตามความสำคัญ: 🟢 สัญญาณเข้าตอนนี้ → 📊 ตัวที่กำลังติดตามผล (ดูจังหวะออก) → 🏆 Top 5 น่าจัด → คะแนนรวมสูง</div>
   <div class="grid" id="charts"></div>
 
   __WARNS__
@@ -1073,7 +1090,7 @@ const host = document.getElementById('charts');
 CHARTS.forEach(c=>{
   const row = ROWS.find(r=>r.id===c.id) || {};
   const card=document.createElement('div'); card.className='chart-card';
-  card.innerHTML = `<div class="chart-head"><b>${c.ticker}</b>
+  card.innerHTML = `<div class="chart-head"><b>${c.ticker} <span class="badge bull" style="font-size:10.5px;vertical-align:2px">${c.why||''}</span></b>
      <span class="meta">ปันผล ${(row.yield||0).toFixed(2)}% · งบ ${row.health||'—'} · คะแนน ${row.score||0}<br>XD ล่าสุด ${row.xd_last||'—'} · คาดถัดไป ~${row.xd_next||'—'}</span></div>
      <div class="chart" id="c_${c.id}"></div>`;
   host.appendChild(card);
