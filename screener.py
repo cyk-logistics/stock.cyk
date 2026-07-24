@@ -754,59 +754,103 @@ def _dig_line(res, want):
     return out
 
 
-def build_digest(res_set, res_mai, market, open_signals, new_msgs):
-    """สรุปประจำวันสำหรับ LINE/Discord — จัดหน้าให้อ่านง่ายบนมือถือ (บล็อก + เว้นบรรทัด)"""
+SITE_URL = "https://cyk-logistics.github.io/stock.cyk/"
+
+
+def _digest_parts(res_set, market, open_signals, new_msgs):
+    """คำนวณเนื้อหาสรุป (SET เท่านั้น — ไม่รวม MAI) ใช้ร่วมกันทั้ง text และ flex"""
+    ent = _dig_line(res_set, lambda r: "เข้าได้" in r["status"])
+    xd = sorted([r for r in res_set if r.get("xd_days") is not None and 0 <= r["xd_days"] <= 10 and r["yield"] > 0],
+                key=lambda r: r["xd_days"])
+    exits = [s["ticker"] for s in open_signals if s.get("exit_st", "").startswith("🔴")]
+    return ent, xd, exits
+
+
+def build_digest(res_set, market, open_signals, new_msgs):
+    """สรุปแบบข้อความ (ใช้กับ Discord + altText ของ Flex + log) — SET เท่านั้น"""
     now = datetime.now(timezone.utc) + timedelta(hours=7)
+    ent, xd, exits = _digest_parts(res_set, market, open_signals, new_msgs)
     BAR = "━━━━━━━━━━━━━━"
     L = [f"📊 stock.cyk — สรุปเย็น {now.day} {TH_MON[now.month]}"]
     if market:
         c1 = market.get("chg_1m") or 0
         mood = "🐂 ขาขึ้น" if c1 > 1 else ("🐻 ขาลง" if c1 < -1 else "↔ ออกข้าง")
         L.append(f"🇹🇭 SET {market['level']:,.0f}  ({c1:+.1f}%/เดือน)  {mood}")
-    L.append(BAR)
-
-    # 🟢 สัญญาณเข้า
-    ent_set = _dig_line(res_set, lambda r: "เข้าได้" in r["status"])
-    ent_mai = _dig_line(res_mai, lambda r: "เข้าได้" in r["status"])
-    L.append("🟢 เข้าซื้อได้ตอนนี้")
-    if ent_set:
-        L += ["   • " + t for t in ent_set[:8]]
-        if len(ent_set) > 8:
-            L.append(f"   • …อีก {len(ent_set) - 8} ตัว")
-    if ent_mai:
-        L.append("   ▸ MAI: " + ", ".join(ent_mai[:6]))
-    if not (ent_set or ent_mai):
-        L.append("   — ยังไม่มีจังหวะ (รอเงินสดถูกที่)")
-    L.append("   💎 = ปันผลคุณภาพ")
-
-    # 📅 ใกล้ปันผล (โชว์เฉพาะเมื่อมี)
-    xd = sorted([r for r in res_set if r.get("xd_days") is not None and 0 <= r["xd_days"] <= 10 and r["yield"] > 0],
-                key=lambda r: r["xd_days"])
+    L += [BAR, "🟢 เข้าซื้อได้ตอนนี้"]
+    L += ["   • " + t for t in ent[:8]] if ent else ["   — ยังไม่มีจังหวะ (รอเงินสดถูกที่)"]
     if xd:
-        L += ["", "📅 ใกล้ขึ้น XD (≤10 วัน)"]
-        L += [f"   • {r['ticker']}  ~{r['xd_next']}" for r in xd[:6]]
-
-    # 🚪 ควรออก (โชว์เฉพาะเมื่อมี)
-    exits = [s["ticker"] for s in open_signals if s.get("exit_st", "").startswith("🔴")]
+        L += ["", "📅 ใกล้ขึ้น XD (≤10 วัน)"] + [f"   • {r['ticker']}  ~{r['xd_next']}" for r in xd[:6]]
     if exits:
         L += ["", "🚪 หุ้นแนะนำ — ควรพิจารณาออก", "   • " + " · ".join(exits[:10])]
-
-    # ⚠️ เตือนใหม่
     L.append("")
     if new_msgs:
         L.append(f"⚠️ เตือนใหม่ ({len(new_msgs)})")
         L += ["   • " + m for m in new_msgs[:6]]
-        if len(new_msgs) > 6:
-            L.append(f"   • …อีก {len(new_msgs) - 6} รายการ")
     else:
         L.append("⚠️ เตือนใหม่ — ไม่มี")
-
-    L += [BAR, "👉 ดูเต็ม + กราฟ", "https://cyk-logistics.github.io/stock.cyk/"]
+    L += [BAR, "👉 ดูเต็ม + กราฟ", SITE_URL]
     return "\n".join(L)
 
 
-def send_alert(text):
-    """ส่งข้อความไป Discord + LINE (n8n) — คืน (sent_dc, sent_line)"""
+def _ftxt(s, **kw):
+    d = {"type": "text", "text": s, "size": "sm", "wrap": True, "color": "#1A1A1A"}
+    d.update(kw)
+    return d
+
+
+def _fsep():
+    return {"type": "separator", "margin": "lg", "color": "#E4E7EB"}
+
+
+def build_flex(res_set, market, open_signals, new_msgs):
+    """LINE Flex card — SET เท่านั้น (ไม่ส่ง MAI)"""
+    now = datetime.now(timezone.utc) + timedelta(hours=7)
+    ent, xd, exits = _digest_parts(res_set, market, open_signals, new_msgs)
+    body = []
+    if market:
+        c1 = market.get("chg_1m") or 0
+        mood = "🐂 ขาขึ้น" if c1 > 1 else ("🐻 ขาลง" if c1 < -1 else "↔ ออกข้าง")
+        body.append({"type": "box", "layout": "baseline", "contents": [
+            _ftxt("🇹🇭 SET", color="#7D8590", flex=0, size="sm"),
+            _ftxt(f"{market['level']:,.0f}   {c1:+.1f}%/ด.   {mood}", align="end", weight="bold", size="sm")]})
+
+    body += [_fsep(), _ftxt("🟢 เข้าซื้อได้ตอนนี้", weight="bold", color="#0B6E4F")]
+    if ent:
+        body += [_ftxt("•  " + t, margin="sm") for t in ent[:8]]
+        body.append(_ftxt("💎 = ปันผลคุณภาพ", size="xxs", color="#9AA4B0", margin="sm"))
+    else:
+        body.append(_ftxt("— ยังไม่มีจังหวะ (รอเงินสดถูกที่)", margin="sm", color="#7D8590"))
+
+    if xd:
+        body += [_fsep(), _ftxt("📅 ใกล้ขึ้น XD (≤10 วัน)", weight="bold", color="#8A6D1F")]
+        body += [_ftxt(f"•  {r['ticker']}   ~{r['xd_next']}", margin="sm") for r in xd[:6]]
+
+    if exits:
+        body += [_fsep(), _ftxt("🚪 หุ้นแนะนำ — ควรพิจารณาออก", weight="bold", color="#7A2222"),
+                 _ftxt("•  " + " · ".join(exits[:10]), margin="sm")]
+
+    body.append(_fsep())
+    if new_msgs:
+        body.append(_ftxt(f"⚠️ เตือนใหม่ ({len(new_msgs)})", weight="bold", color="#7A2222"))
+        body += [_ftxt("•  " + m, margin="sm", size="xs", color="#555555") for m in new_msgs[:6]]
+    else:
+        body.append(_ftxt("⚠️ เตือนใหม่ — ไม่มี", weight="bold", color="#7D8590"))
+
+    bubble = {
+        "type": "bubble",
+        "header": {"type": "box", "layout": "vertical", "backgroundColor": "#0E1117", "paddingAll": "16px",
+                   "contents": [_ftxt("📊 stock.cyk", color="#5FE0C8", weight="bold", size="lg"),
+                                _ftxt(f"สรุปเย็น {now.day} {TH_MON[now.month]} {now.year}", color="#9AA4B0", size="xs")]},
+        "body": {"type": "box", "layout": "vertical", "spacing": "sm", "paddingAll": "16px", "contents": body},
+        "footer": {"type": "box", "layout": "vertical", "contents": [
+            {"type": "button", "style": "primary", "color": "#1F7A4D", "height": "sm",
+             "action": {"type": "uri", "label": "ดูเต็ม + กราฟ 📈", "uri": SITE_URL}}]},
+    }
+    return {"type": "flex", "altText": f"📊 stock.cyk สรุปเย็น {now.day} {TH_MON[now.month]}", "contents": bubble}
+
+
+def send_alert(text, flex=None):
+    """Discord = ข้อความล้วน · LINE = Flex card (ผ่านสะพาน n8n; n8n ถือ token เอง)"""
     sent_dc = sent_line = False
     hook = os.environ.get("DISCORD_WEBHOOK", "").strip()
     if hook:
@@ -817,10 +861,11 @@ def send_alert(text):
         except Exception:
             pass
     line_hook = os.environ.get("STOCK_LINE_HOOK", "").strip()
-    if line_hook:   # สะพาน n8n → LINE DM (n8n ถือ token เอง ระบบนี้ไม่เห็น token)
+    if line_hook:
+        payload = {"messages": [flex]} if flex else {"text": text}
         try:
             import requests
-            requests.post(line_hook, json={"text": text}, timeout=10).raise_for_status()
+            requests.post(line_hook, json=payload, timeout=10).raise_for_status()
             sent_line = True
         except Exception:
             pass
@@ -1419,13 +1464,16 @@ if __name__ == "__main__":
     if args.intraday:
         print("⏸ รอบพักเที่ยง: อัปเดตหน้าเว็บอย่างเดียว — ไม่บันทึกสัญญาณ/ไม่ส่งสรุป (รอราคาปิดรอบเย็น)")
     else:
+        # แจ้งเตือน = SET เท่านั้น (ผู้ใช้ขอไม่ส่ง MAI)
+        set_open = signals["open"]
         exit_warns = [{"ticker": s["ticker"], "price": s.get("last", s["entry"]),
                        "items": [("exit", "🚪 " + s["exit"])]}
-                      for s in open_all if s.get("exit_st", "").startswith("🔴")]
-        new_msgs = diff_new_warnings(warns_set + warns_mai + exit_warns)
-        digest = build_digest(res, res_mai, market, open_all, new_msgs)
-        sent_dc, sent_line = send_alert(digest)
+                      for s in set_open if s.get("exit_st", "").startswith("🔴")]
+        new_msgs = diff_new_warnings(warns_set + exit_warns)
+        digest = build_digest(res, market, set_open, new_msgs)
+        flex = build_flex(res, market, set_open, new_msgs)
+        sent_dc, sent_line = send_alert(digest, flex)
         _st = lambda on, env: ('ส่งแล้ว ✅' if on else ('ยังไม่ตั้ง' if not os.environ.get(env) else 'พลาด'))
-        print(f"\n📤 สรุปประจำวัน — เตือนใหม่ {len(new_msgs)} · "
-              f"Discord: {_st(sent_dc, 'DISCORD_WEBHOOK')} · LINE: {_st(sent_line, 'STOCK_LINE_HOOK')}")
+        print(f"\n📤 สรุปประจำวัน (SET) — เตือนใหม่ {len(new_msgs)} · "
+              f"Discord: {_st(sent_dc, 'DISCORD_WEBHOOK')} · LINE(Flex): {_st(sent_line, 'STOCK_LINE_HOOK')}")
         print("─" * 40 + "\n" + digest + "\n" + "─" * 40)
