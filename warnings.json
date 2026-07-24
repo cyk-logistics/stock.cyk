@@ -1,5 +1,5 @@
 {
- "BH": [
+ "CPN": [
   "bear"
  ],
  "PTTGC": [
@@ -11,9 +11,6 @@
  ],
  "CRC": [
   "bear"
- ],
- "CBG": [
-  "runup"
  ],
  "PTTEP": [
   "runup",
@@ -34,7 +31,10 @@
   "trap"
  ],
  "BGRIM": [
-  "runup"
+  "bear"
+ ],
+ "WHA": [
+  "trap"
  ],
  "HMPRO": [
   "bear"
@@ -42,22 +42,23 @@
  "SCGP": [
   "bear"
  ],
- "PJW": [
+ "KJL": [
+  "runup"
+ ],
+ "SFT": [
   "trap"
  ],
  "KIAT": [
   "trap"
  ],
- "KJL": [
-  "runup"
+ "K": [
+  "exit",
+  "trap"
  ],
  "DOD": [
   "trap"
  ],
  "APP": [
-  "trap"
- ],
- "TPS": [
   "trap"
  ],
  "KWM": [
@@ -72,10 +73,17 @@
  "BOL": [
   "bear"
  ],
+ "TITLE": [
+  "bear"
+ ],
  "BLESS": [
   "runup"
  ],
- "SFT": [
+ "PJW": [
+  "trap"
+ ],
+ "TPS": [
+  "exit",
   "trap"
  ],
  "AU": [
@@ -83,9 +91,6 @@
  ],
  "XO": [
   "bear"
- ],
- "SICT": [
-  "runup"
  ],
  "IIG": [
   "runup"
@@ -112,10 +117,6 @@
  "BM": [
   "trap"
  ],
- "K": [
-  "exit",
-  "trap"
- ],
  "WARRIX": [
   "trap"
  ],
@@ -129,7 +130,16 @@
   "bear",
   "trap"
  ],
+ "CIG": [
+  "runup"
+ ],
  "LH": [
+  "exit"
+ ],
+ "CHOW": [
+  "exit"
+ ],
+ "LDC": [
   "exit"
  ]
 }
