@@ -1,21 +1,24 @@
 {
- "CPN": [
-  "bear"
+ "WHA": [
+  "trap"
+ ],
+ "BBL": [
+  "runup"
  ],
  "PTTGC": [
   "runup"
- ],
- "WHA": [
-  "trap"
  ],
  "CPF": [
   "runup",
   "trap"
  ],
+ "CBG": [
+  "runup"
+ ],
  "CRC": [
   "bear"
  ],
- "CBG": [
+ "BJC": [
   "runup"
  ],
  "PTTEP": [
@@ -26,27 +29,20 @@
   "runup",
   "trap"
  ],
- "IVL": [
-  "runup"
+ "CPN": [
+  "bear"
  ],
  "OR": [
-  "trap"
- ],
- "BANPU": [
-  "runup",
   "trap"
  ],
  "BGRIM": [
   "bear",
   "runup"
  ],
- "HMPRO": [
-  "bear"
- ],
  "SCGP": [
   "bear"
  ],
- "LH": [
-  "exit"
+ "IVL": [
+  "runup"
  ]
 }
