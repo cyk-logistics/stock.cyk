@@ -1,19 +1,7 @@
 {
  "WHA": [
+  "bear",
   "trap"
- ],
- "BBL": [
-  "runup"
- ],
- "PTTGC": [
-  "runup"
- ],
- "CPF": [
-  "runup",
-  "trap"
- ],
- "CBG": [
-  "runup"
  ],
  "CRC": [
   "bear"
@@ -25,24 +13,36 @@
   "runup",
   "trap"
  ],
- "EGCO": [
-  "runup",
-  "trap"
- ],
  "CPN": [
   "bear"
  ],
  "OR": [
   "trap"
  ],
+ "EGCO": [
+  "bear",
+  "runup",
+  "trap"
+ ],
  "BGRIM": [
   "bear",
   "runup"
  ],
- "SCGP": [
+ "MTC": [
   "bear"
  ],
- "IVL": [
-  "runup"
+ "CENTEL": [
+  "bear"
+ ],
+ "CPF": [
+  "bear",
+  "runup",
+  "trap"
+ ],
+ "SCC": [
+  "bear"
+ ],
+ "PTTGC": [
+  "exit"
  ]
 }
