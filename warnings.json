@@ -1,20 +1,17 @@
 {
- "WHA": [
-  "bear",
-  "trap"
- ],
  "CRC": [
   "bear"
  ],
- "BJC": [
-  "runup"
+ "CPN": [
+  "bear"
  ],
  "PTTEP": [
   "runup",
   "trap"
  ],
- "CPN": [
-  "bear"
+ "PTTGC": [
+  "exit",
+  "runup"
  ],
  "OR": [
   "trap"
@@ -25,14 +22,17 @@
   "trap"
  ],
  "BGRIM": [
-  "bear",
-  "runup"
+  "bear"
  ],
  "MTC": [
   "bear"
  ],
  "CENTEL": [
   "bear"
+ ],
+ "WHA": [
+  "bear",
+  "trap"
  ],
  "CPF": [
   "bear",
@@ -41,8 +41,5 @@
  ],
  "SCC": [
   "bear"
- ],
- "PTTGC": [
-  "exit"
  ]
 }
