@@ -5,20 +5,11 @@
  "CPN": [
   "bear"
  ],
- "PTTEP": [
-  "runup",
-  "trap"
- ],
- "PTTGC": [
-  "exit",
-  "runup"
- ],
  "OR": [
   "trap"
  ],
  "EGCO": [
   "bear",
-  "runup",
   "trap"
  ],
  "BGRIM": [
@@ -36,10 +27,15 @@
  ],
  "CPF": [
   "bear",
-  "runup",
   "trap"
  ],
  "SCC": [
   "bear"
+ ],
+ "KCE": [
+  "runup"
+ ],
+ "PTTGC": [
+  "exit"
  ]
 }
