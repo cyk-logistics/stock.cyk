@@ -8,6 +8,13 @@
  "OR": [
   "trap"
  ],
+ "CENTEL": [
+  "bear"
+ ],
+ "WHA": [
+  "bear",
+  "trap"
+ ],
  "EGCO": [
   "bear",
   "trap"
@@ -18,24 +25,11 @@
  "MTC": [
   "bear"
  ],
- "CENTEL": [
-  "bear"
- ],
- "WHA": [
-  "bear",
-  "trap"
- ],
  "CPF": [
   "bear",
   "trap"
  ],
  "SCC": [
   "bear"
- ],
- "KCE": [
-  "runup"
- ],
- "PTTGC": [
-  "exit"
  ]
 }
