@@ -2,14 +2,14 @@
  "CRC": [
   "bear"
  ],
+ "KCE": [
+  "runup"
+ ],
  "CPN": [
   "bear"
  ],
  "OR": [
   "trap"
- ],
- "CENTEL": [
-  "bear"
  ],
  "WHA": [
   "bear",
@@ -31,5 +31,8 @@
  ],
  "SCC": [
   "bear"
+ ],
+ "LH": [
+  "exit"
  ]
 }
