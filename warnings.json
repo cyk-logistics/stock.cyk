@@ -2,8 +2,12 @@
  "CRC": [
   "bear"
  ],
- "BJC": [
-  "runup"
+ "BGRIM": [
+  "bear"
+ ],
+ "BANPU": [
+  "runup",
+  "trap"
  ],
  "CPN": [
   "bear"
@@ -13,31 +17,26 @@
  ],
  "EGCO": [
   "bear",
-  "runup",
   "trap"
- ],
- "BGRIM": [
-  "bear"
  ],
  "MTC": [
   "bear"
  ],
- "CPF": [
-  "bear",
-  "trap"
- ],
  "CENTEL": [
   "bear"
- ],
- "SCC": [
-  "bear",
-  "runup"
  ],
  "WHA": [
   "bear",
   "trap"
  ],
- "KCE": [
-  "runup"
+ "CPF": [
+  "bear",
+  "trap"
+ ],
+ "SCC": [
+  "bear"
+ ],
+ "LH": [
+  "exit"
  ]
 }
