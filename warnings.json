@@ -1,33 +1,30 @@
 {
- "CRC": [
+ "MINT": [
   "bear"
- ],
- "BGRIM": [
-  "bear"
- ],
- "BANPU": [
-  "runup",
-  "trap"
  ],
  "CPN": [
   "bear"
  ],
- "OR": [
+ "GULF": [
+  "trap"
+ ],
+ "WHA": [
+  "bear",
+  "trap"
+ ],
+ "BANPU": [
+  "runup",
   "trap"
  ],
  "EGCO": [
   "bear",
   "trap"
  ],
+ "BGRIM": [
+  "bear"
+ ],
  "MTC": [
   "bear"
- ],
- "CENTEL": [
-  "bear"
- ],
- "WHA": [
-  "bear",
-  "trap"
  ],
  "CPF": [
   "bear",
