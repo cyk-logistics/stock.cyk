@@ -15,6 +15,7 @@ supportPct  = input.float(2.0, "ระยะใกล้แนวรับ EMA80
 pullLoPct   = input.float(5.0, "ย่อซื้อ: ต่ำกว่า EMA50 ได้ไม่เกิน (%)")
 pullHiPct   = input.float(3.0, "ย่อซื้อ: สูงกว่า EMA50 ได้ไม่เกิน (%)")
 volMult     = input.float(1.5, "วอลุ่มหนุน: กี่เท่าของเฉลี่ย 20 วัน")
+showPanel   = input.bool(true, "แสดงแผงสรุปสถานะ (มุมขวาบน)")
 
 osc    = ta.rsi(close, rsiLen)
 emaC   = ta.ema(close, confirmLen)
@@ -69,6 +70,13 @@ pbBuy    = uptrend and pullZone and macdX
 near800   = math.abs(close - ema800) / ema800 <= supportPct / 100
 atSupport = near800 and not near800[1]   // เพิ่งเข้าโซนแนวรับ (เตือนครั้งเดียว)
 
+// ===== สถานะเทคนิครวม (ตรรกะเดียวกับหน้าเว็บ "เทคนิคสวย") =====
+bullConfirm = bullDiv and close > emaC
+statusTxt = bearDiv ? "🔴 เลี่ยง" : (bullConfirm or pbBuy) ? "🟢 น่าเข้า" : (bullDiv or pullZone) ? "🟡 ใกล้จุดเข้า" : near800 ? "🟣 ที่แนวรับ" : osc < 35 ? "🔵 Oversold" : "⚪ เฝ้าดู"
+statusCol = bearDiv ? color.red : (bullConfirm or pbBuy) ? color.green : (bullDiv or pullZone) ? color.orange : near800 ? color.purple : osc < 35 ? color.blue : color.gray
+// อันดับสัญญาณเป็นตัวเลข (ให้ AI/Remix อ่านจาก Data Window ได้): 2=น่าเข้า 1=ใกล้ 0.5=แนวรับ 0.3=oversold 0=เฝ้าดู -1=เลี่ยง
+sigRank = bearDiv ? -1.0 : (bullConfirm or pbBuy) ? 2.0 : (bullDiv or pullZone) ? 1.0 : near800 ? 0.5 : osc < 35 ? 0.3 : 0.0
+
 // ===== Plot บนแพเนล RSI =====
 plot(plFound ? osc[lbR] : na, "BullLn", offset=-lbR, color = bullDiv ? color.green : color.new(color.white, 100), linewidth=2)
 plot(phFound ? osc[lbR] : na, "BearLn", offset=-lbR, color = bearDiv ? color.red   : color.new(color.white, 100), linewidth=2)
@@ -85,10 +93,34 @@ plotshape(sell,  "SELL",    style=shape.labeldown,  location=location.abovebar, 
 plotshape(pbBuy, "ย่อซื้อ", style=shape.labelup,    location=location.belowbar, text="ย่อซื้อ", color=color.teal, textcolor=color.white, size=size.small, force_overlay=true)
 plotshape(atSupport, "At EMA800", style=shape.diamond, location=location.belowbar, color=color.purple, size=size.small, force_overlay=true)
 
+// ===== ค่าตัวเลขใน Data Window (ให้ Remix/AI อ่านสถานะจากกราฟ) =====
+plot(sigRank,        "ATLS Signal (2=เข้า/-1=เลี่ยง)", display=display.data_window)
+plot(uptrend ? 1 : 0,"Uptrend (1=ขาขึ้น)",            display=display.data_window)
+plot((close - ema800) / ema800 * 100, "ระยะจาก EMA800 %", display=display.data_window)
 plot(buy       ? 1 : 0, "Buy Signal",   display=display.data_window)
 plot(sell      ? 1 : 0, "Sell Signal",  display=display.data_window)
 plot(pbBuy     ? 1 : 0, "Dip-Buy",      display=display.data_window)
 plot(atSupport ? 1 : 0, "At Support",   display=display.data_window)
+
+// ===== แผงสรุปสถานะ (มุมขวาบน) — ให้มองปราดเดียวรู้ + Remix อ่านสถานะกราฟได้ =====
+var table panel = table.new(position.top_right, 2, 7, border_width=1, frame_color=color.new(color.gray, 50), frame_width=1)
+if showPanel and barstate.islast
+    dist800 = (close - ema800) / ema800 * 100
+    lblBg = color.new(color.gray, 80)
+    table.cell(panel, 0, 0, "ATLS Signal", bgcolor=color.new(color.black, 0), text_color=color.white, text_size=size.small)
+    table.cell(panel, 1, 0, syminfo.ticker + " " + timeframe.period, bgcolor=color.new(color.black, 0), text_color=color.white, text_size=size.small)
+    table.cell(panel, 0, 1, "สถานะ", bgcolor=lblBg, text_color=color.silver, text_size=size.small)
+    table.cell(panel, 1, 1, statusTxt, bgcolor=color.new(statusCol, 20), text_color=color.white, text_size=size.small)
+    table.cell(panel, 0, 2, "เทรนด์", bgcolor=lblBg, text_color=color.silver, text_size=size.small)
+    table.cell(panel, 1, 2, uptrend ? "ขาขึ้น ▲" : "ขาลง ▼", text_color=uptrend ? color.green : color.red, text_size=size.small)
+    table.cell(panel, 0, 3, "RSI", bgcolor=lblBg, text_color=color.silver, text_size=size.small)
+    table.cell(panel, 1, 3, str.tostring(osc, "#") + (osc > 70 ? " ร้อน" : osc < 35 ? " เย็น" : " ปกติ"), text_color=osc > 70 ? color.red : osc < 35 ? color.green : color.gray, text_size=size.small)
+    table.cell(panel, 0, 4, "MACD", bgcolor=lblBg, text_color=color.silver, text_size=size.small)
+    table.cell(panel, 1, 4, macdLine > macdSig ? "ขึ้น ▲" : "ลง ▼", text_color=macdLine > macdSig ? color.green : color.red, text_size=size.small)
+    table.cell(panel, 0, 5, "EMA800", bgcolor=lblBg, text_color=color.silver, text_size=size.small)
+    table.cell(panel, 1, 5, (near800 ? "ที่แนวรับ " : "ห่าง ") + str.tostring(dist800, "+#.#") + "%", text_color=near800 ? color.purple : color.gray, text_size=size.small)
+    table.cell(panel, 0, 6, "ย่อซื้อ", bgcolor=lblBg, text_color=color.silver, text_size=size.small)
+    table.cell(panel, 1, 6, pbBuy ? "✅ ตอนนี้" : pullZone ? "โซน EMA50" : "—", text_color=pbBuy ? color.green : color.gray, text_size=size.small)
 
 // ===== Discord alerts =====
 volTxt  = volBoost ? " + วอลุ่มหนุน 💥" : ""
