@@ -1,7 +1,4 @@
 {
- "MINT": [
-  "bear"
- ],
  "CPN": [
   "bear"
  ],
@@ -9,12 +6,16 @@
   "trap"
  ],
  "WHA": [
-  "bear",
   "trap"
  ],
- "BANPU": [
-  "runup",
+ "CPF": [
   "trap"
+ ],
+ "OR": [
+  "trap"
+ ],
+ "MINT": [
+  "bear"
  ],
  "EGCO": [
   "bear",
@@ -25,15 +26,5 @@
  ],
  "MTC": [
   "bear"
- ],
- "CPF": [
-  "bear",
-  "trap"
- ],
- "SCC": [
-  "bear"
- ],
- "LH": [
-  "exit"
  ]
 }
