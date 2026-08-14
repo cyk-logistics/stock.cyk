@@ -1,4 +1,7 @@
 {
+ "RATCH": [
+  "bear"
+ ],
  "CPN": [
   "bear"
  ],
@@ -11,11 +14,14 @@
  "WHA": [
   "trap"
  ],
+ "KBANK": [
+  "bear"
+ ],
+ "TTB": [
+  "bear"
+ ],
  "OR": [
   "trap"
- ],
- "MINT": [
-  "bear"
  ],
  "EGCO": [
   "bear",
@@ -26,5 +32,14 @@
  ],
  "MTC": [
   "bear"
+ ],
+ "MINT": [
+  "bear"
+ ],
+ "KCE": [
+  "runup"
+ ],
+ "TU": [
+  "exit"
  ]
 }
