@@ -11,6 +11,9 @@
  "CPF": [
   "trap"
  ],
+ "LH": [
+  "trap"
+ ],
  "WHA": [
   "trap"
  ],
@@ -18,6 +21,9 @@
   "bear"
  ],
  "TTB": [
+  "bear"
+ ],
+ "MINT": [
   "bear"
  ],
  "OR": [
@@ -33,13 +39,10 @@
  "MTC": [
   "bear"
  ],
- "MINT": [
-  "bear"
- ],
  "KCE": [
   "runup"
  ],
- "TU": [
-  "exit"
+ "HANA": [
+  "runup"
  ]
 }
