@@ -2,19 +2,22 @@
  "RATCH": [
   "bear"
  ],
+ "EGCO": [
+  "trap"
+ ],
  "CPN": [
   "bear"
  ],
  "GULF": [
   "trap"
  ],
- "CPF": [
+ "WHA": [
   "trap"
  ],
  "LH": [
   "trap"
  ],
- "WHA": [
+ "CPF": [
   "trap"
  ],
  "KBANK": [
@@ -23,20 +26,19 @@
  "TTB": [
   "bear"
  ],
- "MINT": [
+ "TOP": [
   "bear"
  ],
  "OR": [
-  "trap"
- ],
- "EGCO": [
-  "bear",
   "trap"
  ],
  "BGRIM": [
   "bear"
  ],
  "MTC": [
+  "bear"
+ ],
+ "MINT": [
   "bear"
  ],
  "KCE": [
