@@ -705,7 +705,73 @@ def track_signals(results, path=SIGNALS_FILE, persist=True):
 
 
 WARN_FILE = Path(__file__).parent / "warnings.json"
+EDGE_FILE = Path(__file__).parent / "signal_edge.json"
 UPDATE_NOTE = ""   # รอบพักเที่ยงจะถูกตั้งเป็นหมายเหตุ "ราคาระหว่างวัน"
+
+
+def load_edge():
+    """อ่านผล backtest ความแม่นสัญญาณ (signal_edge.json) — None ถ้ายังไม่มี"""
+    try:
+        return json.loads(EDGE_FILE.read_text(encoding="utf-8"))
+    except Exception:
+        return None
+
+
+# แมปสถานะสด -> ชนิดสัญญาณใน signal_edge
+def _edge_key(status):
+    if "เข้าได้" in status or "รอยืนยัน" in status or "น่าเข้า" in status or "ใกล้จุดเข้า" in status:
+        return "bull_confirm"
+    if "แนวรับ" in status:
+        return "near800"
+    if "oversold" in status.lower() or "Oversold" in status:
+        return "oversold"
+    return None
+
+
+def edge_note(status, edge):
+    """ข้อความสั้นบอกสถิติอดีตของสัญญาณสถานะนี้ (ติดกำกับสัญญาณสด)"""
+    if not edge:
+        return ""
+    s = edge.get("signals", {}).get(_edge_key(status) or "", {})
+    if not s or not s.get("n"):
+        return ""
+    return f"อดีตแม่น {s['hit20']:.0f}% · edge {s['edge_avg']:+.1f}%/20วัน"
+
+
+def _edge_verdict(key, s):
+    if key == "bear_avoid":
+        return "⚠️ ขายตามไม่ได้ผล (ราคามักขึ้นต่อ)" if s["avg20"] > 0 else "✅ เลี่ยงถูก (ราคามักลง)"
+    e = s.get("edge_avg", 0)
+    return "✅ มีเอดจ์บวก" if e >= 0.5 else ("⚠️ แย่กว่าสุ่ม" if e < -0.2 else "➖ พอๆ กับสุ่ม")
+
+
+def edge_section_html(edge):
+    """ตาราง 'ความแม่นของสัญญาณ' สำหรับแปะบนเว็บ (headline ฟีเจอร์ขั้นสูง)"""
+    if not edge:
+        return ""
+    vcol = {"✅": "#0b6e4f", "➖": "#3a3f4b", "⚠️": "#7a2222"}
+    rows = ""
+    for k, lab in edge.get("labels", {}).items():
+        s = edge["signals"].get(k, {})
+        if not s.get("n"):
+            continue
+        v = _edge_verdict(k, s)
+        vc = next((c for e, c in vcol.items() if v.startswith(e)), "#3a3f4b")
+        ecol = "#5fe0c8" if s.get("edge_avg", 0) > 0 else "#ff8a8a"
+        rows += (f'<tr><td>{lab}</td><td class="num">{s["n"]:,}</td>'
+                 f'<td class="num">{s["hit20"]:.0f}%</td>'
+                 f'<td class="num" style="color:{ecol}">{s["edge_avg"]:+.2f}%</td>'
+                 f'<td class="num" style="color:#ff8a8a">{s["maxdd"]:.1f}%</td>'
+                 f'<td><span class="pill" style="background:{vc}">{v}</span></td></tr>')
+    return (f'<h2>🎯 ความแม่นของสัญญาณ — backtest 5 ปี ({edge["n_stocks"]} ตัว)</h2>'
+            f'<div class="sub" style="margin:-6px 0 10px">วัดจากทุกครั้งที่สัญญาณเกิดในอดีต → ผลตอบแทนล่วงหน้า 20 วันทำการ · '
+            f'<b>edge</b> = ดีกว่า "สุ่มซื้อถือ 20 วัน" กี่ % (baseline: แม่น {edge["baseline_hit"]:.0f}% · เฉลี่ย {edge["baseline_avg"]:+.2f}%) · '
+            f'อัปเดต {edge["as_of"]} · ⚠️ สถิติอดีต ไม่การันตีอนาคต + มี survivorship bias</div>'
+            f'<table style="max-width:860px"><thead><tr><th>สัญญาณ</th><th class="num">จำนวนครั้ง</th>'
+            f'<th class="num">แม่น%</th><th class="num">edge (vs สุ่ม)</th><th class="num">maxDD เฉลี่ย</th><th>สรุป</th></tr></thead>'
+            f'<tbody>{rows}</tbody></table>'
+            f'<div class="sub" style="margin-top:6px;font-size:11px">อ่านผลตรงๆ: สัญญาณ "ซื้อตอนแข็งแรง" (bull-div ยืนยัน / ย่อซื้อในขาขึ้น) มีเอดจ์บวกเล็กน้อย · '
+            f'"ซื้อตอนอ่อนแอ" (oversold / แตะแนวรับ) แทบไม่ต่างจากสุ่ม · เอดจ์ทั้งหมดเล็ก — ระบบนี้ช่วย "คัดกรอง+มีวินัย" ไม่ใช่เครื่องจักรทำเงิน</div>')
 
 
 def collect_warnings(results):
@@ -778,6 +844,9 @@ def build_digest(res_set, market, open_signals, new_msgs):
         L.append(f"🇹🇭 SET {market['level']:,.0f}  ({c1:+.1f}%/เดือน)  {mood}")
     L += [BAR, "🟢 เข้าซื้อได้ตอนนี้"]
     L += ["   • " + t for t in ent[:8]] if ent else ["   — ยังไม่มีจังหวะ (รอเงินสดถูกที่)"]
+    _en = edge_note("เข้าได้", load_edge()) if ent else ""
+    if _en:
+        L.append("   📊 สถิติ 5ปี: " + _en)
     if xd:
         L += ["", "📅 ใกล้ขึ้น XD (≤10 วัน)"] + [f"   • {r['ticker']}  ~{r['xd_next']}" for r in xd[:6]]
     if exits:
@@ -818,6 +887,9 @@ def build_flex(res_set, market, open_signals, new_msgs):
     if ent:
         body += [_ftxt("•  " + t, margin="sm") for t in ent[:8]]
         body.append(_ftxt("💎 = ปันผลคุณภาพ", size="xxs", color="#9AA4B0", margin="sm"))
+        _en = edge_note("เข้าได้", load_edge())
+        if _en:
+            body.append(_ftxt("📊 สถิติ 5ปี: " + _en, size="xxs", color="#9AA4B0", margin="sm"))
     else:
         body.append(_ftxt("— ยังไม่มีจังหวะ (รอเงินสดถูกที่)", margin="sm", color="#7D8590"))
 
@@ -891,7 +963,7 @@ MAI_NOTICE = ('<div style="background:#2a2014;border:1px solid #6e4a1f;border-ra
 
 def build_dashboard(results, market, signals, out_path,
                     title="📈 SET Dividend + Technical + Fundamental Screener",
-                    tabs="", notice="", mlabel="🇹🇭 ภาพรวมตลาด SET", secstats=None, warns=None):
+                    tabs="", notice="", mlabel="🇹🇭 ภาพรวมตลาด SET", secstats=None, warns=None, edge=None):
     keys = ("ticker", "price", "yield", "payout", "roe", "de", "epsg", "pe",
             "health", "health_color", "rsi", "trend", "score", "reasons", "id", "bear_div", "trap", "div_cut",
             "xd_last", "xd_next", "xd_days", "status", "status_color", "srank", "div_good", "turnaround", "comment", "fair_txt",
@@ -945,6 +1017,7 @@ def build_dashboard(results, market, signals, out_path,
                     '<th class="num">1 เดือน</th><th class="num">ขาขึ้น%</th><th class="num">RSI เฉลี่ย</th><th>สถานะกลุ่ม</th></tr></thead>'
                     f'<tbody>{_rows}</tbody></table>')
     html = html.replace("__SECTORS__", sec_html)
+    html = html.replace("__EDGE__", edge_section_html(edge))
     warn_html = ""
     if warns:
         _w = []
@@ -1099,6 +1172,8 @@ HTML_TEMPLATE = r"""<!DOCTYPE html>
   <div class="sub" style="margin:-6px 0 12px">เรียงตามความสำคัญ: 🟢 สัญญาณเข้าตอนนี้ → 📊 ตัวที่กำลังติดตามผล (ดูจังหวะออก) → 🏆 Top 5 น่าจัด → คะแนนรวมสูง</div>
   <div class="grid" id="charts"></div>
 
+  __EDGE__
+
   __WARNS__
 
   <div class="foot">
@@ -1246,7 +1321,7 @@ CHARTS.forEach(c=>{
 </html>"""
 
 
-def build_technical(results, market, out_path):
+def build_technical(results, market, out_path, edge=None):
     """หน้า 2: หุ้นเทคนิคสวย — เรียงตามคะแนนกราฟล้วนๆ (ไม่สนปันผล/งบ)"""
     res = sorted(results, key=lambda x: (x["tscore"], x["trank"]), reverse=True)
     keys = ("ticker", "id", "price", "rsi", "trend", "tscore", "tstatus", "tstatus_color", "trank",
@@ -1261,6 +1336,7 @@ def build_technical(results, market, out_path):
     html = TECH_TEMPLATE
     html = html.replace("/*__CSS__*/", CSS)
     html = html.replace("__TABS__", tabs_html("tech"))
+    html = html.replace("__EDGE__", edge_section_html(edge))
     html = html.replace("/*__ROWS__*/", json.dumps(table, ensure_ascii=False))
     html = html.replace("/*__CHARTS__*/", json.dumps(charts, ensure_ascii=False))
     now_ict = datetime.now(timezone.utc) + timedelta(hours=7)
@@ -1314,6 +1390,8 @@ TECH_TEMPLATE = r"""<!DOCTYPE html>
 
   <h2>กราฟคะแนนเทคนิคสูงสุด (Top 8)</h2>
   <div class="grid" id="charts"></div>
+
+  __EDGE__
 
   <div class="foot">
     ⚠ <b>สำคัญ:</b> หน้านี้คัดจากกราฟอย่างเดียว ไม่ได้กรองงบ/ปันผล — หุ้นกราฟสวยแต่งบแย่ก็ติดอันดับได้ → กด 💬 ดูคอมเมนต์งบก่อนตัดสินใจเสมอ<br>
@@ -1436,9 +1514,10 @@ if __name__ == "__main__":
         print(f"📊 track record: เปิดติดตาม {n_open} สัญญาณ · ปิดแล้ว {len(signals['closed'])}")
     warns_set = collect_warnings(res)
     open_all = list(signals["open"])
-    build_dashboard(res, market, signals, args.out, tabs=tabs_html("div"), secstats=secstats, warns=warns_set)
+    edge = load_edge()
+    build_dashboard(res, market, signals, args.out, tabs=tabs_html("div"), secstats=secstats, warns=warns_set, edge=edge)
     tech_out = str(Path(args.out).with_name("technical.html"))
-    build_technical(res, market, tech_out)
+    build_technical(res, market, tech_out, edge=edge)
     print(f"\n✅ สร้าง {args.out} + {tech_out} แล้ว ({len(res)} หุ้น)")
 
     # ---------- หน้า 3: กลุ่ม MAI ----------
@@ -1456,7 +1535,7 @@ if __name__ == "__main__":
         build_dashboard(res_mai, None, signals_mai, mai_out,
                         title="🚀 MAI Dividend + Technical Screener",
                         tabs=tabs_html("mai"), notice=MAI_NOTICE,
-                        mlabel="🚀 ภาพรวมกลุ่ม MAI (จากหุ้นที่สแกน)", secstats=secstats_mai, warns=warns_mai)
+                        mlabel="🚀 ภาพรวมกลุ่ม MAI (จากหุ้นที่สแกน)", secstats=secstats_mai, warns=warns_mai, edge=edge)
         print(f"✅ สร้าง {mai_out} แล้ว ({len(res_mai)} หุ้น MAI)")
     else:
         print("⚠ กลุ่ม MAI ดึงข้อมูลไม่ได้ — ข้ามหน้า mai.html รอบนี้")

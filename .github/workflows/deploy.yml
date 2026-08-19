@@ -27,6 +27,13 @@ jobs:
           python-version: '3.12'
       - name: ติดตั้ง dependencies
         run: pip install -r requirements.txt
+      - name: อัปเดตความแม่นสัญญาณ (backtest 5 ปี — สัปดาห์ละครั้ง วันจันทร์)
+        run: |
+          if [ "$(date -u +%u)" = "1" ] || [ ! -f signal_edge.json ]; then
+            echo "รัน signal_edge.py (จันทร์/ไฟล์หาย)"; python signal_edge.py || true
+          else
+            echo "ข้าม — ไม่ใช่วันจันทร์"
+          fi
       - name: สแกนหุ้น + สร้างหน้าเว็บ
         env:
           DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
@@ -40,8 +47,8 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add signals.json signals_mai.json warnings.json
-          git diff --cached --quiet || (git commit -m "Update signal track record [skip ci]" && git push)
+          git add signals.json signals_mai.json warnings.json signal_edge.json
+          git diff --cached --quiet || (git commit -m "Update signal track record + edge [skip ci]" && git push)
       - uses: actions/upload-pages-artifact@v3
         with:
           path: site

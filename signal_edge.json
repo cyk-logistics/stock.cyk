@@ -1,0 +1,77 @@
+{
+ "as_of": "2026-08-19",
+ "years": 5,
+ "n_stocks": 150,
+ "horizon_days": 20,
+ "baseline_hit": 40.9,
+ "baseline_avg": -0.55,
+ "labels": {
+  "bull_confirm": "🟢 เข้าได้ (Bull Div ยืนยันเหนือ EMA20)",
+  "dip_buy": "🟢 ย่อซื้อในขาขึ้น (โซน EMA50 + MACD ตัดขึ้น)",
+  "oversold": "🔵 Oversold (RSI ตัดลงใต้ 35)",
+  "near800": "🟣 ที่แนวรับใหญ่ (เข้าโซน EMA800 ±3%)",
+  "bear_avoid": "🔴 เลี่ยง (Bear Div ยืนยันใต้ EMA20)"
+ },
+ "signals": {
+  "bull_confirm": {
+   "n": 356,
+   "hit20": 44.1,
+   "avg20": 0.05,
+   "med20": -1.11,
+   "hit10": 39.9,
+   "avg10": -0.23,
+   "maxgain": 8.98,
+   "maxdd": -7.8,
+   "edge_hit": 3.2,
+   "edge_avg": 0.6
+  },
+  "dip_buy": {
+   "n": 1025,
+   "hit20": 46.4,
+   "avg20": 0.29,
+   "med20": 0.0,
+   "hit10": 46.0,
+   "avg10": 0.29,
+   "maxgain": 7.52,
+   "maxdd": -5.78,
+   "edge_hit": 5.5,
+   "edge_avg": 0.84
+  },
+  "oversold": {
+   "n": 5233,
+   "hit20": 43.3,
+   "avg20": -0.61,
+   "med20": -0.83,
+   "hit10": 45.2,
+   "avg10": -0.27,
+   "maxgain": 8.89,
+   "maxdd": -8.8,
+   "edge_hit": 2.4,
+   "edge_avg": -0.06
+  },
+  "near800": {
+   "n": 2897,
+   "hit20": 42.5,
+   "avg20": -0.51,
+   "med20": -0.93,
+   "hit10": 43.3,
+   "avg10": -0.22,
+   "maxgain": 7.77,
+   "maxdd": -7.14,
+   "edge_hit": 1.6,
+   "edge_avg": 0.04
+  },
+  "bear_avoid": {
+   "n": 270,
+   "hit20": 47.8,
+   "avg20": 0.55,
+   "med20": 0.0,
+   "hit10": 47.8,
+   "avg10": 0.2,
+   "maxgain": 9.07,
+   "maxdd": -7.3,
+   "edge_hit": 6.9,
+   "edge_avg": 1.1
+  }
+ }
+}
