@@ -2,7 +2,13 @@
  "RATCH": [
   "bear"
  ],
+ "TTB": [
+  "bear"
+ ],
  "EGCO": [
+  "trap"
+ ],
+ "LH": [
   "trap"
  ],
  "CPN": [
@@ -14,19 +20,10 @@
  "WHA": [
   "trap"
  ],
- "LH": [
-  "trap"
- ],
  "CPF": [
   "trap"
  ],
  "KBANK": [
-  "bear"
- ],
- "TTB": [
-  "bear"
- ],
- "TOP": [
   "bear"
  ],
  "OR": [
