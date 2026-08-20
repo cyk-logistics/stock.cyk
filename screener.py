@@ -474,6 +474,27 @@ def analyze(ticker, df, fund):
     else:
         fair_txt = "ข้อมูลไม่พอประเมิน"
 
+    # ===== โซนน่าเก็บ (buy zone) — ราคาเป้ารอเก็บ แม้ยังไม่มีสัญญาณ =====
+    # ขาขึ้น: โซน pullback รอบ EMA50 (จุดที่สัญญาณ "ย่อซื้อ" edge ดีสุดมักเกิด) · ขาลง: รอยืนเหนือ EMA200 ก่อน
+    low1m = float(low.tail(21).min())
+    if uptrend:
+        bz_hi = round(e50 * 1.02, 2)
+        bz_lo = round(min(e50 * 0.98, low1m), 2)
+        if price <= bz_hi:
+            buy_state = "in"
+            buy_txt = f"✅ อยู่ในโซนน่าเก็บแล้ว (~{bz_lo:g}–{bz_hi:g})"
+            buy_dist = 0.0
+        else:
+            buy_state = "wait"
+            buy_dist = round((bz_hi / price - 1) * 100, 1)   # ติดลบ = ต้องรอย่อ
+            buy_txt = f"🎯 รอเก็บ {bz_lo:g}–{bz_hi:g} ({buy_dist:+.0f}%)"
+    else:
+        bz_hi = round(e200, 2)
+        bz_lo = round(low52, 2)
+        buy_state = "recover"
+        buy_dist = round((e200 / price - 1) * 100, 1)
+        buy_txt = f"⏳ รอกลับตัว (ยืนเหนือ EMA200 ~{e200:.0f})"
+
     # ---------- ข้อมูลกราฟ ----------
     tail = df.tail(300)
     e20t, e50t, e200t, e800t = ema20.tail(300), ema50.tail(300), ema200.tail(300), ema800.tail(300)
@@ -515,6 +536,7 @@ def analyze(ticker, df, fund):
         "xd_last": xd_last, "xd_next": xd_next, "xd_days": xd_days,
         "status": status, "status_color": scolor, "srank": srank, "div_good": div_good, "turnaround": turnaround,
         "comment": comment, "fair_txt": fair_txt,
+        "buy_txt": buy_txt, "buy_state": buy_state, "buy_dist": buy_dist,
         "score": score, "reasons": reasons,
         "sector": sector_th(fund), "chg1m": round(chg1m, 1), "sec_heat": "",
         "tscore": tscore, "tstatus": tstatus, "tstatus_color": tcolor, "trank": trank, "treasons": treasons,
@@ -745,6 +767,32 @@ def _edge_verdict(key, s):
     return "✅ มีเอดจ์บวก" if e >= 0.5 else ("⚠️ แย่กว่าสุ่ม" if e < -0.2 else "➖ พอๆ กับสุ่ม")
 
 
+def buyzone_section_html(results):
+    """ช้อปปิ้งลิสต์ 'โซนน่าเก็บ' — หุ้นปันผลคุณภาพ + ราคาเป้ารอเก็บ (มีเสมอ แม้ไม่มีสัญญาณสด)"""
+    picks = sorted([r for r in results if r.get("div_good") and r.get("buy_state") in ("in", "wait")],
+                   key=lambda r: r.get("buy_dist", -99), reverse=True)[:8]
+    if not picks:
+        return ""
+    rows = ""
+    for r in picks:
+        inzone = r["buy_state"] == "in"
+        badge = ('<span class="pill" style="background:#0b6e4f">✅ อยู่ในโซนแล้ว</span>' if inzone
+                 else f'<span class="pill" style="background:#5a4a1f">🎯 รอย่อ {r["buy_dist"]:+.0f}%</span>')
+        xd = f'~{r["xd_next"]}' if r.get("xd_days") is not None and 0 <= r["xd_days"] <= 40 else "—"
+        zone = (r["buy_txt"].replace("🎯 รอเก็บ ", "").replace("✅ อยู่ในโซนน่าเก็บแล้ว ", "")
+                .replace("(~", "").replace(")", "").strip())
+        rows += (f'<tr><td><b style="cursor:pointer;color:#58a6ff" onclick="openComment(\'{r["ticker"]}\')">{r["ticker"]} 💬</b></td>'
+                 f'<td class="num">{r["price"]:.2f}</td><td class="num up">{r["yield"]:.1f}%</td>'
+                 f'<td style="white-space:nowrap">{zone}</td>'
+                 f'<td>{badge}</td><td style="white-space:nowrap;color:var(--mut);font-size:11px">{xd}</td></tr>')
+    return ('<h2>🎯 โซนน่าเก็บ — ช้อปปิ้งลิสต์หุ้นปันผลคุณภาพ</h2>'
+            '<div class="sub" style="margin:-6px 0 10px">ราคาเป้า "รอเก็บ" ของหุ้น 💎 งบแข็งแรง (โซนแนวรับ EMA50 + จุดต่ำ 1 เดือน = จุดที่สัญญาณ "ย่อซื้อในขาขึ้น" มักเกิด) · '
+            'เรียงจากใกล้โซนสุด · ตั้ง alert รอ แล้วค่อยเก็บเมื่อถึง — ไม่ต้องไล่ซื้อ</div>'
+            '<table style="max-width:820px"><thead><tr><th>หุ้น</th><th class="num">ราคาตอนนี้</th><th class="num">ยีลด์</th>'
+            '<th>โซนน่าเก็บ</th><th>สถานะ</th><th>XD ใกล้</th></tr></thead>'
+            f'<tbody>{rows}</tbody></table>')
+
+
 def edge_section_html(edge):
     """ตาราง 'ความแม่นของสัญญาณ' สำหรับแปะบนเว็บ (headline ฟีเจอร์ขั้นสูง)"""
     if not edge:
@@ -823,19 +871,29 @@ def _dig_line(res, want):
 SITE_URL = "https://cyk-logistics.github.io/stock.cyk/"
 
 
+def _buy_short(r):
+    if r.get("buy_state") == "in":
+        return "✅ อยู่ในโซนแล้ว"
+    return "รอ " + r.get("buy_txt", "").split("รอเก็บ ")[-1]
+
+
 def _digest_parts(res_set, market, open_signals, new_msgs):
     """คำนวณเนื้อหาสรุป (SET เท่านั้น — ไม่รวม MAI) ใช้ร่วมกันทั้ง text และ flex"""
     ent = _dig_line(res_set, lambda r: "เข้าได้" in r["status"])
     xd = sorted([r for r in res_set if r.get("xd_days") is not None and 0 <= r["xd_days"] <= 10 and r["yield"] > 0],
                 key=lambda r: r["xd_days"])
     exits = [s["ticker"] for s in open_signals if s.get("exit_st", "").startswith("🔴")]
-    return ent, xd, exits
+    # ช้อปปิ้งลิสต์: หุ้นปันผลคุณภาพ เรียงตามใกล้โซนน่าเก็บที่สุด (ในโซน > รอย่อนิดเดียว)
+    shop_rows = sorted([r for r in res_set if r.get("div_good") and r.get("buy_state") in ("in", "wait")],
+                       key=lambda r: r.get("buy_dist", -99), reverse=True)[:5]
+    shop = [(r["ticker"] + (" 💎" if r["div_good"] else ""), _buy_short(r)) for r in shop_rows]
+    return ent, xd, exits, shop
 
 
 def build_digest(res_set, market, open_signals, new_msgs):
     """สรุปแบบข้อความ (ใช้กับ Discord + altText ของ Flex + log) — SET เท่านั้น"""
     now = datetime.now(timezone.utc) + timedelta(hours=7)
-    ent, xd, exits = _digest_parts(res_set, market, open_signals, new_msgs)
+    ent, xd, exits, shop = _digest_parts(res_set, market, open_signals, new_msgs)
     BAR = "━━━━━━━━━━━━━━"
     L = [f"📊 stock.cyk — สรุปเย็น {now.day} {TH_MON[now.month]}"]
     if market:
@@ -843,10 +901,13 @@ def build_digest(res_set, market, open_signals, new_msgs):
         mood = "🐂 ขาขึ้น" if c1 > 1 else ("🐻 ขาลง" if c1 < -1 else "↔ ออกข้าง")
         L.append(f"🇹🇭 SET {market['level']:,.0f}  ({c1:+.1f}%/เดือน)  {mood}")
     L += [BAR, "🟢 เข้าซื้อได้ตอนนี้"]
-    L += ["   • " + t for t in ent[:8]] if ent else ["   — ยังไม่มีจังหวะ (รอเงินสดถูกที่)"]
+    L += ["   • " + t for t in ent[:8]] if ent else ["   — ยังไม่มีจังหวะ (ดูโซนน่าเก็บด้านล่าง)"]
     _en = edge_note("เข้าได้", load_edge()) if ent else ""
     if _en:
         L.append("   📊 สถิติ 5ปี: " + _en)
+    if shop:
+        L += ["", "🎯 โซนน่าเก็บ (หุ้นปันผลคุณภาพ — รอจังหวะ)"]
+        L += [f"   • {tk}  {z}" for tk, z in shop]
     if xd:
         L += ["", "📅 ใกล้ขึ้น XD (≤10 วัน)"] + [f"   • {r['ticker']}  ~{r['xd_next']}" for r in xd[:6]]
     if exits:
@@ -874,7 +935,7 @@ def _fsep():
 def build_flex(res_set, market, open_signals, new_msgs):
     """LINE Flex card — SET เท่านั้น (ไม่ส่ง MAI)"""
     now = datetime.now(timezone.utc) + timedelta(hours=7)
-    ent, xd, exits = _digest_parts(res_set, market, open_signals, new_msgs)
+    ent, xd, exits, shop = _digest_parts(res_set, market, open_signals, new_msgs)
     body = []
     if market:
         c1 = market.get("chg_1m") or 0
@@ -891,7 +952,13 @@ def build_flex(res_set, market, open_signals, new_msgs):
         if _en:
             body.append(_ftxt("📊 สถิติ 5ปี: " + _en, size="xxs", color="#9AA4B0", margin="sm"))
     else:
-        body.append(_ftxt("— ยังไม่มีจังหวะ (รอเงินสดถูกที่)", margin="sm", color="#7D8590"))
+        body.append(_ftxt("— ยังไม่มีจังหวะ (ดูโซนน่าเก็บ)", margin="sm", color="#7D8590"))
+
+    if shop:
+        body += [_fsep(), _ftxt("🎯 โซนน่าเก็บ (รอจังหวะ)", weight="bold", color="#1F7A4D")]
+        for tk, z in shop:
+            body.append({"type": "box", "layout": "baseline", "margin": "sm", "contents": [
+                _ftxt("•  " + tk, flex=0), _ftxt(z, align="end", size="xs", color="#555555")]})
 
     if xd:
         body += [_fsep(), _ftxt("📅 ใกล้ขึ้น XD (≤10 วัน)", weight="bold", color="#8A6D1F")]
@@ -967,7 +1034,7 @@ def build_dashboard(results, market, signals, out_path,
     keys = ("ticker", "price", "yield", "payout", "roe", "de", "epsg", "pe",
             "health", "health_color", "rsi", "trend", "score", "reasons", "id", "bear_div", "trap", "div_cut",
             "xd_last", "xd_next", "xd_days", "status", "status_color", "srank", "div_good", "turnaround", "comment", "fair_txt",
-            "sector", "sec_heat", "chg1m")
+            "buy_txt", "buy_state", "buy_dist", "sector", "sec_heat", "chg1m")
     table = [{k: r[k] for k in keys} for r in results]
     # กราฟ: เลือกตามที่ระบบ "แนะนำ/ติดตาม" จริง ไม่ใช่แค่คะแนนสูง — จะได้ตรงกับตารางแนะนำ
     by_tk, order, why = {r["ticker"]: r for r in results}, [], {}
@@ -1018,6 +1085,7 @@ def build_dashboard(results, market, signals, out_path,
                     f'<tbody>{_rows}</tbody></table>')
     html = html.replace("__SECTORS__", sec_html)
     html = html.replace("__EDGE__", edge_section_html(edge))
+    html = html.replace("__BUYZONE__", buyzone_section_html(results))
     warn_html = ""
     if warns:
         _w = []
@@ -1143,6 +1211,8 @@ HTML_TEMPLATE = r"""<!DOCTYPE html>
   <div class="sub" style="margin:-6px 0 12px">ลงทุน 1 ล้านบาท → ปันผล <b>ต่อปี</b> (สุทธิหลังหักภาษี 10%) • จ่ายจริงปีละ 1–2 ครั้งตามวัน XD ไม่ใช่รายเดือน • คัดจากหุ้น 💎 งบแข็งแรง</div>
   <div id="top5" class="top5"></div>
 
+  __BUYZONE__
+
   __XD__
 
   <h2>📊 ผลสัญญาณที่เคยแนะนำ — วัดผลจริง</h2>
@@ -1215,7 +1285,7 @@ function render(rows){
 render(ROWS);
 function openComment(tk){
   const r=ROWS.find(x=>x.ticker===tk); if(!r)return;
-  document.getElementById('modal-body').innerHTML=`<h2 style="margin:0 0 4px">${r.ticker} <span class="pill" style="background:${r.status_color};font-size:11px">${r.status}</span></h2><div class="sub" style="margin-bottom:12px">ราคา ${r.price.toFixed(2)} · ยีลด์ ${r.yield.toFixed(1)}% · กลุ่ม ${r.sector||'—'} ${r.sec_heat||''} · ลงล้าน ~${Math.round(9000*r.yield).toLocaleString()} ฿/ปี</div><div style="font-size:13px;background:#1a2130;border-radius:8px;padding:8px 11px;margin-bottom:12px">🎯 <b>ราคาเหมาะสม (ประเมิน):</b> ${r.fair_txt||'—'}</div><div style="font-size:13.5px;line-height:1.75">${r.comment||'—'}</div><div class="sub" style="margin-top:14px;font-size:11px">💬 คอมเมนต์สร้างอัตโนมัติจากงบ/ราคา (yfinance) • ไม่ใช่คำแนะนำลงทุน</div>`;
+  document.getElementById('modal-body').innerHTML=`<h2 style="margin:0 0 4px">${r.ticker} <span class="pill" style="background:${r.status_color};font-size:11px">${r.status}</span></h2><div class="sub" style="margin-bottom:12px">ราคา ${r.price.toFixed(2)} · ยีลด์ ${r.yield.toFixed(1)}% · กลุ่ม ${r.sector||'—'} ${r.sec_heat||''} · ลงล้าน ~${Math.round(9000*r.yield).toLocaleString()} ฿/ปี</div><div style="font-size:13px;background:#1a2130;border-radius:8px;padding:8px 11px;margin-bottom:8px">🎯 <b>ราคาเหมาะสม (ประเมิน):</b> ${r.fair_txt||'—'}</div><div style="font-size:13px;background:#10261b;border:1px solid #2c6e4f;border-radius:8px;padding:8px 11px;margin-bottom:12px">🛒 <b>โซนน่าเก็บ:</b> ${r.buy_txt||'—'}</div><div style="font-size:13.5px;line-height:1.75">${r.comment||'—'}</div><div class="sub" style="margin-top:14px;font-size:11px">💬 คอมเมนต์สร้างอัตโนมัติจากงบ/ราคา (yfinance) • ไม่ใช่คำแนะนำลงทุน</div>`;
   document.getElementById('modal').classList.add('show');
 }
 function closeModal(){document.getElementById('modal').classList.remove('show');}
