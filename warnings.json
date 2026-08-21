@@ -1,31 +1,36 @@
 {
- "TTB": [
-  "bear"
- ],
- "RATCH": [
-  "bear",
-  "trap"
- ],
  "CPN": [
   "bear"
  ],
  "GULF": [
   "trap"
  ],
- "EGCO": [
-  "trap"
- ],
- "CPF": [
-  "trap"
- ],
  "WHA": [
   "trap"
+ ],
+ "AWC": [
+  "bear"
  ],
  "KBANK": [
   "bear"
  ],
+ "CPF": [
+  "trap"
+ ],
+ "TTB": [
+  "bear"
+ ],
+ "MINT": [
+  "bear"
+ ],
+ "CENTEL": [
+  "bear"
+ ],
  "BCP": [
   "bear"
+ ],
+ "EGCO": [
+  "trap"
  ],
  "LH": [
   "trap"
@@ -33,13 +38,14 @@
  "OR": [
   "trap"
  ],
+ "RATCH": [
+  "bear",
+  "trap"
+ ],
  "BGRIM": [
   "bear"
  ],
  "MTC": [
-  "bear"
- ],
- "MINT": [
   "bear"
  ],
  "KCE": [
