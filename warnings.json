@@ -2,14 +2,17 @@
  "GULF": [
   "trap"
  ],
- "CPN": [
+ "AWC": [
   "bear"
  ],
- "AWC": [
+ "BJC": [
   "bear"
  ],
  "WHA": [
   "trap"
+ ],
+ "CRC": [
+  "bear"
  ],
  "RATCH": [
   "bear",
@@ -24,22 +27,13 @@
  "KCE": [
   "runup"
  ],
- "MINT": [
-  "bear"
- ],
- "CENTEL": [
-  "bear"
- ],
- "MTC": [
-  "bear"
- ],
- "CPF": [
-  "trap"
- ],
  "BCP": [
   "bear"
  ],
  "EGCO": [
+  "trap"
+ ],
+ "CPF": [
   "trap"
  ],
  "LH": [
@@ -48,7 +42,13 @@
  "OR": [
   "trap"
  ],
- "BGRIM": [
+ "MTC": [
+  "bear"
+ ],
+ "MINT": [
+  "bear"
+ ],
+ "CENTEL": [
   "bear"
  ],
  "HANA": [
