@@ -2,6 +2,9 @@
  "GULF": [
   "trap"
  ],
+ "BCP": [
+  "bear"
+ ],
  "AWC": [
   "bear"
  ],
@@ -14,12 +17,11 @@
  "CRC": [
   "bear"
  ],
- "RATCH": [
-  "bear",
-  "trap"
- ],
  "KBANK": [
   "bear"
+ ],
+ "CPF": [
+  "trap"
  ],
  "TTB": [
   "bear"
@@ -27,20 +29,21 @@
  "KCE": [
   "runup"
  ],
- "BCP": [
-  "bear"
- ],
- "EGCO": [
+ "OR": [
   "trap"
  ],
- "CPF": [
+ "EGCO": [
   "trap"
  ],
  "LH": [
   "trap"
  ],
- "OR": [
+ "RATCH": [
+  "bear",
   "trap"
+ ],
+ "BGRIM": [
+  "bear"
  ],
  "MTC": [
   "bear"
