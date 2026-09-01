@@ -2,14 +2,14 @@
  "GULF": [
   "trap"
  ],
- "OR": [
-  "trap"
+ "CRC": [
+  "bear"
+ ],
+ "AWC": [
+  "bear"
  ],
  "WHA": [
   "trap"
- ],
- "CRC": [
-  "bear"
  ],
  "KBANK": [
   "bear"
@@ -20,11 +20,11 @@
  "IVL": [
   "runup"
  ],
- "AWC": [
-  "bear"
- ],
  "BCP": [
   "bear"
+ ],
+ "OR": [
+  "trap"
  ],
  "EGCO": [
   "trap"
