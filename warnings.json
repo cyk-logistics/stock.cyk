@@ -2,14 +2,8 @@
  "GULF": [
   "trap"
  ],
- "BCP": [
-  "bear"
- ],
- "AWC": [
-  "bear"
- ],
- "BJC": [
-  "bear"
+ "OR": [
+  "trap"
  ],
  "WHA": [
   "trap"
@@ -20,17 +14,17 @@
  "KBANK": [
   "bear"
  ],
- "CPF": [
-  "trap"
- ],
  "TTB": [
   "bear"
  ],
- "KCE": [
+ "IVL": [
   "runup"
  ],
- "OR": [
-  "trap"
+ "AWC": [
+  "bear"
+ ],
+ "BCP": [
+  "bear"
  ],
  "EGCO": [
   "trap"
@@ -48,13 +42,22 @@
  "MTC": [
   "bear"
  ],
+ "BJC": [
+  "bear"
+ ],
  "MINT": [
   "bear"
  ],
  "CENTEL": [
   "bear"
  ],
+ "KCE": [
+  "runup"
+ ],
  "HANA": [
   "runup"
+ ],
+ "TU": [
+  "exit"
  ]
 }
