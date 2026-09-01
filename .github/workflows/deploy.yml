@@ -22,6 +22,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0        # ให้มีประวัติพอ rebase ตอน push track record กลับ
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
@@ -43,12 +45,17 @@ jobs:
           EXTRA=""
           if [ "${{ github.event.schedule }}" = "35 5 * * 1-5" ]; then EXTRA="--intraday"; fi
           python screener.py --out site/index.html $EXTRA
-      - name: บันทึก track record กลับ repo
+      - name: บันทึก track record กลับ repo (best-effort — ห้ามทำ deploy ล้ม)
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add signals.json signals_mai.json warnings.json signal_edge.json
-          git diff --cached --quiet || (git commit -m "Update signal track record + edge [skip ci]" && git push)
+          if ! git diff --cached --quiet; then
+            git commit -m "Update signal track record + edge [skip ci]"
+            git pull --rebase --autostash origin main || git rebase --abort || true
+            git push || echo "⚠ push ไม่ผ่าน (ชนกัน) — track record จะอัปเดตรอบหน้า ไม่กระทบเว็บ/LINE"
+          fi
+        continue-on-error: true   # step นี้ล้มไม่ทำให้ทั้ง job ล้ม (เว็บ+LINE ต้องไปต่อได้)
       - uses: actions/upload-pages-artifact@v3
         with:
           path: site
