@@ -544,11 +544,40 @@ def analyze(ticker, df, fund):
     }
 
 
+def _download_prices(yq, tries=4):
+    """ดึงราคาแบบ bulk + retry (yfinance บน CI โดน Yahoo rate-limit เป็นครั้งคราว รอบเย็นบ่อย)"""
+    import time
+    raw = None
+    for k in range(tries):
+        try:
+            raw = yf.download(yq, period="5y", interval="1d", group_by="ticker",
+                              auto_adjust=False, actions=True, progress=False, threads=True)
+            ok = 0
+            try:
+                lvl0 = list(raw.columns.get_level_values(0))
+                for tq in yq:
+                    if tq in lvl0 and not raw[tq]["Close"].dropna().empty:
+                        ok += 1
+            except Exception:
+                ok = 0
+            if ok >= max(5, len(yq) // 3):    # ได้ข้อมูลพอใช้ (≥1/3 หรืออย่างน้อย 5 ตัว)
+                if k:
+                    print(f"   ✓ ดึงสำเร็จรอบที่ {k + 1} ({ok}/{len(yq)} ตัว)")
+                return raw
+            print(f"   ⚠ รอบ {k + 1}: ได้แค่ {ok}/{len(yq)} ตัว — ลองใหม่")
+        except Exception as e:
+            print(f"   ⚠ รอบ {k + 1} ดึงพลาด: {str(e)[:80]} — ลองใหม่")
+        if k < tries - 1:
+            time.sleep(20 * (k + 1))          # backoff 20/40/60 วิ
+    return raw
+
+
 def run(tickers):
     yq = [t + ".BK" for t in tickers]
     print(f"⬇  ราคา/ปันผล {len(yq)} ตัว ...")
-    raw = yf.download(yq, period="5y", interval="1d", group_by="ticker",
-                      auto_adjust=False, actions=True, progress=False, threads=True)
+    raw = _download_prices(yq)
+    if raw is None or not len(raw):
+        return []
     print(f"⬇  งบการเงิน {len(yq)} ตัว ...")
     funds = fetch_fundamentals(yq)
 
@@ -1564,7 +1593,11 @@ if __name__ == "__main__":
     tk = TICKERS[:args.limit] if args.limit else TICKERS
     res = run(tk)
     if not res:
-        print("❌ ไม่ได้ข้อมูล — เช็คอินเทอร์เน็ต/ชื่อหุ้น")
+        print("❌ ไม่ได้ข้อมูล — yfinance โดน rate-limit/ล่ม")
+        if not args.intraday:   # อย่าเงียบ — แจ้ง LINE ว่ารอบนี้ดึงข้อมูลไม่ได้ (กันเข้าใจผิดว่าระบบตาย)
+            now = datetime.now(timezone.utc) + timedelta(hours=7)
+            send_alert(f"⚠️ stock.cyk — รอบเย็น {now.day} {TH_MON[now.month]} ดึงข้อมูลไม่ได้ "
+                       f"(yfinance โดน rate-limit) · ระบบยังปกติ ไว้พรุ่งนี้ลองใหม่ · ดูเว็บ: {SITE_URL}")
         raise SystemExit(1)
 
     print(f"\n{'หุ้น':<8}{'ราคา':>8}{'ปผ%':>6}{'Pay%':>6}{'กำไรโต%':>8}{'งบ':>10}{'คะแนน':>7}  สัญญาณ")
