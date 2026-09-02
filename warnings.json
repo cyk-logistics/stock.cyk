@@ -2,13 +2,11 @@
  "GULF": [
   "trap"
  ],
- "CRC": [
-  "bear"
- ],
- "AWC": [
-  "bear"
- ],
  "WHA": [
+  "trap"
+ ],
+ "RATCH": [
+  "bear",
   "trap"
  ],
  "KBANK": [
@@ -19,6 +17,9 @@
  ],
  "IVL": [
   "runup"
+ ],
+ "AWC": [
+  "bear"
  ],
  "BCP": [
   "bear"
@@ -32,10 +33,6 @@
  "LH": [
   "trap"
  ],
- "RATCH": [
-  "bear",
-  "trap"
- ],
  "BGRIM": [
   "bear"
  ],
@@ -45,19 +42,10 @@
  "BJC": [
   "bear"
  ],
- "MINT": [
-  "bear"
- ],
- "CENTEL": [
-  "bear"
- ],
  "KCE": [
   "runup"
  ],
  "HANA": [
   "runup"
- ],
- "TU": [
-  "exit"
  ]
 }
