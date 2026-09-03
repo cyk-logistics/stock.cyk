@@ -2,18 +2,17 @@
  "GULF": [
   "trap"
  ],
- "WHA": [
-  "trap"
- ],
- "RATCH": [
-  "bear",
-  "trap"
+ "BJC": [
+  "bear"
  ],
  "KBANK": [
   "bear"
  ],
  "TTB": [
   "bear"
+ ],
+ "WHA": [
+  "trap"
  ],
  "IVL": [
   "runup"
@@ -33,13 +32,13 @@
  "LH": [
   "trap"
  ],
+ "RATCH": [
+  "bear"
+ ],
  "BGRIM": [
   "bear"
  ],
  "MTC": [
-  "bear"
- ],
- "BJC": [
   "bear"
  ],
  "KCE": [
