@@ -1,15 +1,22 @@
 {
  "open": [
   {
-   "ticker": "TU",
-   "date": "2026-07-08",
-   "entry": 11.7,
-   "last": 13.1,
-   "ret": 11.97,
-   "peak": 14.53,
-   "days": 58,
-   "exit_st": "🟢 ถือต่อได้",
-   "exit": ""
+   "ticker": "DELTA",
+   "date": "2026-09-07",
+   "entry": 276.0,
+   "last": 276.0,
+   "ret": 0.0,
+   "peak": 0.0,
+   "days": 0
+  },
+  {
+   "ticker": "COM7",
+   "date": "2026-09-07",
+   "entry": 30.0,
+   "last": 30.0,
+   "ret": 0.0,
+   "peak": 0.0,
+   "days": 0
   }
  ],
  "closed": [
@@ -50,6 +57,19 @@
    "exit_st": "🟡 ระวัง/แบ่งขาย",
    "exit": "RSI ร้อน (74) — พิจารณาแบ่งขายล็อกกำไร",
    "exit_date": "2026-09-01",
+   "win": true
+  },
+  {
+   "ticker": "TU",
+   "date": "2026-07-08",
+   "entry": 11.7,
+   "last": 13.2,
+   "ret": 12.82,
+   "peak": 14.53,
+   "days": 61,
+   "exit_st": "🟢 ถือต่อได้",
+   "exit": "",
+   "exit_date": "2026-09-07",
    "win": true
   }
  ]
