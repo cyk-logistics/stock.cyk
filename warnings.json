@@ -2,9 +2,6 @@
  "GULF": [
   "trap"
  ],
- "WHA": [
-  "trap"
- ],
  "TTB": [
   "bear"
  ],
@@ -14,16 +11,16 @@
  "BJC": [
   "bear"
  ],
- "LH": [
+ "WHA": [
   "trap"
  ],
  "KBANK": [
   "bear"
  ],
- "IVL": [
-  "runup"
- ],
  "OR": [
+  "trap"
+ ],
+ "LH": [
   "trap"
  ],
  "EGCO": [
@@ -36,10 +33,17 @@
  "MTC": [
   "bear"
  ],
+ "IVL": [
+  "runup"
+ ],
  "KCE": [
+  "bear",
   "runup"
  ],
  "HANA": [
   "runup"
+ ],
+ "COM7": [
+  "exit"
  ]
 }
