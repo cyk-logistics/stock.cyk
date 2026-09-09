@@ -1,9 +1,15 @@
 {
- "GULF": [
-  "trap"
+ "KBANK": [
+  "bear"
  ],
  "TTB": [
   "bear"
+ ],
+ "GULF": [
+  "trap"
+ ],
+ "LH": [
+  "trap"
  ],
  "BCP": [
   "bear"
@@ -14,13 +20,7 @@
  "WHA": [
   "trap"
  ],
- "KBANK": [
-  "bear"
- ],
  "OR": [
-  "trap"
- ],
- "LH": [
   "trap"
  ],
  "EGCO": [
