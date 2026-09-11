@@ -1,0 +1,10 @@
+{
+  "_readme": "คัดเป็น settrade_config.json แล้วเติมค่าจริง (ไฟล์จริงอยู่ใน .gitignore ไม่ถูก commit). App Secret เป็น base64 ยาว ดูได้ครั้งเดียวตอน Regenerate → copy ทันที. อย่าส่ง secret นี้ให้ใครหรือแปะในแชท.",
+  "_sandbox_note": "ค่าด้านล่าง = ใช้จริงกับ InnovestX (broker 023, is_sandbox=false). อ่านข้อมูลอย่างเดียวปลอดภัย ไม่มีคำสั่งซื้อขาย. ถ้าจะลอง Sandbox ของ Settrade ให้ใช้ broker_id 098 + is_sandbox true + App ID/Secret จากเว็บ sandbox ของ Settrade (คนละชุดกับ InnovestX).",
+  "app_id": "<App ID จากพอร์ทัล InnovestX>",
+  "app_secret": "<App Secret (base64 ยาว) — ดูได้ครั้งเดียว>",
+  "app_code": "<App Code ของ Equity (หุ้น)>",
+  "broker_id": "023",
+  "account_no": "<เลขบัญชีหุ้นของคุณ>",
+  "is_sandbox": false
+}
