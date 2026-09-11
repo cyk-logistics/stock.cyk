@@ -11,23 +11,26 @@
  "BJC": [
   "bear"
  ],
- "WHA": [
-  "trap"
+ "HANA": [
+  "runup"
  ],
- "LH": [
+ "WHA": [
   "trap"
  ],
  "OR": [
   "trap"
  ],
+ "MTC": [
+  "bear"
+ ],
  "EGCO": [
   "bear",
   "trap"
  ],
- "BGRIM": [
-  "bear"
+ "LH": [
+  "trap"
  ],
- "MTC": [
+ "BGRIM": [
   "bear"
  ],
  "IVL": [
@@ -35,9 +38,6 @@
  ],
  "KCE": [
   "bear",
-  "runup"
- ],
- "HANA": [
   "runup"
  ],
  "COM7": [
