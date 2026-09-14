@@ -1,10 +1,10 @@
 {
- "as_of": "2026-09-07",
+ "as_of": "2026-09-14",
  "years": 5,
  "n_stocks": 149,
  "horizon_days": 20,
  "baseline_hit": 40.8,
- "baseline_avg": -0.56,
+ "baseline_avg": NaN,
  "labels": {
   "bull_confirm": "🟢 เข้าได้ (Bull Div ยืนยันเหนือ EMA20)",
   "dip_buy": "🟢 ย่อซื้อในขาขึ้น (โซน EMA50 + MACD ตัดขึ้น)",
@@ -14,64 +14,64 @@
  },
  "signals": {
   "bull_confirm": {
-   "n": 361,
+   "n": 359,
    "hit20": 44.0,
-   "avg20": -0.01,
+   "avg20": -0.1,
    "med20": -1.11,
-   "hit10": 40.4,
-   "avg10": -0.14,
+   "hit10": 40.1,
+   "avg10": -0.16,
    "maxgain": 8.98,
-   "maxdd": -7.77,
+   "maxdd": -7.83,
    "edge_hit": 3.2,
-   "edge_avg": 0.55
+   "edge_avg": NaN
   },
   "dip_buy": {
-   "n": 949,
+   "n": 931,
    "hit20": 44.8,
-   "avg20": -0.18,
+   "avg20": -0.26,
    "med20": 0.0,
-   "hit10": 42.1,
-   "avg10": -0.1,
-   "maxgain": 6.82,
-   "maxdd": -6.14,
+   "hit10": 41.5,
+   "avg10": -0.22,
+   "maxgain": 6.83,
+   "maxdd": -6.11,
    "edge_hit": 4.0,
-   "edge_avg": 0.38
+   "edge_avg": NaN
   },
   "oversold": {
-   "n": 5238,
-   "hit20": 43.3,
+   "n": 5255,
+   "hit20": 43.2,
    "avg20": -0.58,
-   "med20": -0.83,
-   "hit10": 45.1,
-   "avg10": -0.24,
-   "maxgain": 8.91,
-   "maxdd": -8.82,
-   "edge_hit": 2.5,
-   "edge_avg": -0.02
+   "med20": -0.85,
+   "hit10": 44.5,
+   "avg10": -0.31,
+   "maxgain": 8.9,
+   "maxdd": -8.81,
+   "edge_hit": 2.4,
+   "edge_avg": NaN
   },
   "near800": {
-   "n": 2906,
-   "hit20": 40.1,
-   "avg20": -0.63,
+   "n": 2860,
+   "hit20": 40.3,
+   "avg20": -0.62,
    "med20": -1.23,
-   "hit10": 41.7,
-   "avg10": -0.24,
-   "maxgain": 8.05,
-   "maxdd": -7.52,
-   "edge_hit": -0.7,
-   "edge_avg": -0.07
+   "hit10": 42.1,
+   "avg10": -0.1,
+   "maxgain": 7.81,
+   "maxdd": -7.43,
+   "edge_hit": -0.5,
+   "edge_avg": NaN
   },
   "bear_avoid": {
-   "n": 261,
-   "hit20": 47.9,
-   "avg20": 0.52,
+   "n": 264,
+   "hit20": 47.3,
+   "avg20": 0.4,
    "med20": 0.0,
-   "hit10": 47.5,
-   "avg10": 0.23,
-   "maxgain": 9.06,
+   "hit10": 47.3,
+   "avg10": 0.13,
+   "maxgain": 8.8,
    "maxdd": -7.25,
-   "edge_hit": 7.1,
-   "edge_avg": 1.08
+   "edge_hit": 6.5,
+   "edge_avg": NaN
   }
  }
 }
