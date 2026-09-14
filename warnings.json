@@ -1,8 +1,12 @@
 {
- "KBANK": [
-  "bear"
- ],
  "GULF": [
+  "trap"
+ ],
+ "RATCH": [
+  "trap"
+ ],
+ "EGCO": [
+  "bear",
   "trap"
  ],
  "BCP": [
@@ -11,8 +15,11 @@
  "BJC": [
   "bear"
  ],
- "HANA": [
-  "runup"
+ "KBANK": [
+  "bear"
+ ],
+ "BGRIM": [
+  "bear"
  ],
  "WHA": [
   "trap"
@@ -23,15 +30,8 @@
  "MTC": [
   "bear"
  ],
- "EGCO": [
-  "bear",
-  "trap"
- ],
  "LH": [
   "trap"
- ],
- "BGRIM": [
-  "bear"
  ],
  "IVL": [
   "runup"
@@ -39,6 +39,12 @@
  "KCE": [
   "bear",
   "runup"
+ ],
+ "HANA": [
+  "runup"
+ ],
+ "DELTA": [
+  "exit"
  ],
  "COM7": [
   "exit"
