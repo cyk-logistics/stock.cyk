@@ -2,18 +2,21 @@
  "GULF": [
   "trap"
  ],
- "RATCH": [
-  "trap"
- ],
- "EGCO": [
-  "bear",
-  "trap"
- ],
  "BCP": [
   "bear"
  ],
  "BJC": [
   "bear"
+ ],
+ "WHA": [
+  "trap"
+ ],
+ "LH": [
+  "trap"
+ ],
+ "EGCO": [
+  "bear",
+  "trap"
  ],
  "KBANK": [
   "bear"
@@ -21,8 +24,8 @@
  "BGRIM": [
   "bear"
  ],
- "WHA": [
-  "trap"
+ "AWC": [
+  "bear"
  ],
  "OR": [
   "trap"
@@ -30,17 +33,11 @@
  "MTC": [
   "bear"
  ],
- "LH": [
-  "trap"
- ],
  "IVL": [
   "runup"
  ],
  "KCE": [
   "bear",
-  "runup"
- ],
- "HANA": [
   "runup"
  ],
  "DELTA": [
