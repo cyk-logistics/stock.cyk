@@ -2,10 +2,19 @@
  "GULF": [
   "trap"
  ],
+ "EGCO": [
+  "trap"
+ ],
+ "PTT": [
+  "bear"
+ ],
  "BCP": [
   "bear"
  ],
  "BJC": [
+  "bear"
+ ],
+ "KBANK": [
   "bear"
  ],
  "WHA": [
@@ -13,19 +22,6 @@
  ],
  "LH": [
   "trap"
- ],
- "EGCO": [
-  "bear",
-  "trap"
- ],
- "KBANK": [
-  "bear"
- ],
- "BGRIM": [
-  "bear"
- ],
- "AWC": [
-  "bear"
  ],
  "OR": [
   "trap"
@@ -41,9 +37,6 @@
   "runup"
  ],
  "DELTA": [
-  "exit"
- ],
- "COM7": [
   "exit"
  ]
 }
