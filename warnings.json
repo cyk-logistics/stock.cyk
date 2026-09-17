@@ -2,31 +2,37 @@
  "GULF": [
   "trap"
  ],
+ "BCP": [
+  "bear"
+ ],
  "EGCO": [
   "trap"
  ],
  "PTT": [
   "bear"
  ],
- "BCP": [
+ "WHA": [
+  "trap"
+ ],
+ "KBANK": [
   "bear"
  ],
  "BJC": [
   "bear"
  ],
- "KBANK": [
-  "bear"
- ],
- "WHA": [
+ "OR": [
   "trap"
  ],
  "LH": [
   "trap"
  ],
- "OR": [
-  "trap"
+ "PTTGC": [
+  "bear"
  ],
  "MTC": [
+  "bear"
+ ],
+ "SCC": [
   "bear"
  ],
  "IVL": [
