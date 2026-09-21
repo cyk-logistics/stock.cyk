@@ -1,0 +1,30 @@
+name: Daily Stock Scan (news x chart x volume)
+
+on:
+  schedule:
+    - cron: '30 1 * * 1-5'    # ~08:30 ICT วันธรรมดา (ก่อนเปิดตลาด) — เวลาเป็น UTC
+  workflow_dispatch:            # กดรันเองได้จากหน้า Actions
+
+permissions:
+  contents: read
+
+concurrency:
+  group: daily-scan
+  cancel-in-progress: false
+
+jobs:
+  scan:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: สแกนหุ้น (ข่าว×กราฟ×วอลลุ่ม) + ส่ง LINE
+        env:
+          STOCK_API_KEY: ${{ secrets.STOCK_API_KEY }}
+          STOCK_LINE_HOOK: ${{ secrets.STOCK_LINE_HOOK }}
+          DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
+          SCAN_API_BASE: https://live.atlog.asia
+          SCAN_TOP: '7'
+        run: python scan_daily.py
