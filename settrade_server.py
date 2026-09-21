@@ -51,28 +51,82 @@ def cq(sym):
     return _cached("q:" + sym, QUOTE_TTL, lambda: data().quote(sym))
 
 
-def _candles(sym, interval, limit, normalized=False, iso=False):
-    """candles แบบ cache · iso=True -> time เป็น ISO 8601 +07:00 · normalized -> ปรับ corporate action"""
-    key = f"c:{sym}:{interval}:{limit}:{int(bool(normalized))}:{int(bool(iso))}"
+TF_SECONDS = {"1m": 60, "5m": 300, "15m": 900, "30m": 1800, "60m": 3600, "1d": 86400, "1w": 604800}
+
+
+def _raw(sym, interval, limit, normalized=False):
+    """แท่งดิบ (cache) — list ของ {t(unix), open, high, low, close, volume}"""
+    key = f"r:{sym}:{interval}:{limit}:{int(bool(normalized))}"
 
     def build():
         c = data().candles(sym, interval=interval, limit=limit, normalized=normalized or None)
         ts, o, h, l, cl = c["time"], c["open"], c["high"], c["low"], c["close"]
         vol = c.get("volume", [])
-        daily = interval in ("1d", "1w", "1M")
-        out = []
-        for i in range(len(ts)):
-            t = ts[i]
-            if iso:
-                tv = datetime.fromtimestamp(t, tz=BKK).isoformat()          # 2026-09-21T16:00:00+07:00
-            elif daily:
-                tv = datetime.fromtimestamp(t, tz=timezone.utc).strftime("%Y-%m-%d")
-            else:
-                tv = int(t)
-            out.append({"time": tv, "open": o[i], "high": h[i], "low": l[i], "close": cl[i],
-                        "volume": vol[i] if i < len(vol) else 0})
-        return out
+        return [{"t": int(ts[i]), "open": o[i], "high": h[i], "low": l[i], "close": cl[i],
+                 "volume": vol[i] if i < len(vol) else 0} for i in range(len(ts))]
     return _cached(key, CANDLE_TTL, build)
+
+
+def _candles(sym, interval, limit, normalized=False, iso=False):
+    """รูปแบบสำหรับหน้าเว็บ/UI (Lightweight Charts)"""
+    daily = interval in ("1d", "1w", "1M")
+    out = []
+    for r in _raw(sym, interval, limit, normalized):
+        t = r["t"]
+        if iso:
+            tv = datetime.fromtimestamp(t, tz=BKK).isoformat()
+        elif daily:
+            tv = datetime.fromtimestamp(t, tz=timezone.utc).strftime("%Y-%m-%d")
+        else:
+            tv = t
+        out.append({"time": tv, "open": r["open"], "high": r["high"], "low": r["low"],
+                    "close": r["close"], "volume": r["volume"]})
+    return out
+
+
+def _session_trade_date(bt):
+    """แยก session + trade_date จากเวลาเปิดแท่ง (aware BKK) · DR หลังเที่ยงคืน = วันซื้อขายก่อนหน้า"""
+    h = bt.hour
+    if h >= 19 or h < 4:
+        td = (bt.date() - timedelta(days=1)) if h < 12 else bt.date()
+        return "NIGHT", td.isoformat()
+    if h < 13:
+        return "DAY_AM", bt.date().isoformat()
+    return "DAY_PM", bt.date().isoformat()
+
+
+def rich_candles(sym, interval, limit, final=False, normalized=False):
+    """สคีมาเต็มตาม spec ผู้พัฒนา (bar_time/close/confirmed/session/trade_date/volume ต่อแท่ง)"""
+    dur = TF_SECONDS.get(interval)
+    now = time.time()
+    now_iso = datetime.fromtimestamp(now, tz=BKK).isoformat()
+    out = []
+    for r in _raw(sym, interval, limit, normalized):
+        t = r["t"]
+        bt = datetime.fromtimestamp(t, tz=BKK)
+        ct = datetime.fromtimestamp(t + dur, tz=BKK) if dur else None
+        confirmed = (now >= t + dur) if dur else True
+        session, td = _session_trade_date(bt)
+        out.append({
+            "bar_time": bt.isoformat(),
+            "bar_close_time": ct.isoformat() if ct else None,
+            "trade_date": td,
+            "session": session,
+            "confirmed": confirmed,
+            "open": r["open"], "high": r["high"], "low": r["low"], "close": r["close"],
+            "volume": r["volume"],
+            "updated_at": (ct.isoformat() if (confirmed and ct) else now_iso),
+        })
+    if final:
+        out = [c for c in out if c["confirmed"]]
+    return out
+
+
+def _instrument(sym):
+    try:
+        return cq(sym).get("instrumentType") or "STOCK"
+    except Exception:
+        return "STOCK"
 
 
 @app.route("/api/symbol/<sym>")
@@ -129,16 +183,23 @@ def api_docs():
         "note": "ข้อมูลตลาด SET เท่านั้น · ไม่มีข้อมูลพอร์ต/บัญชี · ต้องมี API key ที่เจ้าของอนุญาต",
         "auth": "ใส่ ?key=YOUR_KEY หรือ header X-API-Key: YOUR_KEY",
         "endpoints": {
-            "GET /api/quote/<symbol>": "ราคาสด 1 ตัว เช่น /api/quote/PTT?key=...",
-            "GET /api/quotes?symbols=A,B,C": "ราคาสดหลายตัว (batch, สูงสุด 30 ตัว)",
-            "GET /api/candles/<symbol>?interval=1d&limit=250&normalized=0": "แท่งเทียน (interval: 1m,5m,15m,30m,60m,1d,1w,1M · normalized=1 ปรับ corporate action)",
+            "GET /api/quote/<symbol>": "ราคาสด 1 ตัว",
+            "GET /api/quotes?symbols=A,B,C": "ราคาสดหลายตัว (batch, สูงสุด 30)",
+            "GET /api/candles/<symbol>?interval=15m&limit=250&final=1&normalized=0": "แท่งเทียน 1 ตัว (final=1 เอาเฉพาะแท่งปิดยืนยันแล้ว)",
+            "GET /api/candles?symbols=A,B,C&interval=15m&limit=250&final=1": "แท่งเทียนหลายตัว (batch, สูงสุด 30)",
+            "GET /api/candles/latest?symbols=A,B,C&interval=15m&final=true": "แท่งล่าสุด(ปิดแล้ว)ต่อหุ้น (สูงสุด 50)",
         },
+        "interval": "1m,5m,15m,30m,60m,1d,1w,1M",
+        "candle_fields": ["bar_time", "bar_close_time", "trade_date", "session(DAY_AM/DAY_PM/NIGHT)",
+                          "confirmed", "open", "high", "low", "close", "volume(ต่อแท่ง)", "updated_at"],
         "conventions": {
-            "time": "ISO 8601 +07:00 (Asia/Bangkok) = เวลาเปิดแท่ง",
-            "candle.volume": "วอลุ่มต่อแท่ง · quote.totalVolume = สะสมทั้งวัน",
-            "candle.complete": "true=แท่งปิดสมบูรณ์ · false=แท่งกำลังก่อตัว (ระหว่างตลาดเปิด)",
-            "cache": "ราคา ~8 วินาที · กราฟ ~20 วินาที (ข้อมูลอาจช้ากว่าจริงเล็กน้อยตาม cache)",
-            "rate_limit": "~5 คำขอ/วินาที · ~60 คำขอ/นาที (แชร์รวมทุกผู้ใช้)",
+            "time": "ISO 8601 +07:00 (Asia/Bangkok) · bar_time = เวลาเปิดแท่ง",
+            "confirmed": "true=แท่งปิดสมบูรณ์ · false=กำลังก่อตัว (ใช้ final=1 กรองเอาเฉพาะ true)",
+            "volume": "วอลุ่มต่อแท่ง (ไม่ใช่สะสมทั้งวัน) · quote.totalVolume = สะสมทั้งวัน",
+            "trade_date_DR_night": "DR ภาคกลางคืน (19:00–03:00) นับเป็นวันซื้อขายเดียว — หลังเที่ยงคืนยังเป็นวันก่อนหน้า",
+            "no_trade": "ช่วงไม่มีการซื้อขาย = ไม่มีแท่ง (ข้ามไป ไม่ส่งแท่ง volume 0)",
+            "cache": "ราคา ~8 วินาที · แท่ง ~20 วินาที",
+            "rate_limit": "~5 คำขอ/วินาที · ~60 คำขอ/นาที (โควตารวมทุกผู้ใช้ → ใช้ batch)",
         },
         "disclaimer": "เพื่อผู้ที่ได้รับอนุญาตเท่านั้น · ห้าม redistribute ต่อสาธารณะ (สิทธิ์ข้อมูลตลาด)",
     })
@@ -171,27 +232,71 @@ def api_quotes():
     return jsonify({"ok": True, "quotes": out})
 
 
-@app.route("/api/candles/<sym>")
-def api_candles(sym):
-    if not _check_key():
-        return _deny()
-    sym = sym.upper().strip()
-    iv = request.args.get("interval", "1d")
+def _cparams():
+    iv = request.args.get("interval", "15m")
     if iv not in VALID_TF:
-        iv = "1d"
+        iv = "15m"
     try:
         lim = int(request.args.get("limit", 250))
     except (TypeError, ValueError):
         lim = 250
     lim = max(1, min(lim, 1000))
+    final = request.args.get("final", "") in ("1", "true", "yes")
     norm = request.args.get("normalized", "") in ("1", "true", "yes")
+    return iv, lim, final, norm
+
+
+def _syms():
+    return [s.strip().upper() for s in request.args.get("symbols", "").split(",") if s.strip()]
+
+
+@app.route("/api/candles/latest")
+def api_candles_latest():
+    if not _check_key():
+        return _deny()
+    syms = _syms()[:50]
+    if not syms:
+        return jsonify({"ok": False, "error": "ต้องระบุ ?symbols=PTT,TFG,..."}), 400
+    iv, _, _, norm = _cparams()
+    final = request.args.get("final", "true") not in ("0", "false", "no")   # default True
+    out = {}
+    for s in syms:
+        try:
+            cs = rich_candles(s, iv, 6, final=final, normalized=norm)
+            out[s] = cs[-1] if cs else None
+        except Exception as e:
+            out[s] = {"error": str(e)[:80]}
+    return jsonify({"ok": True, "timeframe": iv, "timezone": "Asia/Bangkok", "data": out})
+
+
+@app.route("/api/candles")
+def api_candles_batch():
+    if not _check_key():
+        return _deny()
+    syms = _syms()[:30]
+    if not syms:
+        return jsonify({"ok": False, "error": "ต้องระบุ ?symbols=PTT,TFG,BCP,..."}), 400
+    iv, lim, final, norm = _cparams()
+    out = {}
+    for s in syms:
+        try:
+            out[s] = {"exchange": "SET", "instrument_type": _instrument(s),
+                      "candles": rich_candles(s, iv, lim, final=final, normalized=norm)}
+        except Exception as e:
+            out[s] = {"error": str(e)[:80]}
+    return jsonify({"ok": True, "timeframe": iv, "timezone": "Asia/Bangkok", "data": out})
+
+
+@app.route("/api/candles/<sym>")
+def api_candles(sym):
+    if not _check_key():
+        return _deny()
+    sym = sym.upper().strip()
+    iv, lim, final, norm = _cparams()
     try:
-        cand = [dict(c, complete=True) for c in _candles(sym, iv, lim, normalized=norm, iso=True)]
-        if cand:   # แท่งล่าสุดยังไม่ปิดถ้าตลาดยัง live (ภาคเช้า/บ่าย/กลางคืน DR)
-            ms = cq(sym).get("marketStatus") or ""
-            live = ("Open" in ms) or ("Night" in ms)
-            cand[-1]["complete"] = not live
-        return jsonify({"ok": True, "symbol": sym, "interval": iv, "normalized": norm, "candles": cand})
+        cs = rich_candles(sym, iv, lim, final=final, normalized=norm)
+        return jsonify({"ok": True, "symbol": sym, "exchange": "SET", "instrument_type": _instrument(sym),
+                        "timeframe": iv, "timezone": "Asia/Bangkok", "normalized": norm, "candles": cs})
     except Exception as e:
         return jsonify({"ok": False, "error": str(e)[:200]}), 404
 
