@@ -69,9 +69,9 @@ class SettradeData:
                 out[s] = {"error": str(e)[:120]}
         return out
 
-    def candles(self, symbol, interval="1d", limit=250):
-        """แท่งเทียนย้อนหลัง (ไว้คำนวณ RSI/EMA แทน yfinance ได้)"""
-        return self._md.get_candlestick(symbol, interval=interval, limit=limit)
+    def candles(self, symbol, interval="1d", limit=250, normalized=None):
+        """แท่งเทียนย้อนหลัง · normalized=True = ปรับราคาย้อนหลังตาม corporate action (แตกพาร์/XD)"""
+        return self._md.get_candlestick(symbol, interval=interval, limit=limit, normalized=normalized)
 
     # ---------- บัญชี / พอร์ต (ต้องมี account_no) ----------
     def account(self):

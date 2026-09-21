@@ -6,7 +6,9 @@
 รัน: python settrade_server.py  (อ่าน settrade_config.json ในโฟลเดอร์เดียวกัน)
 """
 import argparse
-from datetime import datetime, timezone
+import threading
+import time
+from datetime import datetime, timezone, timedelta
 
 from flask import Flask, jsonify, Response, request
 from settrade_client import SettradeData, load_config
@@ -24,17 +26,53 @@ def data():
     return _D
 
 
-def _candles(sym, interval, limit):
-    c = data().candles(sym, interval=interval, limit=limit)
-    ts, o, h, l, cl, vol = c["time"], c["open"], c["high"], c["low"], c["close"], c.get("volume", [])
-    daily = interval.lower() in ("1d", "1w", "1m") and not interval.lower().endswith("min")
-    out = []
-    for i in range(len(ts)):
-        t = ts[i]
-        tv = datetime.fromtimestamp(t, tz=timezone.utc).strftime("%Y-%m-%d") if daily else int(t)
-        out.append({"time": tv, "open": o[i], "high": h[i], "low": l[i], "close": cl[i],
-                    "volume": vol[i] if i < len(vol) else 0})
-    return out
+# ---------- cache: ลดการยิง Settrade (โควตา 5/วิ · 60/นาที ต่อบัญชี) ----------
+QUOTE_TTL = 8        # cache ราคา ~8 วินาที
+CANDLE_TTL = 20      # cache กราฟ ~20 วินาที
+BKK = timezone(timedelta(hours=7))
+_cache = {}
+_clock = threading.Lock()
+
+
+def _cached(key, ttl, fn):
+    now = time.time()
+    with _clock:
+        hit = _cache.get(key)
+        if hit and now - hit[0] < ttl:
+            return hit[1]
+    val = fn()
+    with _clock:
+        _cache[key] = (now, val)
+    return val
+
+
+def cq(sym):
+    """quote แบบ cache"""
+    return _cached("q:" + sym, QUOTE_TTL, lambda: data().quote(sym))
+
+
+def _candles(sym, interval, limit, normalized=False, iso=False):
+    """candles แบบ cache · iso=True -> time เป็น ISO 8601 +07:00 · normalized -> ปรับ corporate action"""
+    key = f"c:{sym}:{interval}:{limit}:{int(bool(normalized))}:{int(bool(iso))}"
+
+    def build():
+        c = data().candles(sym, interval=interval, limit=limit, normalized=normalized or None)
+        ts, o, h, l, cl = c["time"], c["open"], c["high"], c["low"], c["close"]
+        vol = c.get("volume", [])
+        daily = interval in ("1d", "1w", "1M")
+        out = []
+        for i in range(len(ts)):
+            t = ts[i]
+            if iso:
+                tv = datetime.fromtimestamp(t, tz=BKK).isoformat()          # 2026-09-21T16:00:00+07:00
+            elif daily:
+                tv = datetime.fromtimestamp(t, tz=timezone.utc).strftime("%Y-%m-%d")
+            else:
+                tv = int(t)
+            out.append({"time": tv, "open": o[i], "high": h[i], "low": l[i], "close": cl[i],
+                        "volume": vol[i] if i < len(vol) else 0})
+        return out
+    return _cached(key, CANDLE_TTL, build)
 
 
 @app.route("/api/symbol/<sym>")
@@ -44,7 +82,7 @@ def api_symbol(sym):
     if iv not in VALID_TF:
         iv = "1d"
     try:
-        q = data().quote(sym)
+        q = cq(sym)
         lim = 1000 if iv in ("1d", "1w", "1M") else 400
         cand = _candles(sym, iv, lim)
         return jsonify({"ok": True, "symbol": sym, "interval": iv, "quote": q, "candles": cand})
@@ -54,9 +92,15 @@ def api_symbol(sym):
 
 @app.route("/api/watch")
 def api_watch():
-    # ราคาสด watchlist เท่านั้น (ไม่มีพอร์ต/เงิน — ตามที่ผู้ใช้ขอซ่อน)
+    # ราคาสด watchlist เท่านั้น (ไม่มีพอร์ต/เงิน — ตามที่ผู้ใช้ขอซ่อน) · ใช้ cache รายตัว
     try:
-        return jsonify({"ok": True, "watch": WATCH, "quotes": data().quotes(WATCH)})
+        out = {}
+        for s in WATCH:
+            try:
+                out[s] = cq(s)
+            except Exception as e:
+                out[s] = {"error": str(e)[:80]}
+        return jsonify({"ok": True, "watch": WATCH, "quotes": out})
     except Exception as e:
         return jsonify({"ok": False, "error": str(e)[:200]}), 500
 
@@ -86,7 +130,15 @@ def api_docs():
         "auth": "ใส่ ?key=YOUR_KEY หรือ header X-API-Key: YOUR_KEY",
         "endpoints": {
             "GET /api/quote/<symbol>": "ราคาสด 1 ตัว เช่น /api/quote/PTT?key=...",
-            "GET /api/candles/<symbol>?interval=1d&limit=250": "แท่งเทียน (interval: 1m,5m,15m,30m,60m,1d,1w,1M)",
+            "GET /api/quotes?symbols=A,B,C": "ราคาสดหลายตัว (batch, สูงสุด 30 ตัว)",
+            "GET /api/candles/<symbol>?interval=1d&limit=250&normalized=0": "แท่งเทียน (interval: 1m,5m,15m,30m,60m,1d,1w,1M · normalized=1 ปรับ corporate action)",
+        },
+        "conventions": {
+            "time": "ISO 8601 +07:00 (Asia/Bangkok) = เวลาเปิดแท่ง",
+            "candle.volume": "วอลุ่มต่อแท่ง · quote.totalVolume = สะสมทั้งวัน",
+            "candle.complete": "true=แท่งปิดสมบูรณ์ · false=แท่งกำลังก่อตัว (ระหว่างตลาดเปิด)",
+            "cache": "ราคา ~8 วินาที · กราฟ ~20 วินาที (ข้อมูลอาจช้ากว่าจริงเล็กน้อยตาม cache)",
+            "rate_limit": "~5 คำขอ/วินาที · ~60 คำขอ/นาที (แชร์รวมทุกผู้ใช้)",
         },
         "disclaimer": "เพื่อผู้ที่ได้รับอนุญาตเท่านั้น · ห้าม redistribute ต่อสาธารณะ (สิทธิ์ข้อมูลตลาด)",
     })
@@ -98,9 +150,25 @@ def api_quote(sym):
         return _deny()
     sym = sym.upper().strip()
     try:
-        return jsonify({"ok": True, "symbol": sym, "quote": data().quote(sym)})
+        return jsonify({"ok": True, "symbol": sym, "quote": cq(sym)})
     except Exception as e:
         return jsonify({"ok": False, "error": str(e)[:200]}), 404
+
+
+@app.route("/api/quotes")
+def api_quotes():
+    if not _check_key():
+        return _deny()
+    syms = [s.strip().upper() for s in request.args.get("symbols", "").split(",") if s.strip()][:30]
+    if not syms:
+        return jsonify({"ok": False, "error": "ต้องระบุ ?symbols=PTT,KBANK,..."}), 400
+    out = {}
+    for s in syms:
+        try:
+            out[s] = cq(s)
+        except Exception as e:
+            out[s] = {"error": str(e)[:80]}
+    return jsonify({"ok": True, "quotes": out})
 
 
 @app.route("/api/candles/<sym>")
@@ -116,8 +184,13 @@ def api_candles(sym):
     except (TypeError, ValueError):
         lim = 250
     lim = max(1, min(lim, 1000))
+    norm = request.args.get("normalized", "") in ("1", "true", "yes")
     try:
-        return jsonify({"ok": True, "symbol": sym, "interval": iv, "candles": _candles(sym, iv, lim)})
+        cand = [dict(c, complete=True) for c in _candles(sym, iv, lim, normalized=norm, iso=True)]
+        if cand:   # แท่งล่าสุดยังไม่ปิดถ้าตลาดเปิดอยู่
+            mopen = "Open" in (cq(sym).get("marketStatus") or "")
+            cand[-1]["complete"] = not mopen
+        return jsonify({"ok": True, "symbol": sym, "interval": iv, "normalized": norm, "candles": cand})
     except Exception as e:
         return jsonify({"ok": False, "error": str(e)[:200]}), 404
 
