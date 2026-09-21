@@ -9,7 +9,7 @@ import argparse
 from datetime import datetime, timezone
 
 from flask import Flask, jsonify, Response, request
-from settrade_client import SettradeData
+from settrade_client import SettradeData, load_config
 
 VALID_TF = ("1m", "5m", "15m", "30m", "60m", "1d", "1w", "1M")
 
@@ -52,23 +52,77 @@ def api_symbol(sym):
         return jsonify({"ok": False, "error": str(e)[:200]}), 404
 
 
-@app.route("/api/portfolio")
-def api_portfolio():
+@app.route("/api/watch")
+def api_watch():
+    # ราคาสด watchlist เท่านั้น (ไม่มีพอร์ต/เงิน — ตามที่ผู้ใช้ขอซ่อน)
     try:
-        d = data()
-        acc = d.account()
-        pf = d.portfolio()
-        rows = pf.get("portfolioList", []) if isinstance(pf, dict) else (pf or [])
-        tot = pf.get("totalPortfolio", {}) if isinstance(pf, dict) else {}
-        held = [r.get("symbol") for r in rows if r.get("symbol")]
-        watch = held + [s for s in WATCH if s not in held]
-        return jsonify({"ok": True, "account": acc, "rows": rows, "total": tot,
-                        "quotes": d.quotes(watch), "held": held, "watch": watch})
+        return jsonify({"ok": True, "watch": WATCH, "quotes": data().quotes(WATCH)})
     except Exception as e:
         return jsonify({"ok": False, "error": str(e)[:200]}), 500
 
 
-WATCH = ["KTB", "KBANK", "KKP", "BBL", "SCB", "TISCO", "PTT", "AP", "PTTEP", "ADVANC", "DELTA"]
+# ===== Public Data API (ข้อมูลตลาดเท่านั้น · ต้องมี API key ที่เจ้าของอนุญาต) =====
+def _api_keys():
+    return set(load_config().get("api_keys", []) or [])
+
+
+def _check_key():
+    keys = _api_keys()
+    if not keys:
+        return False
+    k = request.args.get("key") or request.headers.get("X-API-Key", "")
+    return k in keys
+
+
+def _deny():
+    return jsonify({"ok": False, "error": "ต้องมี API key ที่ได้รับอนุญาต — ใส่ ?key=... หรือ header X-API-Key"}), 401
+
+
+@app.route("/api")
+def api_docs():
+    return jsonify({
+        "service": "stock.cyk Market Data API (Settrade/SET)",
+        "note": "ข้อมูลตลาด SET เท่านั้น · ไม่มีข้อมูลพอร์ต/บัญชี · ต้องมี API key ที่เจ้าของอนุญาต",
+        "auth": "ใส่ ?key=YOUR_KEY หรือ header X-API-Key: YOUR_KEY",
+        "endpoints": {
+            "GET /api/quote/<symbol>": "ราคาสด 1 ตัว เช่น /api/quote/PTT?key=...",
+            "GET /api/candles/<symbol>?interval=1d&limit=250": "แท่งเทียน (interval: 1m,5m,15m,30m,60m,1d,1w,1M)",
+        },
+        "disclaimer": "เพื่อผู้ที่ได้รับอนุญาตเท่านั้น · ห้าม redistribute ต่อสาธารณะ (สิทธิ์ข้อมูลตลาด)",
+    })
+
+
+@app.route("/api/quote/<sym>")
+def api_quote(sym):
+    if not _check_key():
+        return _deny()
+    sym = sym.upper().strip()
+    try:
+        return jsonify({"ok": True, "symbol": sym, "quote": data().quote(sym)})
+    except Exception as e:
+        return jsonify({"ok": False, "error": str(e)[:200]}), 404
+
+
+@app.route("/api/candles/<sym>")
+def api_candles(sym):
+    if not _check_key():
+        return _deny()
+    sym = sym.upper().strip()
+    iv = request.args.get("interval", "1d")
+    if iv not in VALID_TF:
+        iv = "1d"
+    try:
+        lim = int(request.args.get("limit", 250))
+    except (TypeError, ValueError):
+        lim = 250
+    lim = max(1, min(lim, 1000))
+    try:
+        return jsonify({"ok": True, "symbol": sym, "interval": iv, "candles": _candles(sym, iv, lim)})
+    except Exception as e:
+        return jsonify({"ok": False, "error": str(e)[:200]}), 404
+
+
+WATCH = ["KTB", "KBANK", "KKP", "BBL", "SCB", "TISCO", "PTT", "AP", "PTTEP", "ADVANC"]
 
 
 @app.route("/")
@@ -120,21 +174,13 @@ PAGE = r"""<!DOCTYPE html><html lang="th"><head>
  <div id="legend"></div>
  <div id="chart"></div>
 
- <h2>💼 พอร์ตของฉัน</h2>
- <div class="cards">
-   <div class="card"><b id="cash" class="up">—</b><span>เงินสดพร้อมซื้อ</span></div>
-   <div class="card"><b id="tpv">—</b><span>มูลค่าพอร์ต</span></div>
-   <div class="card"><b id="tpp">—</b><span>กำไร/ขาดทุน</span></div>
- </div>
- <table id="pf"><thead><tr><th>หุ้น</th><th class="num">จำนวน</th><th class="num">ต้นทุน</th><th class="num">ล่าสุด</th><th class="num">มูลค่า</th><th class="num">กำไร/ขาดทุน</th></tr></thead><tbody></tbody></table>
-
  <h2>👀 ราคาสด — เฝ้าดู <span style="color:var(--mut);font-size:13px">(แตะเพื่อดูกราฟ)</span></h2>
  <table id="wl"><thead><tr><th>หุ้น</th><th class="num">ล่าสุด</th><th class="num">เปลี่ยน%</th><th class="num">ปันผล%</th><th class="num">PE</th><th class="num">PBV</th></tr></thead><tbody></tbody></table>
  <div class="foot">ราคาสดจาก Settrade (InnovestX) · อ่านอย่างเดียว ไม่มีคำสั่งซื้อขาย · ไม่ใช่คำแนะนำลงทุน · รีเฟรชอัตโนมัติทุก 30 วินาที</div>
 </div>
 <script>
 const $=s=>document.querySelector(s);
-let chart, series, volSeries, cur="DELTA", curTf="1d", emaSeries=[];
+let chart, series, volSeries, cur="PTT", curTf="1d", emaSeries=[];
 const EMAS=[[5,"#ffd93d"],[7,"#ff9f1c"],[14,"#4dd0e1"],[20,"#5f8cff"],[200,"#b06cff"],[800,"#ff5aa9"]];
 function fmt(v,d=2){return v==null||isNaN(v)?"—":(+v).toLocaleString("th-TH",{minimumFractionDigits:d,maximumFractionDigits:d});}
 function emaCalc(data,period){const k=2/(period+1);let prev;const out=[];for(let i=0;i<data.length;i++){const c=data[i].close;prev=i===0?c:c*k+prev*(1-k);if(i>=period-1)out.push({time:data[i].time,value:+prev.toFixed(2)});}return out;}
@@ -170,22 +216,16 @@ async function load(sym){
  $("#meta").textContent="ปันผล "+fmt(q.percentYield)+"% · PE "+fmt(q.pe,1)+" · PBV "+fmt(q.pbv)+" · สูง "+fmt(q.high)+" ต่ำ "+fmt(q.low);
  $("#mkt").textContent=(q.marketStatus||"").includes("Open")?"🟢 ตลาดเปิด":"🔴 ตลาดปิด";
 }
-async function loadPort(){
- const j=await (await fetch("/api/portfolio")).json(); if(!j.ok)return;
- $("#cash").textContent=fmt(j.account.cashBalance,0);
- $("#tpv").textContent=fmt(j.total.marketValue,0);
- const tp=+j.total.profit||0, tpc=+j.total.percentProfit||0;
- $("#tpp").className=tp>=0?"up":"down"; $("#tpp").textContent=(tp>=0?"+":"")+fmt(tp,0)+" ("+(tpc>=0?"+":"")+fmt(tpc,1)+"%)";
- $("#pf tbody").innerHTML=(j.rows.length?j.rows:[]).map(r=>{const p=+r.profit||0,pc=+r.percentProfit||0,c=p>=0?"up":"down";
-   return `<tr onclick="load('${r.symbol}')"><td><b>${r.symbol}</b></td><td class="num">${fmt(r.actualVolume||r.currentVolume,0)}</td><td class="num">${fmt(r.averagePrice)}</td><td class="num">${fmt(r.marketPrice)}</td><td class="num">${fmt(r.marketValue,0)}</td><td class="num ${c}">${p>=0?"+":""}${fmt(p,0)} (${pc>=0?"+":""}${fmt(pc,1)}%)</td></tr>`;}).join("")||'<tr><td colspan="6" style="color:var(--mut);text-align:center">ไม่มีหุ้นในพอร์ต (ถือเงินสด)</td></tr>';
- $("#wl tbody").innerHTML=j.watch.map(s=>{const q=j.quotes[s]||{};const ch=+q.percentChange||0,c=ch>=0?"up":"down",tag=j.held.includes(s)?" 🎒":"";
-   return q.last==null?`<tr onclick="load('${s}')"><td><b>${s}</b>${tag}</td><td colspan="5" style="color:var(--mut)">—</td></tr>`:
-   `<tr onclick="load('${s}')"><td><b>${s}</b>${tag}</td><td class="num">${fmt(q.last)}</td><td class="num ${c}">${ch>=0?"+":""}${fmt(ch)}%</td><td class="num">${fmt(q.percentYield)}%</td><td class="num">${fmt(q.pe,1)}</td><td class="num">${fmt(q.pbv)}</td></tr>`;}).join("");
+async function loadWatch(){
+ const j=await (await fetch("/api/watch")).json(); if(!j.ok)return;
+ $("#wl tbody").innerHTML=j.watch.map(s=>{const q=j.quotes[s]||{};const ch=+q.percentChange||0,c=ch>=0?"up":"down";
+   return q.last==null?`<tr onclick="load('${s}')"><td><b>${s}</b></td><td colspan="5" style="color:var(--mut)">—</td></tr>`:
+   `<tr onclick="load('${s}')"><td><b>${s}</b></td><td class="num">${fmt(q.last)}</td><td class="num ${c}">${ch>=0?"+":""}${fmt(ch)}%</td><td class="num">${fmt(q.percentYield)}%</td><td class="num">${fmt(q.pe,1)}</td><td class="num">${fmt(q.pbv)}</td></tr>`;}).join("");
 }
 $("#q").addEventListener("keydown",e=>{if(e.key==="Enter")load(e.target.value);});
 $("#go").addEventListener("click",()=>load($("#q").value));
-initChart(); initTf(); load(cur); loadPort();
-setInterval(()=>{load(cur);loadPort();},30000);
+initChart(); initTf(); load(cur); loadWatch();
+setInterval(()=>{load(cur);loadWatch();},30000);
 </script></body></html>"""
 
 
