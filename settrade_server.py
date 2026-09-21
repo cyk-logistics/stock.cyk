@@ -1,0 +1,198 @@
+#!/usr/bin/env python3
+"""
+เว็บแอป "พอร์ต + ราคาสด + กราฟ" สไตล์ TradingView จาก Settrade Open API
+- backend (Flask) ถือ key ตอบ quote/candles/portfolio — ดึงข้อมูลอย่างเดียว ไม่มีคำสั่งซื้อขาย
+- frontend: ค้นหุ้นได้ทุกตัว + กราฟแท่งเทียน (Lightweight Charts) + พอร์ต + watchlist
+รัน: python settrade_server.py  (อ่าน settrade_config.json ในโฟลเดอร์เดียวกัน)
+"""
+import argparse
+from datetime import datetime, timezone
+
+from flask import Flask, jsonify, Response, request
+from settrade_client import SettradeData
+
+VALID_TF = ("1m", "5m", "15m", "30m", "60m", "1d", "1w", "1M")
+
+app = Flask(__name__)
+_D = None
+
+
+def data():
+    global _D
+    if _D is None:
+        _D = SettradeData()
+    return _D
+
+
+def _candles(sym, interval, limit):
+    c = data().candles(sym, interval=interval, limit=limit)
+    ts, o, h, l, cl, vol = c["time"], c["open"], c["high"], c["low"], c["close"], c.get("volume", [])
+    daily = interval.lower() in ("1d", "1w", "1m") and not interval.lower().endswith("min")
+    out = []
+    for i in range(len(ts)):
+        t = ts[i]
+        tv = datetime.fromtimestamp(t, tz=timezone.utc).strftime("%Y-%m-%d") if daily else int(t)
+        out.append({"time": tv, "open": o[i], "high": h[i], "low": l[i], "close": cl[i],
+                    "volume": vol[i] if i < len(vol) else 0})
+    return out
+
+
+@app.route("/api/symbol/<sym>")
+def api_symbol(sym):
+    sym = sym.upper().strip()
+    iv = request.args.get("interval", "1d")
+    if iv not in VALID_TF:
+        iv = "1d"
+    try:
+        q = data().quote(sym)
+        lim = 1000 if iv in ("1d", "1w", "1M") else 400
+        cand = _candles(sym, iv, lim)
+        return jsonify({"ok": True, "symbol": sym, "interval": iv, "quote": q, "candles": cand})
+    except Exception as e:
+        return jsonify({"ok": False, "error": str(e)[:200]}), 404
+
+
+@app.route("/api/portfolio")
+def api_portfolio():
+    try:
+        d = data()
+        acc = d.account()
+        pf = d.portfolio()
+        rows = pf.get("portfolioList", []) if isinstance(pf, dict) else (pf or [])
+        tot = pf.get("totalPortfolio", {}) if isinstance(pf, dict) else {}
+        held = [r.get("symbol") for r in rows if r.get("symbol")]
+        watch = held + [s for s in WATCH if s not in held]
+        return jsonify({"ok": True, "account": acc, "rows": rows, "total": tot,
+                        "quotes": d.quotes(watch), "held": held, "watch": watch})
+    except Exception as e:
+        return jsonify({"ok": False, "error": str(e)[:200]}), 500
+
+
+WATCH = ["KTB", "KBANK", "KKP", "BBL", "SCB", "TISCO", "PTT", "AP", "PTTEP", "ADVANC", "DELTA"]
+
+
+@app.route("/")
+def index():
+    return Response(PAGE, mimetype="text/html")
+
+
+PAGE = r"""<!DOCTYPE html><html lang="th"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Live Port · Settrade</title>
+<script src="https://unpkg.com/lightweight-charts@4.1.3/dist/lightweight-charts.standalone.production.js"></script>
+<style>
+ :root{--bg:#0e1117;--pan:#161b22;--bd:#2a2e39;--tx:#e6e9ef;--mut:#8b95a3;--grn:#26c281;--red:#ff5a5a;--ac:#2962ff;}
+ *{box-sizing:border-box} body{margin:0;background:var(--bg);color:var(--tx);font-family:-apple-system,"Segoe UI",Roboto,sans-serif;font-size:16px}
+ .top{display:flex;align-items:center;gap:12px;padding:12px 16px;background:var(--pan);border-bottom:1px solid var(--bd);position:sticky;top:0;z-index:5;flex-wrap:wrap}
+ .top b{font-size:18px;color:#5f8cff}
+ #q{flex:1;min-width:150px;max-width:300px;background:#0e1117;border:1px solid var(--bd);color:var(--tx);border-radius:9px;padding:10px 14px;font-size:16px}
+ #go{background:var(--ac);color:#fff;border:none;border-radius:9px;padding:10px 18px;font-size:16px;font-weight:700;cursor:pointer}
+ #legend{display:flex;gap:14px;flex-wrap:wrap;padding:4px 16px 8px;font-size:13px}
+ #legend span{display:inline-flex;align-items:center;gap:5px;color:var(--mut)}
+ #legend i{width:16px;height:3px;border-radius:2px;display:inline-block}
+ #tfbar{display:flex;gap:6px;flex-wrap:wrap;padding:6px 16px 0}
+ #tfbar button{background:#0e1117;border:1px solid var(--bd);color:var(--mut);border-radius:8px;padding:7px 13px;font-size:14px;cursor:pointer}
+ #tfbar button.on{background:var(--ac);color:#fff;border-color:var(--ac);font-weight:700}
+ .hd{display:flex;align-items:baseline;gap:14px;flex-wrap:wrap;padding:14px 16px}
+ .hd .sym{font-size:26px;font-weight:800} .hd .last{font-size:26px;font-weight:800}
+ .hd .chg{font-size:17px;font-weight:700} .hd .meta{color:var(--mut);font-size:14px}
+ .up{color:var(--grn)} .down{color:var(--red)}
+ #chart{height:60vh;min-height:340px;margin:0 8px}
+ .wrap{max-width:1200px;margin:0 auto}
+ h2{font-size:18px;margin:22px 16px 10px}
+ table{width:calc(100% - 32px);margin:0 16px;border-collapse:collapse;background:var(--pan);border:1px solid var(--bd);border-radius:12px;overflow:hidden;font-size:15px}
+ th,td{padding:11px 12px;text-align:left;border-bottom:1px solid var(--bd)} th{color:var(--mut);font-size:13px;font-weight:600}
+ td.num,th.num{text-align:right;font-variant-numeric:tabular-nums} tr:last-child td{border-bottom:none}
+ tbody tr{cursor:pointer} tbody tr:hover{background:#1c2230}
+ .cards{display:flex;gap:12px;flex-wrap:wrap;padding:0 16px}
+ .card{background:var(--pan);border:1px solid var(--bd);border-radius:12px;padding:12px 16px;flex:1;min-width:150px}
+ .card b{display:block;font-size:22px} .card span{color:var(--mut);font-size:13px}
+ .foot{color:var(--mut);font-size:13px;margin:22px 16px;line-height:1.7}
+</style></head><body><div class="wrap">
+ <div class="top"><b>📈 Live Port</b>
+   <input id="q" placeholder="ค้นหุ้น เช่น PTT, KBANK, DELTA…" autocomplete="off">
+   <button id="go">ค้นหา</button>
+   <span id="mkt" class="meta" style="color:var(--mut);font-size:13px"></span></div>
+ <div id="tfbar"></div>
+ <div class="hd"><span id="sym" class="sym">—</span><span id="last" class="last">—</span>
+   <span id="chg" class="chg"></span>
+   <span id="meta" class="meta"></span></div>
+ <div id="legend"></div>
+ <div id="chart"></div>
+
+ <h2>💼 พอร์ตของฉัน</h2>
+ <div class="cards">
+   <div class="card"><b id="cash" class="up">—</b><span>เงินสดพร้อมซื้อ</span></div>
+   <div class="card"><b id="tpv">—</b><span>มูลค่าพอร์ต</span></div>
+   <div class="card"><b id="tpp">—</b><span>กำไร/ขาดทุน</span></div>
+ </div>
+ <table id="pf"><thead><tr><th>หุ้น</th><th class="num">จำนวน</th><th class="num">ต้นทุน</th><th class="num">ล่าสุด</th><th class="num">มูลค่า</th><th class="num">กำไร/ขาดทุน</th></tr></thead><tbody></tbody></table>
+
+ <h2>👀 ราคาสด — เฝ้าดู <span style="color:var(--mut);font-size:13px">(แตะเพื่อดูกราฟ)</span></h2>
+ <table id="wl"><thead><tr><th>หุ้น</th><th class="num">ล่าสุด</th><th class="num">เปลี่ยน%</th><th class="num">ปันผล%</th><th class="num">PE</th><th class="num">PBV</th></tr></thead><tbody></tbody></table>
+ <div class="foot">ราคาสดจาก Settrade (InnovestX) · อ่านอย่างเดียว ไม่มีคำสั่งซื้อขาย · ไม่ใช่คำแนะนำลงทุน · รีเฟรชอัตโนมัติทุก 30 วินาที</div>
+</div>
+<script>
+const $=s=>document.querySelector(s);
+let chart, series, volSeries, cur="DELTA", curTf="1d", emaSeries=[];
+const EMAS=[[5,"#ffd93d"],[7,"#ff9f1c"],[14,"#4dd0e1"],[20,"#5f8cff"],[200,"#b06cff"],[800,"#ff5aa9"]];
+function fmt(v,d=2){return v==null||isNaN(v)?"—":(+v).toLocaleString("th-TH",{minimumFractionDigits:d,maximumFractionDigits:d});}
+function emaCalc(data,period){const k=2/(period+1);let prev;const out=[];for(let i=0;i<data.length;i++){const c=data[i].close;prev=i===0?c:c*k+prev*(1-k);if(i>=period-1)out.push({time:data[i].time,value:+prev.toFixed(2)});}return out;}
+function initChart(){
+ const el=$("#chart");
+ chart=LightweightCharts.createChart(el,{width:el.clientWidth,height:el.clientHeight,
+   layout:{background:{color:"#0e1117"},textColor:"#c9d1d9"},grid:{vertLines:{color:"#1c2230"},horzLines:{color:"#1c2230"}},
+   timeScale:{borderColor:"#2a2e39"},rightPriceScale:{borderColor:"#2a2e39"}});
+ series=chart.addCandlestickSeries({upColor:"#26c281",downColor:"#ff5a5a",borderVisible:false,wickUpColor:"#26c281",wickDownColor:"#ff5a5a"});
+ volSeries=chart.addHistogramSeries({priceFormat:{type:"volume"},priceScaleId:"vol"});
+ chart.priceScale("vol").applyOptions({scaleMargins:{top:0.82,bottom:0}});
+ emaSeries=EMAS.map(([p,c])=>chart.addLineSeries({color:c,lineWidth:p>=200?2:1,priceLineVisible:false,lastValueVisible:false}));
+ $("#legend").innerHTML=EMAS.map(([p,c])=>`<span><i style="background:${c}"></i>EMA${p}</span>`).join("");
+ new ResizeObserver(()=>chart.applyOptions({width:el.clientWidth,height:el.clientHeight})).observe(el);
+}
+const TFS=[["1m","1m"],["5m","5m"],["15m","15m"],["30m","30m"],["60m","1H"],["1d","D"],["1w","W"],["1M","M"]];
+function initTf(){
+ $("#tfbar").innerHTML=TFS.map(([v,l])=>`<button data-tf="${v}"${v===curTf?' class="on"':''}>${l}</button>`).join("");
+ $("#tfbar").querySelectorAll("button").forEach(b=>b.onclick=()=>{curTf=b.dataset.tf;
+   $("#tfbar").querySelectorAll("button").forEach(x=>x.classList.toggle("on",x.dataset.tf===curTf));load(cur);});
+}
+async function load(sym){
+ sym=(sym||"").toUpperCase().trim(); if(!sym)return;
+ const r=await fetch("/api/symbol/"+encodeURIComponent(sym)+"?interval="+curTf); const j=await r.json();
+ if(!j.ok){$("#sym").textContent=sym;$("#last").textContent="ไม่พบ";$("#chg").textContent="";$("#meta").textContent=j.error||"";return;}
+ cur=sym; series.setData(j.candles);
+ volSeries.setData(j.candles.map(c=>({time:c.time,value:c.volume,color:c.close>=c.open?"#26c28166":"#ff5a5a66"})));
+ EMAS.forEach(([p,_],i)=>emaSeries[i].setData(j.candles.length>=p?emaCalc(j.candles,p):[]));
+ chart.timeScale().fitContent();
+ const q=j.quote, ch=+q.percentChange||0, col=ch>=0?"up":"down";
+ $("#sym").textContent=sym; $("#last").textContent=fmt(q.last);
+ $("#chg").className="chg "+col; $("#chg").textContent=(ch>=0?"▲ +":"▼ ")+fmt(q.change)+" ("+(ch>=0?"+":"")+fmt(ch)+"%)";
+ $("#meta").textContent="ปันผล "+fmt(q.percentYield)+"% · PE "+fmt(q.pe,1)+" · PBV "+fmt(q.pbv)+" · สูง "+fmt(q.high)+" ต่ำ "+fmt(q.low);
+ $("#mkt").textContent=(q.marketStatus||"").includes("Open")?"🟢 ตลาดเปิด":"🔴 ตลาดปิด";
+}
+async function loadPort(){
+ const j=await (await fetch("/api/portfolio")).json(); if(!j.ok)return;
+ $("#cash").textContent=fmt(j.account.cashBalance,0);
+ $("#tpv").textContent=fmt(j.total.marketValue,0);
+ const tp=+j.total.profit||0, tpc=+j.total.percentProfit||0;
+ $("#tpp").className=tp>=0?"up":"down"; $("#tpp").textContent=(tp>=0?"+":"")+fmt(tp,0)+" ("+(tpc>=0?"+":"")+fmt(tpc,1)+"%)";
+ $("#pf tbody").innerHTML=(j.rows.length?j.rows:[]).map(r=>{const p=+r.profit||0,pc=+r.percentProfit||0,c=p>=0?"up":"down";
+   return `<tr onclick="load('${r.symbol}')"><td><b>${r.symbol}</b></td><td class="num">${fmt(r.actualVolume||r.currentVolume,0)}</td><td class="num">${fmt(r.averagePrice)}</td><td class="num">${fmt(r.marketPrice)}</td><td class="num">${fmt(r.marketValue,0)}</td><td class="num ${c}">${p>=0?"+":""}${fmt(p,0)} (${pc>=0?"+":""}${fmt(pc,1)}%)</td></tr>`;}).join("")||'<tr><td colspan="6" style="color:var(--mut);text-align:center">ไม่มีหุ้นในพอร์ต (ถือเงินสด)</td></tr>';
+ $("#wl tbody").innerHTML=j.watch.map(s=>{const q=j.quotes[s]||{};const ch=+q.percentChange||0,c=ch>=0?"up":"down",tag=j.held.includes(s)?" 🎒":"";
+   return q.last==null?`<tr onclick="load('${s}')"><td><b>${s}</b>${tag}</td><td colspan="5" style="color:var(--mut)">—</td></tr>`:
+   `<tr onclick="load('${s}')"><td><b>${s}</b>${tag}</td><td class="num">${fmt(q.last)}</td><td class="num ${c}">${ch>=0?"+":""}${fmt(ch)}%</td><td class="num">${fmt(q.percentYield)}%</td><td class="num">${fmt(q.pe,1)}</td><td class="num">${fmt(q.pbv)}</td></tr>`;}).join("");
+}
+$("#q").addEventListener("keydown",e=>{if(e.key==="Enter")load(e.target.value);});
+$("#go").addEventListener("click",()=>load($("#q").value));
+initChart(); initTf(); load(cur); loadPort();
+setInterval(()=>{load(cur);loadPort();},30000);
+</script></body></html>"""
+
+
+if __name__ == "__main__":
+    ap = argparse.ArgumentParser()
+    ap.add_argument("--host", default="127.0.0.1")
+    ap.add_argument("--port", type=int, default=8095)
+    a = ap.parse_args()
+    print(f"เริ่มเซิร์ฟเวอร์ที่ http://{a.host}:{a.port}")
+    app.run(host=a.host, port=a.port, debug=False)
