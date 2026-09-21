@@ -187,9 +187,10 @@ def api_candles(sym):
     norm = request.args.get("normalized", "") in ("1", "true", "yes")
     try:
         cand = [dict(c, complete=True) for c in _candles(sym, iv, lim, normalized=norm, iso=True)]
-        if cand:   # แท่งล่าสุดยังไม่ปิดถ้าตลาดเปิดอยู่
-            mopen = "Open" in (cq(sym).get("marketStatus") or "")
-            cand[-1]["complete"] = not mopen
+        if cand:   # แท่งล่าสุดยังไม่ปิดถ้าตลาดยัง live (ภาคเช้า/บ่าย/กลางคืน DR)
+            ms = cq(sym).get("marketStatus") or ""
+            live = ("Open" in ms) or ("Night" in ms)
+            cand[-1]["complete"] = not live
         return jsonify({"ok": True, "symbol": sym, "interval": iv, "normalized": norm, "candles": cand})
     except Exception as e:
         return jsonify({"ok": False, "error": str(e)[:200]}), 404
