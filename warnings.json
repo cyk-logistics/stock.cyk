@@ -8,12 +8,6 @@
  "EGCO": [
   "trap"
  ],
- "LH": [
-  "trap"
- ],
- "KBANK": [
-  "bear"
- ],
  "WHA": [
   "trap"
  ],
@@ -21,6 +15,9 @@
   "bear"
  ],
  "OR": [
+  "trap"
+ ],
+ "LH": [
   "trap"
  ],
  "MTC": [
@@ -34,6 +31,9 @@
  ],
  "KCE": [
   "bear",
+  "runup"
+ ],
+ "HANA": [
   "runup"
  ],
  "DELTA": [
