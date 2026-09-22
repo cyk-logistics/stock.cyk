@@ -184,8 +184,12 @@ def send(text, flex):
         if not url:
             continue
         try:
-            req = urllib.request.Request(url, data=json.dumps(payload).encode(),
-                                         headers={"Content-Type": "application/json"})
+            req = urllib.request.Request(
+                url, data=json.dumps(payload).encode(),
+                headers={"Content-Type": "application/json",
+                         "Accept": "application/json",
+                         "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) "
+                                       "AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0 Safari/537.36"})
             urllib.request.urlopen(req, timeout=15).read()
             sent.append(name)
         except Exception as e:
