@@ -23,8 +23,8 @@ jobs:
       - name: สแกนหุ้น (ข่าว×กราฟ×วอลลุ่ม) + ส่ง LINE
         env:
           STOCK_API_KEY: ${{ secrets.STOCK_API_KEY }}
-          STOCK_LINE_HOOK: ${{ secrets.STOCK_LINE_HOOK }}
-          DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
+          LINE_PUSH_TOKEN: ${{ secrets.LINE_PUSH_TOKEN }}
+          LINE_PUSH_TO: ${{ secrets.LINE_PUSH_TO }}
           SCAN_API_BASE: https://live.atlog.asia
           SCAN_TOP: '7'
         run: python scan_daily.py

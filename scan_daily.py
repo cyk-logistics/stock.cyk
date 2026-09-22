@@ -177,17 +177,31 @@ def build_flex(ranked, sec_rank, today):
 
 def send(text, flex):
     sent = []
+    # 1) ส่งตรงเข้า LINE (push API) ตามปลายทางที่กำหนด — LINE_PUSH_TO = group Cxxx / user Uxxx
+    tok = os.environ.get("LINE_PUSH_TOKEN", "").strip()
+    to = os.environ.get("LINE_PUSH_TO", "").strip()
+    if tok and to:
+        msg = flex if flex else {"type": "text", "text": text}
+        try:
+            req = urllib.request.Request(
+                "https://api.line.me/v2/bot/message/push",
+                data=json.dumps({"to": to, "messages": [msg]}).encode(),
+                headers={"Content-Type": "application/json", "Authorization": "Bearer " + tok})
+            urllib.request.urlopen(req, timeout=15).read()
+            sent.append("line-push")
+        except Exception as e:
+            print("line push failed: %s" % str(e)[:200])
+    # 2) ทางเลือกสำรอง: n8n hook (DM) / Discord — ใช้เมื่อไม่ได้ตั้ง push ไว้
     dc = os.environ.get("DISCORD_WEBHOOK", "").strip()
     hook = os.environ.get("STOCK_LINE_HOOK", "").strip()
     for name, url, payload in (("discord", dc, {"content": text}),
-                               ("line", hook, ({"messages": [flex]} if flex else {"text": text}))):
+                               ("line-hook", hook, ({"messages": [flex]} if flex else {"text": text}))):
         if not url:
             continue
         try:
             req = urllib.request.Request(
                 url, data=json.dumps(payload).encode(),
-                headers={"Content-Type": "application/json",
-                         "Accept": "application/json",
+                headers={"Content-Type": "application/json", "Accept": "application/json",
                          "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) "
                                        "AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0 Safari/537.36"})
             urllib.request.urlopen(req, timeout=15).read()
