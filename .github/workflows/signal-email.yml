@@ -1,0 +1,30 @@
+name: Daily Buy-Signal Email
+
+on:
+  schedule:
+    - cron: '0 10 * * 1-5'    # ~17:00 ICT วันธรรมดา (หลังตลาด SET ปิด) — เวลาเป็น UTC
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: signal-email
+  cancel-in-progress: false
+
+jobs:
+  email:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: สแกนสัญญาณซื้อ (ย่อในขาขึ้น) + ส่งเมล
+        env:
+          STOCK_API_KEY: ${{ secrets.STOCK_API_KEY }}
+          RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
+          MAIL_TO: info@atls.co.th
+          MAIL_FROM: "SET Buy Signals <no-reply@lifebazi.com>"
+          SCAN_API_BASE: https://live.atlog.asia
+        run: python signal_email.py
