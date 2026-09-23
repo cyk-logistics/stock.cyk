@@ -71,16 +71,21 @@ def scan():
             if not cs or len(cs) < 210 or "error" in v:
                 continue
             last_date = cs[-1]["bar_time"][:10]
-            cl = [c["close"] for c in cs]; hi = [c["high"] for c in cs]
+            cl = [c["close"] for c in cs]; hi = [c["high"] for c in cs]; vol = [c["volume"] for c in cs]
             last = cl[-1]; e200 = _ema(cl, 200); e50 = _ema(cl, 50); r = _rsi(cl)
             hi60 = max(hi[-61:-1])
             up = last > e200; dip = last <= 0.90 * hi60
             if up and (dip or r < 40):
                 pct = (last / hi60 - 1) * 100
                 reason = "ย่อ %.0f%% จากไฮ 60 วัน" % pct if dip else "RSI ต่ำ %.0f" % r
-                buys.append({"sym": s, "last": last, "rsi": r, "pct": pct,
-                             "reason": reason, "above50": last > e50})
-    buys.sort(key=lambda x: x["pct"])
+                v20 = sum(vol[-21:-1]) / 20 if len(vol) >= 21 else (sum(vol) / max(len(vol), 1))
+                vr = vol[-1] / v20 if v20 else 0.0
+                chg = (last / cl[-2] - 1) * 100 if len(cl) >= 2 else 0.0
+                conf_vol = vr >= 1.3 and chg >= 0
+                vstat = "✅ หนุน" if conf_vol else ("🟡 ปกติ" if vr >= 0.8 else "🔴 บาง")
+                buys.append({"sym": s, "last": last, "rsi": r, "pct": pct, "reason": reason,
+                             "vr": vr, "vstat": vstat, "conf_vol": conf_vol})
+    buys.sort(key=lambda x: (x["conf_vol"], x["vr"]), reverse=True)   # วอลลุ่มหนุนขึ้นก่อน
     return buys, last_date
 
 
@@ -89,14 +94,17 @@ def build_email(buys, last_date):
     tlines = ["สัญญาณซื้อหุ้น (ย่อในขาขึ้น) — แท่งล่าสุด %s · จาก live.atlog.asia" % last_date, ""]
     rows = ""
     for b in buys:
-        tlines.append("- %-7s %8.2f (RSI %3.0f)  %s" % (b["sym"], b["last"], b["rsi"], b["reason"]))
+        tlines.append("- %-7s %8.2f  RSI %3.0f  วอลลุ่ม %.1fx %s  · %s"
+                      % (b["sym"], b["last"], b["rsi"], b["vr"], b["vstat"], b["reason"]))
         rows += ('<tr><td style="border:1px solid #dbe3ee;padding:6px 10px"><b>%s</b></td>'
                  '<td style="border:1px solid #dbe3ee;padding:6px 10px;text-align:right">%.2f</td>'
                  '<td style="border:1px solid #dbe3ee;padding:6px 10px;text-align:right">%.0f</td>'
+                 '<td style="border:1px solid #dbe3ee;padding:6px 10px;text-align:right">%.1fx %s</td>'
                  '<td style="border:1px solid #dbe3ee;padding:6px 10px">%s</td></tr>'
-                 % (b["sym"], b["last"], b["rsi"], b["reason"]))
+                 % (b["sym"], b["last"], b["rsi"], b["vr"], b["vstat"], b["reason"]))
     tlines += ["", ("สัญญาณ = ราคาเหนือ EMA200 (ขาขึ้น) และย่อ >=10% จากไฮ 60 วัน หรือ RSI ต่ำ = จังหวะย่อซื้อในขาขึ้น "
                     "(backtest 10 ปี +5%/120วัน ชนะ 57%)"),
+               "วอลลุ่ม: ✅ หนุน (>=1.3x + เขียว) · 🟡 ปกติ · 🔴 บาง = ยังไม่ยืนยัน (รอวันวอลลุ่มพุ่งก่อนหนักมือ)",
                "หมายเหตุ: ใช้แท่งที่ปิดแล้ว · เป็นจังหวะทยอยเข้า ไม่ใช่การันตี · ไม่ใช่คำแนะนำมีใบอนุญาต ตัดสินใจ+คุมความเสี่ยงเอง"]
     html = ('<div style="font-family:-apple-system,Segoe UI,Roboto,sans-serif;color:#1a1f2b;max-width:600px">'
             '<h2 style="color:#0e3a6e;margin:0 0 2px">🟢 สัญญาณซื้อหุ้น — ย่อในขาขึ้น</h2>'
@@ -105,9 +113,11 @@ def build_email(buys, last_date):
             '<tr style="background:#eef3f9"><th style="border:1px solid #dbe3ee;padding:6px 10px;text-align:left">หุ้น</th>'
             '<th style="border:1px solid #dbe3ee;padding:6px 10px;text-align:right">ราคา</th>'
             '<th style="border:1px solid #dbe3ee;padding:6px 10px;text-align:right">RSI</th>'
+            '<th style="border:1px solid #dbe3ee;padding:6px 10px;text-align:right">วอลลุ่ม</th>'
             '<th style="border:1px solid #dbe3ee;padding:6px 10px;text-align:left">เหตุผล</th></tr>%s</table>'
             '<p style="font-size:13px;color:#333;margin-top:14px;line-height:1.6"><b>สัญญาณนี้:</b> ราคาเหนือ EMA200 (ขาขึ้น) '
             'และย่อ ≥10%% จากไฮ 60 วัน (หรือ RSI ต่ำ) = จังหวะ "ย่อซื้อในขาขึ้น" ที่ backtest 10 ปีให้ผลดีสุด (+5%%/120วัน ชนะ 57%%)</p>'
+            '<p style="font-size:12px;color:#555;line-height:1.6"><b>วอลลุ่ม:</b> ✅ หนุน (≥1.3x + เขียว) · 🟡 ปกติ · 🔴 บาง = ยังไม่ยืนยัน (รอวันวอลลุ่มพุ่งก่อนค่อยหนักมือ)</p>'
             '<p style="font-size:12px;color:#7a8494;line-height:1.6">⚠️ ใช้แท่งที่ปิดแล้ว · ควรรอวอลลุ่มยืนยัน · เป็นจังหวะทยอยเข้า ไม่ใช่การันตี<br>'
             'ไม่ใช่คำแนะนำมีใบอนุญาต — ตัดสินใจและคุมความเสี่ยงเอง</p></div>' % (last_date, len(buys), rows))
     return subj, "\n".join(tlines), html
