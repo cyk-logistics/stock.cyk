@@ -13,6 +13,7 @@ env: STOCK_API_KEY (จำเป็น) · RESEND_API_KEY (จำเป็น) �
 import json
 import os
 import sys
+import urllib.error
 import urllib.request
 from datetime import datetime, timezone, timedelta
 
@@ -114,10 +115,17 @@ def build_email(buys, last_date):
 
 def send_resend(subj, text, html):
     payload = {"from": MAIL_FROM, "to": [MAIL_TO], "subject": subj, "text": text, "html": html}
-    req = urllib.request.Request("https://api.resend.com/emails", data=json.dumps(payload).encode(),
-                                 headers={"Authorization": "Bearer " + os.environ["RESEND_API_KEY"],
-                                          "Content-Type": "application/json"})
-    return json.loads(urllib.request.urlopen(req, timeout=25).read())
+    req = urllib.request.Request(
+        "https://api.resend.com/emails", data=json.dumps(payload).encode(),
+        headers={"Authorization": "Bearer " + os.environ["RESEND_API_KEY"],
+                 "Content-Type": "application/json", "Accept": "application/json",
+                 # ⚠️ ต้องมี browser UA ไม่งั้น Cloudflare หน้า Resend บล็อก (error 1010 / 403)
+                 "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) "
+                               "AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0 Safari/537.36"})
+    try:
+        return json.loads(urllib.request.urlopen(req, timeout=25).read())
+    except urllib.error.HTTPError as e:
+        raise SystemExit("Resend error %s: %s" % (e.code, e.read().decode(errors="replace")[:300]))
 
 
 def main():
