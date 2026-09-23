@@ -2,22 +2,25 @@
  "GULF": [
   "trap"
  ],
- "BCP": [
-  "bear"
- ],
  "EGCO": [
   "trap"
  ],
+ "BCP": [
+  "bear"
+ ],
  "WHA": [
   "trap"
+ ],
+ "LH": [
+  "trap"
+ ],
+ "KBANK": [
+  "bear"
  ],
  "BJC": [
   "bear"
  ],
  "OR": [
-  "trap"
- ],
- "LH": [
   "trap"
  ],
  "MTC": [
@@ -34,9 +37,7 @@
   "runup"
  ],
  "HANA": [
+  "bear",
   "runup"
- ],
- "DELTA": [
-  "exit"
  ]
 }
