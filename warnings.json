@@ -1,5 +1,6 @@
 {
  "GULF": [
+  "exit",
   "trap"
  ],
  "EGCO": [
@@ -8,14 +9,11 @@
  "BCP": [
   "bear"
  ],
- "WHA": [
-  "trap"
- ],
- "LH": [
-  "trap"
- ],
  "KBANK": [
   "bear"
+ ],
+ "WHA": [
+  "trap"
  ],
  "BJC": [
   "bear"
@@ -25,6 +23,9 @@
  ],
  "MTC": [
   "bear"
+ ],
+ "LH": [
+  "trap"
  ],
  "SCC": [
   "bear"
@@ -37,7 +38,6 @@
   "runup"
  ],
  "HANA": [
-  "bear",
-  "runup"
+  "bear"
  ]
 }
