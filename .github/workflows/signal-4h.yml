@@ -1,0 +1,41 @@
+name: 4H Buy-Signal Email (instant)
+
+on:
+  schedule:
+    - cron: '*/30 3-10 * * 1-5'   # ทุก 30 นาที 10:00–17:30 ICT วันธรรมดา (จับแท่ง 4H ปิด 13:00/17:00) — UTC
+  workflow_dispatch:
+
+permissions:
+  contents: write                  # ต้อง commit state กันส่งซ้ำกลับ repo
+
+concurrency:
+  group: signal-4h
+  cancel-in-progress: false
+
+jobs:
+  scan:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: สแกนกราฟ 4H + ส่งเมลทันทีเมื่อมีสัญญาณใหม่
+        env:
+          STOCK_API_KEY: ${{ secrets.STOCK_API_KEY }}
+          RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
+          MAIL_TO: info@atls.co.th
+          MAIL_FROM: "SET Buy Signals <no-reply@lifebazi.com>"
+          SCAN_API_BASE: https://live.atlog.asia
+        run: python signal_email_4h.py
+      - name: บันทึก state กันส่งซ้ำ (commit กลับ — [skip ci] กันไป trigger screener/LINE)
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add signals_4h_state.json
+          if ! git diff --cached --quiet; then
+            git commit -m "Update 4H signal state [skip ci]"
+            git pull --rebase --autostash origin main || git rebase --abort || true
+            git push || echo "⚠ push state ไม่ผ่าน — จะอัปเดตรอบหน้า"
+          fi
+        continue-on-error: true
