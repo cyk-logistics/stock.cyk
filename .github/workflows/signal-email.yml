@@ -6,7 +6,7 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: read
+  contents: write              # commit ประวัติหุ้นที่แนะนำกลับ repo (history/signals_1d.jsonl)
 
 concurrency:
   group: signal-email
@@ -28,3 +28,14 @@ jobs:
           MAIL_FROM: "SET Buy Signals <no-reply@lifebazi.com>"
           SCAN_API_BASE: https://live.atlog.asia
         run: python signal_email.py
+      - name: บันทึกประวัติหุ้นที่แนะนำ (commit กลับ — [skip ci] กันไป trigger screener/LINE)
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          if [ -f history/signals_1d.jsonl ]; then git add history/signals_1d.jsonl; fi
+          if ! git diff --cached --quiet; then
+            git commit -m "Log daily signal email history [skip ci]"
+            git pull --rebase --autostash origin main || git rebase --abort || true
+            git push || echo "⚠ push ประวัติไม่ผ่าน — รอบหน้าลองใหม่"
+          fi
+        continue-on-error: true

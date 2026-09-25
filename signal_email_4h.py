@@ -17,6 +17,8 @@ import urllib.request
 from datetime import datetime, timezone, timedelta
 from pathlib import Path
 
+import signal_history
+
 BASE = os.environ.get("SCAN_API_BASE", "https://live.atlog.asia").rstrip("/")
 KEY = os.environ.get("STOCK_API_KEY", "").strip()
 MAIL_TO = os.environ.get("MAIL_TO", "info@atls.co.th").strip()
@@ -164,6 +166,12 @@ def main():
         else:
             r = send_resend(subj, text, html)   # ล้ม → SystemExit ก่อนเขียน state → รอบหน้าส่งใหม่ (ไม่หลุด)
             print("ส่งเมลแล้ว:", r.get("id", r))
+            # เก็บประวัติหุ้นที่แนะนำ → สรุปผลสิ้นเดือน (signal_monthly_report.py)
+            signal_history.append("4H", [{"bar": b["bar_close"], "sym": b["sym"], "price": round(b["last"], 4),
+                                          "rsi": round(b["rsi"], 1), "pct": round(b["pct"], 1), "vr": round(b["vr"], 2),
+                                          "vstat": b["vstat"], "reason": b["reason"]}
+                                         for b in sorted(new.values(), key=lambda x: x["sym"])],
+                                  email_id=r.get("id", "") if isinstance(r, dict) else "")
     else:
         print("ไม่มีสัญญาณใหม่ — ไม่ส่งเมล")
     if not dry:   # เขียน state หลังส่งสำเร็จเท่านั้น · ไม่มี timestamp → state เดิม = ไฟล์เดิม = ไม่ commit ถี่

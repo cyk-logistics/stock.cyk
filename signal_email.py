@@ -17,6 +17,8 @@ import urllib.error
 import urllib.request
 from datetime import datetime, timezone, timedelta
 
+import signal_history
+
 BASE = os.environ.get("SCAN_API_BASE", "https://live.atlog.asia").rstrip("/")
 KEY = os.environ.get("STOCK_API_KEY", "").strip()
 MAIL_TO = os.environ.get("MAIL_TO", "info@atls.co.th").strip()
@@ -143,6 +145,9 @@ def main():
         raise SystemExit("ต้องตั้ง STOCK_API_KEY")
     dry = "--dry" in sys.argv
     buys, last_date = scan()
+    if not last_date:
+        # ดึงแท่งไม่ได้สักตัว (API ล่ม/เครื่อง mini ดับ) ≠ "ไม่มีสัญญาณ" → ให้ run ขึ้นแดง ไม่เงียบหลอก
+        raise SystemExit("สแกนไม่ได้ — ดึงข้อมูลจาก %s ไม่ได้เลย (ไม่ใช่ 'ไม่มีสัญญาณ')" % BASE)
     print("แท่งล่าสุด %s · พบสัญญาณซื้อ %d ตัว: %s" % (last_date, len(buys), ", ".join(b["sym"] for b in buys)))
     if not buys and os.environ.get("SEND_EMPTY", "") not in ("1", "true", "yes"):
         print("ไม่มีสัญญาณวันนี้ — ไม่ส่งเมล (ตั้ง SEND_EMPTY=1 ถ้าอยากให้ส่งทุกวัน)")
@@ -155,6 +160,11 @@ def main():
         raise SystemExit("ต้องตั้ง RESEND_API_KEY (ยังไม่ได้ส่ง)")
     r = send_resend(subj, text, html)
     print("ส่งเมลแล้ว:", r.get("id", r))
+    # เก็บประวัติหุ้นที่แนะนำ → สรุปผลสิ้นเดือน (signal_monthly_report.py)
+    signal_history.append("1D", [{"bar": last_date, "sym": b["sym"], "price": round(b["last"], 4),
+                                  "rsi": round(b["rsi"], 1), "pct": round(b["pct"], 1), "vr": round(b["vr"], 2),
+                                  "vstat": b["vstat"], "reason": b["reason"]} for b in buys],
+                          email_id=r.get("id", "") if isinstance(r, dict) else "")
 
 
 if __name__ == "__main__":
