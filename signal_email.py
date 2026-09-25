@@ -73,6 +73,7 @@ def scan():
     buys = []
     last_date = ""
     cmap = {}
+    n_all = n_up = 0
     for i in range(0, len(UNIVERSE), 20):
         chunk = ",".join(UNIVERSE[i:i + 20])
         try:
@@ -87,6 +88,7 @@ def scan():
             cmap[s] = cs
             cl = [c["close"] for c in cs]; hi = [c["high"] for c in cs]; vol = [c["volume"] for c in cs]
             last = cl[-1]; e200 = _ema(cl, 200); e50 = _ema(cl, 50); r = _rsi(cl)
+            n_all += 1; n_up += last > e200
             hi60 = max(hi[-61:-1])
             up = last > e200; dip = last <= 0.90 * hi60
             if up and (dip or r < 40):
@@ -98,10 +100,17 @@ def scan():
                 conf_vol = vr >= 1.3 and chg >= 0
                 vstat = "✅ หนุน" if conf_vol else ("🟡 ปกติ" if vr >= 0.8 else "🔴 บาง")
                 new = not _is_signal(cl[:-1], hi[:-1])          # เมื่อวานยังไม่เข้า = สัญญาณเพิ่งเกิด
+                # ป้ายเสี่ยง (analyze_stops.py 10 ปี: ปกติโดนตัดขาดทุน 34% · 2 แบบนี้ ~50%)
+                risk = []
+                if len(cl) > 11 and (last / cl[-11] - 1) * 100 < -10:
+                    risk.append("⚠️ ร่วงเร็ว")
+                if pct < -20:
+                    risk.append("⚠️ ย่อลึก>20%")
                 buys.append({"sym": s, "last": last, "rsi": r, "pct": pct, "reason": reason,
-                             "vr": vr, "vstat": vstat, "conf_vol": conf_vol, "new": new})
+                             "vr": vr, "vstat": vstat, "conf_vol": conf_vol, "new": new, "risk": risk})
     buys.sort(key=lambda x: (x["new"], x["conf_vol"], x["vr"]), reverse=True)   # ใหม่ก่อน แล้ววอลลุ่มหนุน
-    return buys, last_date, cmap
+    market = {"breadth": (n_up / n_all * 100) if n_all else None, "n": n_all}
+    return buys, last_date, cmap, market
 
 
 TD = 'style="border:1px solid #dbe3ee;padding:6px 9px;%s"'
@@ -120,7 +129,25 @@ def _dm(d):
     return "%s/%s" % (d[8:10], d[5:7])
 
 
-def build_email(buys, last_date, held=(), exits=()):
+def market_line(market):
+    """สภาพตลาด (analyze_stops.py): หุ้นส่วนใหญ่ใต้ EMA200 = สัญญาณซื้อโดนตัดขาดทุนบ่อยขึ้นชัดเจน"""
+    b = (market or {}).get("breadth")
+    if b is None:
+        return "", ""
+    if b < 40:
+        t = ("⚠️ ตลาดอ่อน — หุ้นในกลุ่มเหนือ EMA200 แค่ %.0f%% · สถิติ 10 ปี: ซื้อช่วงตลาดอ่อนโดนตัดขาดทุน 43%% "
+             "(ปกติ 31%%) → ลดขนาด/ทยอยเข้า" % b, "#fff4e5", "#8a5a00")
+    elif b > 60:
+        t = ("✅ ตลาดแข็ง — หุ้นในกลุ่มเหนือ EMA200 %.0f%% · สถิติ 10 ปี: ซื้อช่วงตลาดแข็งโดนตัดขาดทุน 27%% (ปกติ 34%%)" % b,
+             "#eaf7ef", "#0a6b44")
+    else:
+        t = ("➖ ตลาดกลางๆ — หุ้นในกลุ่มเหนือ EMA200 %.0f%% · สถิติ 10 ปี: โดนตัดขาดทุน ~36%%" % b, "#f4f7fb", "#3a4454")
+    html = ('<div style="margin:12px 0 4px;padding:9px 12px;border-radius:8px;background:%s;color:%s;font-size:13px">%s</div>'
+            % (t[1], t[2], t[0]))
+    return t[0], html
+
+
+def build_email(buys, last_date, held=(), exits=(), market=None):
     """เมลรายวัน: 🟢 สัญญาณซื้อ · 🔴 ควรออก (หุ้นที่เคยแนะนำเกิดสัญญาณออก) · 📌 ติดตามหุ้นที่แนะนำที่ยังถืออยู่"""
     nb, nx = len(buys), len(exits)
     if nb and nx:
@@ -129,8 +156,9 @@ def build_email(buys, last_date, held=(), exits=()):
         subj = "🔴 สัญญาณควรออก %d ตัว — หุ้นที่เคยแนะนำ %s" % (nx, last_date)
     else:
         subj = "🟢 สัญญาณซื้อหุ้น (ย่อในขาขึ้น) %s — %d ตัว" % (last_date, nb)
-    tl = ["หุ้นปันผล — แท่งล่าสุด %s · จาก live.atlog.asia" % last_date, ""]
-    parts = []
+    mtxt, mhtml = market_line(market)
+    tl = ["หุ้นปันผล — แท่งล่าสุด %s · จาก live.atlog.asia" % last_date] + ([mtxt] if mtxt else []) + [""]
+    parts = [mhtml] if mhtml else []
     if exits:
         tl.append("🔴 ควรออก (หุ้นที่เคยแนะนำ)")
         rows = ""
@@ -152,15 +180,18 @@ def build_email(buys, last_date, held=(), exits=()):
         rows = ""
         for b in buys:
             tag = "🆕 " if b.get("new") else ""
-            tl.append("- %s%-7s %8.2f  RSI %3.0f  วอลลุ่ม %.1fx %s  · %s"
-                      % (tag, b["sym"], b["last"], b["rsi"], b["vr"], b["vstat"], b["reason"]))
+            risk = " ".join(b.get("risk") or [])
+            tl.append("- %s%-7s %8.2f  RSI %3.0f  วอลลุ่ม %.1fx %s  · %s %s"
+                      % (tag, b["sym"], b["last"], b["rsi"], b["vr"], b["vstat"], b["reason"], risk))
             rows += ("<tr><td %s><b>%s</b>%s</td><td %s>%.2f</td><td %s>%.0f</td><td %s>%.1fx %s</td><td %s>%s</td></tr>"
                      % (TD % "", b["sym"], ' <span style="color:#0a8f5a;font-size:12px">🆕 ใหม่</span>' if b.get("new") else "",
                         TD % "text-align:right", b["last"], TD % "text-align:right", b["rsi"],
-                        TD % "text-align:right", b["vr"], b["vstat"], TD % "", b["reason"]))
+                        TD % "text-align:right", b["vr"], b["vstat"], TD % "",
+                        b["reason"] + ((' <span style="color:#b26a00">%s</span>' % " ".join(b["risk"])) if b.get("risk") else "")))
         parts.append('<h3 style="color:#0a8f5a;margin:18px 0 6px">🟢 สัญญาณซื้อ — ย่อในขาขึ้น</h3>'
                      '<table style="border-collapse:collapse;font-size:14px"><tr style="background:#eef3f9">%s%s%s%s%s</tr>%s</table>'
-                     '<p style="font-size:12px;color:#555;margin:6px 0 0">🆕 = สัญญาณเพิ่งเกิดวันนี้ · ไม่มีป้าย = ยังอยู่ในโซนซื้อต่อจากวันก่อน</p>'
+                     '<p style="font-size:12px;color:#555;margin:6px 0 0">🆕 = สัญญาณเพิ่งเกิดวันนี้ · ไม่มีป้าย = ยังอยู่ในโซนซื้อต่อจากวันก่อน · '
+                     '⚠️ ร่วงเร็ว (10 วันร่วง >10%%) / ย่อลึก >20%% = สถิติโดนตัดขาดทุน ~50%% (ปกติ 34%%)</p>'
                      % (TH % ("left", "หุ้น"), TH % ("right", "ราคา"), TH % ("right", "RSI"), TH % ("right", "วอลลุ่ม"),
                         TH % ("left", "เหตุผล"), rows))
         tl.append("")
@@ -223,19 +254,19 @@ def main():
     if not KEY:
         raise SystemExit("ต้องตั้ง STOCK_API_KEY")
     dry = "--dry" in sys.argv
-    buys, last_date, cmap = scan()
+    buys, last_date, cmap, market = scan()
     if not last_date:
         # ดึงแท่งไม่ได้สักตัว (API ล่ม/เครื่อง mini หลุด) ≠ "ไม่มีสัญญาณ" → ให้ run ขึ้นแดง ไม่เงียบหลอก
         raise SystemExit("สแกนไม่ได้ — ดึงข้อมูลจาก %s ไม่ได้เลย (ไม่ใช่ 'ไม่มีสัญญาณ')" % BASE)
     # ติดตามหุ้นที่เคยแนะนำ (ประวัติเมลรายวัน + 4H) → ยังถือ / เกิดสัญญาณควรออก
     held, exits = signal_track.track(signal_history.load(), signal_history.load_exits(), cmap)
-    print("แท่งล่าสุด %s · สัญญาณซื้อ %d ตัว: %s · ควรออก %d: %s · ถืออยู่ %d"
-          % (last_date, len(buys), ", ".join(("🆕" if b["new"] else "") + b["sym"] for b in buys),
+    print("แท่งล่าสุด %s · ตลาด: หุ้นเหนือ EMA200 %s%% · สัญญาณซื้อ %d ตัว: %s · ควรออก %d: %s · ถืออยู่ %d"
+          % (last_date, "%.0f" % market["breadth"] if market.get("breadth") is not None else "—", len(buys), ", ".join(("🆕" if b["new"] else "") + b["sym"] for b in buys),
              len(exits), ", ".join(p["sym"] for p in exits), len(held)))
     if not buys and not exits and os.environ.get("SEND_EMPTY", "") not in ("1", "true", "yes"):
         print("ไม่มีสัญญาณซื้อ/ออกวันนี้ — ไม่ส่งเมล (ตั้ง SEND_EMPTY=1 ถ้าอยากให้ส่งทุกวัน)")
         return
-    subj, text, html = build_email(buys, last_date, held, exits)
+    subj, text, html = build_email(buys, last_date, held, exits, market)
     if dry:
         print("\n[DRY] subject:", subj, "\n", text)
         return

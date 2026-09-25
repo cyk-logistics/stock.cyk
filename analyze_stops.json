@@ -1,0 +1,521 @@
+{
+ "n": 2109,
+ "stop_rate": 33.8,
+ "avg_ret": 4.61,
+ "features": [
+  {
+   "feature": "เข้าเพราะ RSI<40 อย่างเดียว (ยังย่อไม่ถึง10%)",
+   "n": 491,
+   "stop_yes": 25.7,
+   "stop_no": 36.3,
+   "ret_yes": 1.29,
+   "ret_no": 5.62,
+   "early": [
+    35.5,
+    46.0
+   ],
+   "late": [
+    21.2,
+    30.6
+   ],
+   "consistent": true
+  },
+  {
+   "feature": "ย่อลึกกว่า 20% จากไฮ",
+   "n": 43,
+   "stop_yes": 53.5,
+   "stop_no": 33.4,
+   "ret_yes": 4.55,
+   "ret_no": 4.61,
+   "early": [
+    55.0,
+    43.6
+   ],
+   "late": [
+    52.2,
+    27.8
+   ],
+   "consistent": true
+  },
+  {
+   "feature": "ย่อ 10-15% (ตื้น)",
+   "n": 1440,
+   "stop_yes": 35.7,
+   "stop_no": 29.7,
+   "ret_yes": 5.09,
+   "ret_no": 3.57,
+   "early": [
+    45.3,
+    40.5
+   ],
+   "late": [
+    30.1,
+    24.4
+   ],
+   "consistent": true
+  },
+  {
+   "feature": "เหนือ EMA200 ไม่ถึง 3% (จ่อหลุด)",
+   "n": 1001,
+   "stop_yes": 33.9,
+   "stop_no": 33.8,
+   "ret_yes": 3.23,
+   "ret_no": 5.86,
+   "early": [
+    46.6,
+    41.6
+   ],
+   "late": [
+    27.2,
+    29.2
+   ],
+   "consistent": false
+  },
+  {
+   "feature": "เหนือ EMA200 เกิน 10%",
+   "n": 458,
+   "stop_yes": 34.9,
+   "stop_no": 33.5,
+   "ret_yes": 12.34,
+   "ret_no": 2.46,
+   "early": [
+    44.8,
+    43.6
+   ],
+   "late": [
+    28.4,
+    28.2
+   ],
+   "consistent": false
+  },
+  {
+   "feature": "EMA200 เริ่มชี้ลง/แบน (20วัน < +0.5%)",
+   "n": 415,
+   "stop_yes": 34.0,
+   "stop_no": 33.8,
+   "ret_yes": 6.49,
+   "ret_no": 4.15,
+   "early": [
+    45.4,
+    43.5
+   ],
+   "late": [
+    26.6,
+    28.6
+   ],
+   "consistent": false
+  },
+  {
+   "feature": "EMA50 ต่ำกว่า EMA200 แล้ว",
+   "n": 181,
+   "stop_yes": 38.7,
+   "stop_no": 33.4,
+   "ret_yes": 10.81,
+   "ret_no": 4.03,
+   "early": [
+    50.5,
+    42.9
+   ],
+   "late": [
+    25.6,
+    28.4
+   ],
+   "consistent": false
+  },
+  {
+   "feature": "วอลลุ่ม >= 2 เท่า",
+   "n": 297,
+   "stop_yes": 34.7,
+   "stop_no": 33.7,
+   "ret_yes": 4.39,
+   "ret_no": 4.65,
+   "early": [
+    42.2,
+    44.2
+   ],
+   "late": [
+    29.8,
+    28.0
+   ],
+   "consistent": false
+  },
+  {
+   "feature": "วอลลุ่มหนุน (>=1.3x + แท่งเขียว)",
+   "n": 218,
+   "stop_yes": 33.0,
+   "stop_no": 33.9,
+   "ret_yes": 6.13,
+   "ret_no": 4.43,
+   "early": [
+    44.4,
+    43.8
+   ],
+   "late": [
+    26.3,
+    28.4
+   ],
+   "consistent": false
+  },
+  {
+   "feature": "วอลลุ่มพุ่ง + แท่งแดง (ขายทิ้ง)",
+   "n": 446,
+   "stop_yes": 34.8,
+   "stop_no": 33.6,
+   "ret_yes": 2.04,
+   "ret_no": 5.3,
+   "early": [
+    45.2,
+    43.5
+   ],
+   "late": [
+    29.1,
+    28.0
+   ],
+   "consistent": false
+  },
+  {
+   "feature": "ผันผวนสูง (ATR > 3%/วัน)",
+   "n": 903,
+   "stop_yes": 38.5,
+   "stop_no": 30.3,
+   "ret_yes": 9.41,
+   "ret_no": 1.02,
+   "early": [
+    43.9,
+    43.8
+   ],
+   "late": [
+    34.6,
+    24.2
+   ],
+   "consistent": false
+  },
+  {
+   "feature": "ร่วงเร็ว (10 วัน ร่วง > 10%)",
+   "n": 57,
+   "stop_yes": 49.1,
+   "stop_no": 33.4,
+   "ret_yes": 0.88,
+   "ret_no": 4.71,
+   "early": [
+    53.8,
+    43.5
+   ],
+   "late": [
+    45.2,
+    27.8
+   ],
+   "consistent": true
+  },
+  {
+   "feature": "ไฮเพิ่งเกิด <= 10 วัน (ดิ่งจากยอดเร็ว)",
+   "n": 375,
+   "stop_yes": 33.6,
+   "stop_no": 33.9,
+   "ret_yes": 11.49,
+   "ret_no": 3.12,
+   "early": [
+    41.5,
+    44.5
+   ],
+   "late": [
+    28.5,
+    28.2
+   ],
+   "consistent": false
+  },
+  {
+   "feature": "โมเมนตัม 1 ปี ติดลบ",
+   "n": 384,
+   "stop_yes": 38.8,
+   "stop_no": 32.7,
+   "ret_yes": 5.09,
+   "ret_no": 4.5,
+   "early": [
+    39.3,
+    44.9
+   ],
+   "late": [
+    38.6,
+    25.9
+   ],
+   "consistent": false
+  },
+  {
+   "feature": "โมเมนตัม 1 ปี > +40% (ขึ้นแรงมาก่อน)",
+   "n": 507,
+   "stop_yes": 42.0,
+   "stop_no": 31.2,
+   "ret_yes": 7.05,
+   "ret_no": 3.84,
+   "early": [
+    51.0,
+    41.2
+   ],
+   "late": [
+    35.8,
+    26.1
+   ],
+   "consistent": true
+  },
+  {
+   "feature": "ตลาดอ่อน: หุ้นเหนือ EMA200 < 40%",
+   "n": 525,
+   "stop_yes": 43.0,
+   "stop_no": 30.7,
+   "ret_yes": 3.88,
+   "ret_no": 4.85,
+   "early": [
+    55.4,
+    38.7
+   ],
+   "late": [
+    33.2,
+    26.9
+   ],
+   "consistent": true
+  },
+  {
+   "feature": "ตลาดแข็ง: หุ้นเหนือ EMA200 > 60%",
+   "n": 872,
+   "stop_yes": 26.7,
+   "stop_no": 38.8,
+   "ret_yes": 5.0,
+   "ret_no": 4.33,
+   "early": [
+    30.5,
+    52.5
+   ],
+   "late": [
+    24.8,
+    30.8
+   ],
+   "consistent": true
+  },
+  {
+   "feature": "ดัชนีกลุ่มต่ำกว่า EMA200 (ตลาดขาลง)",
+   "n": 610,
+   "stop_yes": 42.6,
+   "stop_no": 30.2,
+   "ret_yes": 1.23,
+   "ret_no": 5.99,
+   "early": [
+    53.1,
+    39.4
+   ],
+   "late": [
+    35.6,
+    25.5
+   ],
+   "consistent": true
+  },
+  {
+   "feature": "5 วันแรก ติดลบเกิน 5%",
+   "n": 278,
+   "stop_yes": 60.1,
+   "stop_no": 29.8,
+   "ret_yes": -0.12,
+   "ret_no": 5.33,
+   "early": [
+    68.3,
+    39.2
+   ],
+   "late": [
+    53.8,
+    24.9
+   ],
+   "consistent": true
+  },
+  {
+   "feature": "5 วันแรก ติดลบเกิน 8%",
+   "n": 90,
+   "stop_yes": 74.4,
+   "stop_no": 32.0,
+   "ret_yes": -7.4,
+   "ret_no": 5.15,
+   "early": [
+    80.5,
+    41.8
+   ],
+   "late": [
+    69.4,
+    26.7
+   ],
+   "consistent": true
+  },
+  {
+   "feature": "ครบ 5 วัน ยังขาดทุน (ปิดต่ำกว่าราคาเข้า)",
+   "n": 915,
+   "stop_yes": 42.3,
+   "stop_no": 27.3,
+   "ret_yes": 0.62,
+   "ret_no": 7.67,
+   "early": [
+    51.8,
+    37.7
+   ],
+   "late": [
+    37.0,
+    21.6
+   ],
+   "consistent": true
+  },
+  {
+   "feature": "5 วันแรก หลุด EMA200",
+   "n": 626,
+   "stop_yes": 42.2,
+   "stop_no": 30.3,
+   "ret_yes": 0.4,
+   "ret_no": 6.39,
+   "early": [
+    52.8,
+    40.3
+   ],
+   "late": [
+    36.5,
+    24.7
+   ],
+   "consistent": true
+  },
+  {
+   "feature": "5 วันแรก ทำโลว์ใหม่ต่ำกว่าวันเข้า",
+   "n": 1520,
+   "stop_yes": 35.5,
+   "stop_no": 29.5,
+   "ret_yes": 3.33,
+   "ret_no": 7.92,
+   "early": [
+    44.2,
+    43.1
+   ],
+   "late": [
+    30.7,
+    21.7
+   ],
+   "consistent": false
+  },
+  {
+   "feature": "10 วันแรก ติดลบเกิน 5%",
+   "n": 543,
+   "stop_yes": 57.3,
+   "stop_no": 25.7,
+   "ret_yes": -1.28,
+   "ret_no": 6.65,
+   "early": [
+    61.9,
+    36.3
+   ],
+   "late": [
+    54.1,
+    20.3
+   ],
+   "consistent": true
+  },
+  {
+   "feature": "10 วันแรก ติดลบเกิน 8%",
+   "n": 236,
+   "stop_yes": 69.5,
+   "stop_no": 29.3,
+   "ret_yes": -6.92,
+   "ret_no": 6.06,
+   "early": [
+    73.7,
+    38.6
+   ],
+   "late": [
+    65.6,
+    24.5
+   ],
+   "consistent": true
+  },
+  {
+   "feature": "ครบ 10 วัน ยังขาดทุน (ปิดต่ำกว่าราคาเข้า)",
+   "n": 971,
+   "stop_yes": 47.6,
+   "stop_no": 22.1,
+   "ret_yes": -1.64,
+   "ret_no": 9.94,
+   "early": [
+    56.0,
+    32.7
+   ],
+   "late": [
+    42.6,
+    16.5
+   ],
+   "consistent": true
+  },
+  {
+   "feature": "10 วันแรก หลุด EMA200",
+   "n": 845,
+   "stop_yes": 43.4,
+   "stop_no": 27.4,
+   "ret_yes": -0.48,
+   "ret_no": 8.02,
+   "early": [
+    53.7,
+    36.9
+   ],
+   "late": [
+    37.4,
+    22.3
+   ],
+   "consistent": true
+  },
+  {
+   "feature": "10 วันแรก ทำโลว์ใหม่ต่ำกว่าวันเข้า",
+   "n": 1682,
+   "stop_yes": 36.4,
+   "stop_no": 23.4,
+   "ret_yes": 2.86,
+   "ret_no": 11.52,
+   "early": [
+    45.5,
+    37.4
+   ],
+   "late": [
+    31.4,
+    16.1
+   ],
+   "consistent": true
+  }
+ ],
+ "early_exit_sims": [
+  {
+   "rule": "ครบ 5 วันยังติดลบเกิน 5% → ออก",
+   "flagged": 278,
+   "flag_stop_rate": 60.1,
+   "avg_new": 3.79,
+   "avg_base": 4.61,
+   "p5_new": -18.3,
+   "p5_base": -19.1
+  },
+  {
+   "rule": "ครบ 5 วันยังติดลบเกิน 8% → ออก",
+   "flagged": 90,
+   "flag_stop_rate": 74.4,
+   "avg_new": 4.5,
+   "avg_base": 4.61,
+   "p5_new": -18.7,
+   "p5_base": -19.1
+  },
+  {
+   "rule": "ครบ 10 วันยังติดลบเกิน 8% → ออก",
+   "flagged": 236,
+   "flag_stop_rate": 69.5,
+   "avg_new": 4.3,
+   "avg_base": 4.61,
+   "p5_new": -18.4,
+   "p5_base": -19.1
+  },
+  {
+   "rule": "ครบ 10 วันยังติดลบเกิน 10% → ออก",
+   "flagged": 120,
+   "flag_stop_rate": 84.2,
+   "avg_new": 4.65,
+   "avg_base": 4.61,
+   "p5_new": -18.9,
+   "p5_base": -19.1
+  }
+ ]
+}

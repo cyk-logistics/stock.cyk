@@ -80,6 +80,10 @@ def evaluate(p, candles):
     e200 = _ema(closes, 200)[-1] if len(closes) >= 200 else None
     target = max(highs[max(0, ie - 60):ie]) if ie >= 20 else None       # ไฮก่อนย่อ = เป้าตามธรรมชาติของจังหวะย่อซื้อ
     tags = []
+    first10 = closes[ie + 1:ie + 11]
+    if first10 and min(first10) <= entry * 0.92:
+        # analyze_stops.py: 10 วันแรกลงเกิน 8% → 70% ไปจบที่ตัดขาดทุน (ปกติ 34%) · แต่ขายทันทีไม่ได้ดีกว่ารอจุดตัด → เป็นธงเฝ้าระวัง
+        tags.append("⚠️ 10 วันแรกลงเกิน 8% (สถิติ 7 ใน 10 ไปถึงจุดตัดขาดทุน)")
     if target and last >= target:
         tags.append("🎯 กลับถึงไฮเดิมแล้ว")
     if e200 and last < e200:
