@@ -6,7 +6,7 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: write              # commit ประวัติหุ้นที่แนะนำกลับ repo (history/signals_1d.jsonl)
+  contents: write              # commit ประวัติหุ้นที่แนะนำ + สัญญาณออกกลับ repo (history/)
 
 concurrency:
   group: signal-email
@@ -33,6 +33,7 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           if [ -f history/signals_1d.jsonl ]; then git add history/signals_1d.jsonl; fi
+          if [ -f history/exits.jsonl ]; then git add history/exits.jsonl; fi   # สัญญาณออกที่แจ้งแล้ว (กันแจ้งซ้ำ)
           if ! git diff --cached --quiet; then
             git commit -m "Log daily signal email history [skip ci]"
             git pull --rebase --autostash origin main || git rebase --abort || true

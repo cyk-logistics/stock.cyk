@@ -1,0 +1,310 @@
+{
+  "years": 10,
+  "div_min": 3.0,
+  "n_stocks": 45,
+  "set_cagr": null,
+  "basket_buyhold_cagr": 3.36,
+  "universe": [
+    {
+      "sym": "PTT",
+      "yield": 8.57
+    },
+    {
+      "sym": "PTTEP",
+      "yield": 6.14
+    },
+    {
+      "sym": "TOP",
+      "yield": 4.64
+    },
+    {
+      "sym": "BCP",
+      "yield": 7.5
+    },
+    {
+      "sym": "OR",
+      "yield": 4.8
+    },
+    {
+      "sym": "BANPU",
+      "yield": 6.8
+    },
+    {
+      "sym": "EGCO",
+      "yield": 7.44
+    },
+    {
+      "sym": "RATCH",
+      "yield": 3.9
+    },
+    {
+      "sym": "GPSC",
+      "yield": 4.1
+    },
+    {
+      "sym": "BGRIM",
+      "yield": 3.05
+    },
+    {
+      "sym": "EA",
+      "yield": 14.59
+    },
+    {
+      "sym": "ADVANC",
+      "yield": 12.28
+    },
+    {
+      "sym": "TRUE",
+      "yield": 4.69
+    },
+    {
+      "sym": "KBANK",
+      "yield": 6.25
+    },
+    {
+      "sym": "SCB",
+      "yield": 7.16
+    },
+    {
+      "sym": "BBL",
+      "yield": 6.09
+    },
+    {
+      "sym": "KTB",
+      "yield": 6.96
+    },
+    {
+      "sym": "TTB",
+      "yield": 6.89
+    },
+    {
+      "sym": "KKP",
+      "yield": 7.68
+    },
+    {
+      "sym": "TISCO",
+      "yield": 7.56
+    },
+    {
+      "sym": "KTC",
+      "yield": 8.3
+    },
+    {
+      "sym": "SAWAD",
+      "yield": 3.26
+    },
+    {
+      "sym": "BEM",
+      "yield": 4.38
+    },
+    {
+      "sym": "BTS",
+      "yield": 15.35
+    },
+    {
+      "sym": "BDMS",
+      "yield": 6.78
+    },
+    {
+      "sym": "BH",
+      "yield": 6.6
+    },
+    {
+      "sym": "CPALL",
+      "yield": 6.74
+    },
+    {
+      "sym": "CPF",
+      "yield": 3.14
+    },
+    {
+      "sym": "CPN",
+      "yield": 7.03
+    },
+    {
+      "sym": "CRC",
+      "yield": 8.17
+    },
+    {
+      "sym": "HMPRO",
+      "yield": 8.71
+    },
+    {
+      "sym": "GLOBAL",
+      "yield": 5.61
+    },
+    {
+      "sym": "COM7",
+      "yield": 6.27
+    },
+    {
+      "sym": "BJC",
+      "yield": 3.78
+    },
+    {
+      "sym": "MINT",
+      "yield": 4.59
+    },
+    {
+      "sym": "OSP",
+      "yield": 7.76
+    },
+    {
+      "sym": "TU",
+      "yield": 8.21
+    },
+    {
+      "sym": "SCC",
+      "yield": 3.16
+    },
+    {
+      "sym": "SCGP",
+      "yield": 3.25
+    },
+    {
+      "sym": "IVL",
+      "yield": 3.1
+    },
+    {
+      "sym": "WHA",
+      "yield": 4.39
+    },
+    {
+      "sym": "AWC",
+      "yield": 5.03
+    },
+    {
+      "sym": "LH",
+      "yield": 11.6
+    },
+    {
+      "sym": "AP",
+      "yield": 14.18
+    },
+    {
+      "sym": "SPALI",
+      "yield": 11.32
+    }
+  ],
+  "strategies": [
+    {
+      "strategy": "ซื้อถือ (Buy&Hold)",
+      "avg_cagr": 3.36,
+      "median_cagr": 2.46,
+      "avg_maxdd": -63.28,
+      "avg_exposure": 100.0,
+      "avg_winrate": 62.2,
+      "beat_basket_pct": 0.0
+    },
+    {
+      "strategy": "ถือเมื่อ EMA50>EMA200",
+      "avg_cagr": 2.61,
+      "median_cagr": 1.72,
+      "avg_maxdd": -46.67,
+      "avg_exposure": 52.1,
+      "avg_winrate": 34.7,
+      "beat_basket_pct": 37.8
+    },
+    {
+      "strategy": "ถือเมื่อราคา>EMA200",
+      "avg_cagr": 1.98,
+      "median_cagr": 1.16,
+      "avg_maxdd": -46.84,
+      "avg_exposure": 52.9,
+      "avg_winrate": 15.4,
+      "beat_basket_pct": 33.3
+    },
+    {
+      "strategy": "ย่อแตะ EMA50 แล้วยืน",
+      "avg_cagr": 1.16,
+      "median_cagr": 0.66,
+      "avg_maxdd": -35.1,
+      "avg_exposure": 30.6,
+      "avg_winrate": 19.4,
+      "beat_basket_pct": 31.1
+    },
+    {
+      "strategy": "เบรกไฮ 200 วัน",
+      "avg_cagr": 1.09,
+      "median_cagr": 0.76,
+      "avg_maxdd": -27.96,
+      "avg_exposure": 16.8,
+      "avg_winrate": 39.1,
+      "beat_basket_pct": 33.3
+    },
+    {
+      "strategy": "ย่อ 10% จากไฮ (ขาขึ้น)",
+      "avg_cagr": 0.55,
+      "median_cagr": 0.63,
+      "avg_maxdd": -21.96,
+      "avg_exposure": 9.3,
+      "avg_winrate": 33.7,
+      "beat_basket_pct": 31.1
+    },
+    {
+      "strategy": "MACD ตัดขึ้น (ขาขึ้น)",
+      "avg_cagr": 0.17,
+      "median_cagr": -0.23,
+      "avg_maxdd": -28.77,
+      "avg_exposure": 16.2,
+      "avg_winrate": 28.8,
+      "beat_basket_pct": 35.6
+    },
+    {
+      "strategy": "ย่อ RSI<35 เด้ง (ขาขึ้น)",
+      "avg_cagr": -0.06,
+      "median_cagr": -0.05,
+      "avg_maxdd": -6.25,
+      "avg_exposure": 0.8,
+      "avg_winrate": 37.3,
+      "beat_basket_pct": 42.2
+    }
+  ],
+  "entry_quality": [
+    {
+      "entry": "ย่อ 10% จากไฮ (ขาขึ้น)",
+      "n60": 555,
+      "fwd60_avg": 3.67,
+      "fwd60_win": 56.0,
+      "n120": 524,
+      "fwd120_avg": 5.01,
+      "fwd120_win": 57.3
+    },
+    {
+      "entry": "ย่อ RSI<35 เด้ง (ขาขึ้น)",
+      "n60": 426,
+      "fwd60_avg": 2.18,
+      "fwd60_win": 57.0,
+      "n120": 413,
+      "fwd120_avg": 4.32,
+      "fwd120_win": 60.0
+    },
+    {
+      "entry": "เบรกไฮ 200 วัน",
+      "n60": 461,
+      "fwd60_avg": 1.92,
+      "fwd60_win": 51.2,
+      "n120": 443,
+      "fwd120_avg": 3.49,
+      "fwd120_win": 51.9
+    },
+    {
+      "entry": "MACD ตัดขึ้น (ขาขึ้น)",
+      "n60": 2145,
+      "fwd60_avg": 1.66,
+      "fwd60_win": 52.3,
+      "n120": 2064,
+      "fwd120_avg": 3.41,
+      "fwd120_win": 54.4
+    },
+    {
+      "entry": "ย่อแตะ EMA50 แล้วยืน",
+      "n60": 2429,
+      "fwd60_avg": 1.26,
+      "fwd60_win": 53.0,
+      "n120": 2356,
+      "fwd120_avg": 2.95,
+      "fwd120_win": 54.2
+    }
+  ]
+}

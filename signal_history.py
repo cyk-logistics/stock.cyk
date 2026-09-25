@@ -14,6 +14,7 @@ from pathlib import Path
 BKK = timezone(timedelta(hours=7))
 DIR = Path(__file__).parent / "history"
 FILES = {"1D": DIR / "signals_1d.jsonl", "4H": DIR / "signals_4h.jsonl"}
+EXITS = DIR / "exits.jsonl"          # สัญญาณ "ควรออก" ที่แจ้งไปแล้ว (signal_track.exit_record) — กันแจ้งซ้ำ
 
 
 def append(source, rows, email_id=""):
@@ -49,3 +50,34 @@ def load(month=None):
             out.append(r)
     out.sort(key=lambda r: r.get("sent_at", ""))
     return out
+
+
+def _read(path):
+    out = []
+    if path.exists():
+        for line in path.read_text(encoding="utf-8").splitlines():
+            line = line.strip()
+            if line:
+                try:
+                    out.append(json.loads(line))
+                except ValueError:
+                    pass
+    return out
+
+
+def load_exits():
+    return _read(EXITS)
+
+
+def append_exits(rows, email_id=""):
+    """บันทึกสัญญาณออกที่แจ้งในเมลแล้ว (เรียกหลังส่งสำเร็จเท่านั้น)"""
+    if not rows:
+        return
+    DIR.mkdir(exist_ok=True)
+    now = datetime.now(BKK).isoformat(timespec="seconds")
+    with EXITS.open("a", encoding="utf-8") as f:
+        for r in rows:
+            rec = {"notified_at": now}
+            rec.update(r)
+            rec["email_id"] = email_id
+            f.write(json.dumps(rec, ensure_ascii=False) + "\n")

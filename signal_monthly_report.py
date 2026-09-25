@@ -18,6 +18,7 @@ import statistics
 from datetime import date, datetime, timedelta
 
 import signal_history
+import signal_track
 from signal_email import BASE, BKK, KEY, MAIL_TO, _get, send_resend
 
 TH_MONTH = ["ม.ค.", "ก.พ.", "มี.ค.", "เม.ย.", "พ.ค.", "มิ.ย.", "ก.ค.", "ส.ค.", "ก.ย.", "ต.ค.", "พ.ย.", "ธ.ค."]
@@ -98,11 +99,11 @@ def build(month, recs):
     end = month_end(month)
     syms = sorted({r["sym"] for r in recs})
     first_day = min(str(r.get("bar", r["sent_at"]))[:10] for r in recs)
-    daily = api_candles(syms + ["SET"], "1d", 80)
+    daily = api_candles(syms + ["SET"], "1d", 260)   # 260 แท่ง = พอคิด EMA200 ให้ป้ายสถานะ
     src = "live.atlog.asia"
     miss = [s for s in syms + ["SET"] if s not in daily]
     if miss:
-        fb = yf_daily(miss, (date.fromisoformat(first_day) - timedelta(days=10)).isoformat())
+        fb = yf_daily(miss, (date.fromisoformat(first_day) - timedelta(days=400)).isoformat())
         daily.update(fb)
         if fb:
             src = "live.atlog.asia + Yahoo (สำรอง %d ตัว)" % len(fb) if len(miss) < len(syms) + 1 else "Yahoo (live.atlog.asia ไม่ตอบ)"
@@ -141,6 +142,17 @@ def build(month, recs):
             base = setd.get(ed) or next((setd[d] for d in sorted(setd, reverse=True) if d <= ed), None)
             if base and setd:
                 row["set_chg"] = (setd[max(setd)]["close"] / base["close"] - 1) * 100
+            # สถานะตามสัญญาณออก (ตัดขาดทุน -15% / ครบ 120 วัน) ณ สิ้นเดือน — ออกแล้ว = ผลจริงที่ราคาออก
+            st = signal_track.evaluate({"entry_date": ed, "entry": entry}, [dd[d] for d in sorted(dd)])
+            row["status"] = "ถืออยู่"
+            if st:
+                if st["exit"]:
+                    e = st["exit"]
+                    row.update(last=e["exit_price"], last_date=e["exit_date"], chg=(e["exit_price"] / entry - 1) * 100,
+                               status="ออกแล้ว %s/%s · %s" % (e["exit_date"][8:10], e["exit_date"][5:7], e["reason"]),
+                               exited=True)
+                elif st["tags"]:
+                    row["status"] = "ถืออยู่ · " + " · ".join(st["tags"])
         rows.append(row)
     rows.sort(key=lambda x: (x["chg"] is None, -(x["chg"] or 0)))
 
@@ -181,7 +193,7 @@ def build_email(summ, rows):
     for x in rows:
         when = "%s/%s %s" % (x["entry_date"][8:10], x["entry_date"][5:7], "·".join(x["sources"]))
         trs += ("<tr><td %s><b>%s</b></td><td %s>%s%s</td><td %s>%s</td><td %s>%s</td>"
-                "<td %s><b>%s</b></td><td %s>%s</td><td %s>%s</td><td %s>%s</td></tr>"
+                "<td %s><b>%s</b></td><td %s>%s</td><td %s>%s</td><td %s>%s</td><td %s>%s</td></tr>"
                 % (td % "", x["sym"],
                    td % "white-space:nowrap", when, (" ×%d" % x["times"]) if x["times"] > 1 else "",
                    td % "text-align:right", "—" if x["entry"] is None else "%.2f" % x["entry"],
@@ -189,13 +201,15 @@ def build_email(summ, rows):
                    td % ("text-align:right;color:%s" % _col(x["chg"])), _p(x["chg"]),
                    td % "text-align:right;color:#0a8f5a", _p(x["max_up"]),
                    td % "text-align:right;color:#c62828", _p(x["max_dn"]),
-                   td % ("text-align:right;color:%s" % _col(x["set_chg"])), _p(x["set_chg"])))
-        tl.append("- %-7s แนะนำ %s  %s → %s  %s  (สูงสุด %s · ต่ำสุด %s · SET %s)"
+                   td % ("text-align:right;color:%s" % _col(x["set_chg"])), _p(x["set_chg"]),
+                   td % "font-size:13px", x.get("status", "")))
+        tl.append("- %-7s แนะนำ %s  %s → %s  %s  (สูงสุด %s · ต่ำสุด %s · SET %s)  %s"
                   % (x["sym"], when, "—" if x["entry"] is None else "%.2f" % x["entry"],
                      "—" if x["last"] is None else "%.2f" % x["last"], _p(x["chg"]),
-                     _p(x["max_up"]), _p(x["max_dn"]), _p(x["set_chg"])))
+                     _p(x["max_up"]), _p(x["max_dn"]), _p(x["set_chg"]), x.get("status", "")))
     note = ("ราคาแนะนำ = ราคาปิดแท่งที่เกิดสัญญาณ (ตัวเลขในเมล) · นับจากครั้งแรกที่แนะนำในเดือน (×n = แนะนำซ้ำ) · "
-            "สูงสุด/ต่ำสุด = ช่วงหลังวันแนะนำถึงสิ้นเดือน · SET = ดัชนีช่วงเดียวกัน · ไม่รวมปันผล/ค่าคอม")
+            "สูงสุด/ต่ำสุด = ช่วงหลังวันแนะนำถึงสิ้นเดือน · SET = ดัชนีช่วงเดียวกัน · ไม่รวมปันผล/ค่าคอม · "
+            "ออกแล้ว = ผลจริงที่ราคาออกตามสัญญาณ (ตัดขาดทุน -%d%% / ครบ %d วันทำการ)" % (signal_track.STOP, signal_track.HOLD))
     beat = "%d/%d" % (summ["beat"], summ["n_set"]) if summ["n_set"] else "— (ไม่มีข้อมูลดัชนี)"
     tl += ["", "ชนะตลาด (ดีกว่า SET) %s ตัว · มัธยฐาน %s · จากเมล %d ฉบับ"
            % (beat, _p(summ["median"]), summ["emails"]),
@@ -210,13 +224,13 @@ def build_email(summ, rows):
     html = ('<div style="font-family:-apple-system,Segoe UI,Roboto,sans-serif;color:#1a1f2b;max-width:720px">'
             '<h2 style="color:#0e3a6e;margin:0 0 2px">📊 สรุปหุ้นที่แนะนำ — เดือน %s</h2>'
             '<div style="color:#5a6472;font-size:13px;margin-bottom:10px">ราคาถึง %s · จาก %s · เมลแนะนำ %d ฉบับ · หุ้น %d ตัว</div>%s'
-            '<table style="border-collapse:collapse;font-size:14px"><tr style="background:#eef3f9">%s%s%s%s%s%s%s%s</tr>%s</table>'
+            '<table style="border-collapse:collapse;font-size:14px"><tr style="background:#eef3f9">%s%s%s%s%s%s%s%s%s</tr>%s</table>'
             '<p style="font-size:12px;color:#555;line-height:1.6;margin-top:12px">%s<br>มัธยฐาน %s</p>'
             '<p style="font-size:12px;color:#7a8494">ไม่ใช่คำแนะนำมีใบอนุญาต — ตัดสินใจและคุมความเสี่ยงเอง</p></div>'
             % (mname, summ["last_date"] or "—", summ["source"], summ["emails"], summ["n"], cards,
                th % ("left", "หุ้น"), th % ("left", "แนะนำ"), th % ("right", "ราคาแนะนำ"), th % ("right", "ราคาล่าสุด"),
                th % ("right", "เปลี่ยน"), th % ("right", "สูงสุด"), th % ("right", "ต่ำสุด"), th % ("right", "SET"),
-               trs, note, _p(summ["median"])))
+               th % ("left", "สถานะ"), trs, note, _p(summ["median"])))
     return subj, "\n".join(tl), html
 
 
