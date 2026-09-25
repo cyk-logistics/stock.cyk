@@ -2,7 +2,8 @@
   "active": [
     "BEM",
     "CPF",
-    "GPSC"
+    "GPSC",
+    "PTTEP"
   ],
-  "bar_close": "2026-09-25T12:00:00+07:00"
+  "bar_close": "2026-09-25T20:00:00+07:00"
 }
