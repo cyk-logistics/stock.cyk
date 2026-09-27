@@ -14,6 +14,7 @@
 """
 STOP = 15.0
 HOLD = 120
+HOLD_BY_SOURCE = {"CC": 250}          # ระบบ 2 Cash Cow ถือยาวกว่า (เก็บปันผล)
 STAT_NOTE = ("สัญญาณออกทดสอบย้อนหลัง 10 ปี (55 หุ้น 2,137 ครั้ง): ถือครบ 120 วันทำการ เฉลี่ย +7.1% ชนะ 55% · "
              "ตัดขาดทุนที่ -15% ผลเฉลี่ยลดเหลือ +4.8% แต่กรณีแย่สุดเสียหายน้อยลง (-25.6% → -19.1%) · "
              "ออกตอนหลุด EMA200 / กลับถึงไฮเดิม / trailing ได้ผลเฉลี่ยแย่กว่าถือ จึงเป็นแค่ป้ายสถานะ")
@@ -66,15 +67,16 @@ def evaluate(p, candles):
         return None
     ie = before[-1]
     entry = p["entry"] if p.get("entry") else closes[ie]
+    hold = HOLD_BY_SOURCE.get(p.get("source"), HOLD)
     exit_ = None
     for k, j in enumerate(range(ie + 1, len(closes)), start=1):
         if closes[j] <= entry * (1 - STOP / 100):
             exit_ = {"exit_date": dates[j], "exit_price": closes[j], "kind": "stop",
                      "reason": "🔴 ตัดขาดทุน (ต่ำกว่าราคาแนะนำ %d%%)" % STOP}
             break
-        if k >= HOLD:
+        if k >= hold:
             exit_ = {"exit_date": dates[j], "exit_price": closes[j], "kind": "time",
-                     "reason": "⏰ ครบ %d วันทำการ — ขายตามรอบ/ประเมินใหม่" % HOLD}
+                     "reason": "⏰ ครบ %d วันทำการ — ขายตามรอบ/ประเมินใหม่" % hold}
             break
     last = closes[-1]
     e200 = _ema(closes, 200)[-1] if len(closes) >= 200 else None
@@ -89,7 +91,7 @@ def evaluate(p, candles):
     if e200 and last < e200:
         tags.append("⚠️ ต่ำกว่า EMA200")
     stop = entry * (1 - STOP / 100)
-    return {"entry": entry, "last": last, "last_date": dates[-1], "chg": (last / entry - 1) * 100,
+    return {"entry": entry, "hold": hold, "last": last, "last_date": dates[-1], "chg": (last / entry - 1) * 100,
             "days": len(closes) - 1 - ie, "stop": stop, "to_stop": (last / stop - 1) * 100,
             "target": target, "exit": exit_, "tags": tags}
 

@@ -143,7 +143,7 @@ def build(month, recs):
             if base and setd:
                 row["set_chg"] = (setd[max(setd)]["close"] / base["close"] - 1) * 100
             # สถานะตามสัญญาณออก (ตัดขาดทุน -15% / ครบ 120 วัน) ณ สิ้นเดือน — ออกแล้ว = ผลจริงที่ราคาออก
-            st = signal_track.evaluate({"entry_date": ed, "entry": entry}, [dd[d] for d in sorted(dd)])
+            st = signal_track.evaluate({"entry_date": ed, "entry": entry, "source": first.get("source")}, [dd[d] for d in sorted(dd)])
             row["status"] = "ถืออยู่"
             if st:
                 if st["exit"]:
@@ -180,9 +180,9 @@ def _col(v):
     return "#5a6472" if v is None else ("#0a8f5a" if v > 0 else ("#c62828" if v < 0 else "#5a6472"))
 
 
-def build_email(summ, rows):
+def build_email(summ, rows, title=""):
     y, m = map(int, summ["month"].split("-"))
-    mname = "%s %d" % (TH_MONTH[m - 1], y)
+    mname = "%s %d" % (TH_MONTH[m - 1], y) + ((" · " + title) if title else "")
     head = ("ชนะ %d/%d ตัว · เฉลี่ย %s (SET %s)" % (summ["win"], summ["n_priced"], _p(summ["avg"]), _p(summ["set_avg"]))
             if summ["n_priced"] else "ยังดึงราคาไม่ได้")
     subj = "📊 สรุปหุ้นที่แนะนำ เดือน %s — %s" % (mname, head)
@@ -251,21 +251,34 @@ def main():
         return
     if not a.month and today.day <= 3 and not (a.force or a.dry) and month != today.strftime("%Y-%m"):
         print("ต้นเดือน: สรุปย้อนเดือน %s ที่ยังไม่ได้ส่ง" % month)
-    recs = signal_history.load(month)
-    if not recs:
+    systems = [("ระบบ 1 ย่อซื้อในขาขึ้น", signal_history.SYSTEM1), ("ระบบ 2 🐄 Cash Cow", signal_history.SYSTEM2)]
+    res = []
+    for title, srcs in systems:
+        recs = signal_history.load(month, sources=srcs)
+        if recs:
+            summ, rows = build(month, recs)
+            res.append((title, summ, rows) + build_email(summ, rows, title))
+    if not res:
         print("เดือน %s ไม่มีหุ้นที่เมลแนะนำ — ไม่ส่ง" % month)
         return
-    summ, rows = build(month, recs)
-    subj, text, html = build_email(summ, rows)
+    y, m = map(int, month.split("-"))
+    heads = []
+    for title, summ, rows, sj, tx, ht in res:
+        heads.append("%s: %s" % (title.split(" ")[0] + " " + title.split(" ")[1],
+                                 ("ชนะ %d/%d เฉลี่ย %s" % (summ["win"], summ["n_priced"], _p(summ["avg"]))) if summ["n_priced"] else "—"))
+    subj = "📊 สรุปหุ้นที่แนะนำ เดือน %s %d — %s" % (TH_MONTH[m - 1], y, " · ".join(heads))
+    text = "\n\n".join(tx for _, _, _, _, tx, _ in res)
+    html = '<hr style="border:none;border-top:1px solid #dbe3ee;margin:22px 0">'.join(ht for _, _, _, _, _, ht in res)
     print(subj)
     print(text)
     if a.dry:
         return
-    if summ["n_priced"] == 0:
+    if all(summ["n_priced"] == 0 for _, summ, _, _, _, _ in res):
         raise SystemExit("ดึงราคาไม่ได้เลย — ยังไม่ส่ง (รอบหน้าลองใหม่)")
     r = send_resend(subj, text, html)
     print("ส่งเมลแล้ว:", r.get("id", r) if isinstance(r, dict) else r)
-    out.write_text(json.dumps({"summary": summ, "rows": rows, "sent_at": datetime.now(BKK).isoformat(timespec="seconds"),
+    out.write_text(json.dumps({"systems": [{"title": t, "summary": sm, "rows": rw} for t, sm, rw, _, _, _ in res],
+                               "sent_at": datetime.now(BKK).isoformat(timespec="seconds"),
                                "email_id": r.get("id", "") if isinstance(r, dict) else "", "to": MAIL_TO},
                               ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
 

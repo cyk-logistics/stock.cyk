@@ -13,8 +13,11 @@ from pathlib import Path
 
 BKK = timezone(timedelta(hours=7))
 DIR = Path(__file__).parent / "history"
-FILES = {"1D": DIR / "signals_1d.jsonl", "4H": DIR / "signals_4h.jsonl"}
+FILES = {"1D": DIR / "signals_1d.jsonl", "4H": DIR / "signals_4h.jsonl",
+         "CC": DIR / "signals_cc.jsonl"}      # CC = ระบบ 2 🐄 Cash Cow (signal_cashcow.py)
+SYSTEM1, SYSTEM2 = ("1D", "4H"), ("CC",)
 EXITS = DIR / "exits.jsonl"          # สัญญาณ "ควรออก" ที่แจ้งไปแล้ว (signal_track.exit_record) — กันแจ้งซ้ำ
+EXITS_CC = DIR / "exits_cc.jsonl"    # ของระบบ 2 แยกไฟล์ (คนละ workflow กัน commit ชน)
 
 
 def append(source, rows, email_id=""):
@@ -31,10 +34,12 @@ def append(source, rows, email_id=""):
             f.write(json.dumps(rec, ensure_ascii=False) + "\n")
 
 
-def load(month=None):
-    """คืนรายการทั้งหมด (หรือเฉพาะเดือน 'YYYY-MM' ตามวันที่ส่งเมล) เรียงตามเวลา"""
+def load(month=None, sources=SYSTEM1):
+    """คืนรายการของระบบนั้น (ดีฟอลต์ระบบ 1) ทั้งหมดหรือเฉพาะเดือน 'YYYY-MM' ตามวันที่ส่งเมล เรียงตามเวลา"""
     out = []
-    for p in FILES.values():
+    for src, p in FILES.items():
+        if src not in sources:
+            continue
         if not p.exists():
             continue
         for line in p.read_text(encoding="utf-8").splitlines():
@@ -65,17 +70,17 @@ def _read(path):
     return out
 
 
-def load_exits():
-    return _read(EXITS)
+def load_exits(cc=False):
+    return _read(EXITS_CC if cc else EXITS)
 
 
-def append_exits(rows, email_id=""):
+def append_exits(rows, email_id="", cc=False):
     """บันทึกสัญญาณออกที่แจ้งในเมลแล้ว (เรียกหลังส่งสำเร็จเท่านั้น)"""
     if not rows:
         return
     DIR.mkdir(exist_ok=True)
     now = datetime.now(BKK).isoformat(timespec="seconds")
-    with EXITS.open("a", encoding="utf-8") as f:
+    with (EXITS_CC if cc else EXITS).open("a", encoding="utf-8") as f:
         for r in rows:
             rec = {"notified_at": now}
             rec.update(r)
