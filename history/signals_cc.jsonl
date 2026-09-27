@@ -1,0 +1,2 @@
+{"sent_at": "2026-09-27T13:55:57+07:00", "source": "CC", "bar": "2026-09-25", "sym": "DELTA", "price": 263.0, "new": true, "rsi": 53.9, "pct": -21.3, "reason": "ย่อ -21% จากไฮ 60 วัน", "cc_passed": 3, "email_id": "01a0e1a6-2462-70d6-a8d5-53785f991049"}
+{"sent_at": "2026-09-27T13:55:57+07:00", "source": "CC", "bar": "2026-09-25", "sym": "SIS", "price": 24.3, "new": false, "rsi": 50.4, "pct": -11.6, "reason": "ย่อ -12% จากไฮ 60 วัน", "cc_passed": 4, "email_id": "01a0e1a6-2462-70d6-a8d5-53785f991049"}
