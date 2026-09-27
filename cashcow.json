@@ -1,5 +1,5 @@
 {
- "updated": "2026-09-27T12:32:27+07:00",
+ "updated": "2026-09-27T13:58:11+07:00",
  "source": "yfinance งบปี ~4 ปี · เกณฑ์ลงทุนแมน longtunman.com/66311",
  "cashcow": [
   "COM7",
@@ -3719,7 +3719,7 @@
     8126,
     19274
    ],
-   "ibde": 0.99,
+   "ibde": 0.0,
    "capex_int": 82,
    "fcf_cover": 0.72,
    "div_streak": 24,
@@ -4381,14 +4381,11 @@
    "payout_avg": 83,
    "payout_max": 109,
    "fcf": [
-    283,
-    1638,
-    817,
-    2697
+    803
    ],
    "ibde": 0.69,
    "capex_int": 6,
-   "fcf_cover": 1.79,
+   "fcf_cover": 0.26,
    "div_streak": 19,
    "yield": 6.49,
    "price": 4.78,
