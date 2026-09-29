@@ -3,25 +3,22 @@
   "exit",
   "trap"
  ],
- "BCP": [
-  "bear"
- ],
  "EGCO": [
   "trap"
  ],
- "KBANK": [
+ "RATCH": [
+  "trap"
+ ],
+ "BCP": [
   "bear"
  ],
  "WHA": [
   "trap"
  ],
- "OR": [
+ "LH": [
   "trap"
  ],
- "MTC": [
-  "bear"
- ],
- "LH": [
+ "OR": [
   "trap"
  ],
  "SCC": [
@@ -35,6 +32,10 @@
   "runup"
  ],
  "HANA": [
-  "bear"
+  "bear",
+  "runup"
+ ],
+ "COM7": [
+  "exit"
  ]
 }
