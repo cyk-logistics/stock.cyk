@@ -2,11 +2,8 @@
   "active": [
     "BBL",
     "BCP",
-    "BEM",
     "BGRIM",
     "CBG",
-    "COM7",
-    "EGCO",
     "GPSC",
     "KBANK",
     "KKP",
@@ -15,5 +12,5 @@
     "PTTEP",
     "RATCH"
   ],
-  "bar_close": "2026-09-29T16:00:00+07:00"
+  "bar_close": "2026-09-29T20:00:00+07:00"
 }
