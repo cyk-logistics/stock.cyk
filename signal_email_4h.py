@@ -21,7 +21,7 @@ import signal_history
 
 BASE = os.environ.get("SCAN_API_BASE", "https://live.atlog.asia").rstrip("/")
 KEY = os.environ.get("STOCK_API_KEY", "").strip()
-MAIL_TO = os.environ.get("MAIL_TO", "info@atls.co.th").strip()
+MAIL_TO = os.environ.get("MAIL_TO", "atlogistics@ymail.com").strip()
 MAIL_FROM = os.environ.get("MAIL_FROM", "SET Buy Signals <no-reply@lifebazi.com>").strip()
 STATE = Path(__file__).parent / "signals_4h_state.json"
 BKK = timezone(timedelta(hours=7))

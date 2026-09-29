@@ -39,7 +39,7 @@ jobs:
         env:
           STOCK_API_KEY: ${{ secrets.STOCK_API_KEY }}
           RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
-          MAIL_TO: info@atls.co.th
+          MAIL_TO: atlogistics@ymail.com
           MAIL_FROM: "SET Buy Signals <no-reply@lifebazi.com>"
           SCAN_API_BASE: https://live.atlog.asia
           IN_MONTH: ${{ github.event.inputs.month }}

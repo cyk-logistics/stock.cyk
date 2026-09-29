@@ -5,7 +5,7 @@
 - สัญญาณ = ราคา>EMA200 (ขาขึ้น) และ (ย่อ >=10% จากไฮ 60 วัน  หรือ RSI<40)  = จุดเข้าที่ backtest 10 ปีดีสุด
 - รันหลังตลาดปิด (แท่งวันนี้ปิดแล้ว = ไม่ repaint)
 
-env: STOCK_API_KEY (จำเป็น) · RESEND_API_KEY (จำเป็น) · MAIL_TO (ดีฟอลต์ info@atls.co.th)
+env: STOCK_API_KEY (จำเป็น) · RESEND_API_KEY (จำเป็น) · MAIL_TO (ดีฟอลต์ atlogistics@ymail.com)
      MAIL_FROM (ต้องเป็นโดเมนที่ verify กับ Resend เช่น @send.lifebazi.com)
      SCAN_API_BASE (ดีฟอลต์ https://live.atlog.asia) · SEND_EMPTY=1 เพื่อส่งแม้ไม่มีสัญญาณ
 รัน: python signal_email.py [--dry]
@@ -22,7 +22,7 @@ import signal_track
 
 BASE = os.environ.get("SCAN_API_BASE", "https://live.atlog.asia").rstrip("/")
 KEY = os.environ.get("STOCK_API_KEY", "").strip()
-MAIL_TO = os.environ.get("MAIL_TO", "info@atls.co.th").strip()
+MAIL_TO = os.environ.get("MAIL_TO", "atlogistics@ymail.com").strip()
 MAIL_FROM = os.environ.get("MAIL_FROM", "SET Buy Signals <no-reply@lifebazi.com>").strip()
 BKK = timezone(timedelta(hours=7))
 UA = {"User-Agent": "Mozilla/5.0 (Macintosh) AppleWebKit/537.36 Chrome/128 Safari/537.36"}
