@@ -1,11 +1,10 @@
 {
   "active": [
-    "BBL",
     "BCP",
     "BGRIM",
     "BH",
     "CBG",
-    "EGCO",
+    "CRC",
     "IRPC",
     "IVL",
     "KBANK",
@@ -20,5 +19,5 @@
     "TTB",
     "TU"
   ],
-  "bar_close": "2026-09-30T16:00:00+07:00"
+  "bar_close": "2026-09-30T20:00:00+07:00"
 }
