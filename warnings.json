@@ -3,29 +3,29 @@
   "exit",
   "trap"
  ],
- "EGCO": [
-  "trap"
- ],
- "RATCH": [
-  "trap"
- ],
  "BCP": [
   "bear"
  ],
- "WHA": [
+ "RATCH": [
   "trap"
  ],
  "LH": [
   "trap"
  ],
+ "EGCO": [
+  "trap"
+ ],
+ "WHA": [
+  "trap"
+ ],
  "OR": [
   "trap"
  ],
- "SCC": [
+ "CENTEL": [
   "bear"
  ],
- "IVL": [
-  "runup"
+ "SCC": [
+  "bear"
  ],
  "KCE": [
   "bear",
