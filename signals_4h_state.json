@@ -3,14 +3,22 @@
     "BBL",
     "BCP",
     "BGRIM",
+    "BH",
     "CBG",
-    "GPSC",
+    "EGCO",
+    "IRPC",
+    "IVL",
     "KBANK",
     "KKP",
     "KTB",
-    "KTC",
-    "PTTEP",
-    "RATCH"
+    "PTT",
+    "RATCH",
+    "SCB",
+    "SCC",
+    "SCGP",
+    "TISCO",
+    "TTB",
+    "TU"
   ],
-  "bar_close": "2026-09-29T20:00:00+07:00"
+  "bar_close": "2026-09-30T16:00:00+07:00"
 }
