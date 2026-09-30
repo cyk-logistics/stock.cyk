@@ -1,0 +1,761 @@
+{
+  "systems": [
+    {
+      "title": "ระบบ 1 ย่อซื้อในขาขึ้น",
+      "summary": {
+        "month": "2026-09",
+        "n": 30,
+        "n_priced": 30,
+        "source": "live.atlog.asia",
+        "win": 2,
+        "beat": 9,
+        "n_set": 30,
+        "avg": -2.48274098502799,
+        "median": -1.8126393077225689,
+        "set_avg": -1.6048558872249308,
+        "last_date": "2026-09-30",
+        "emails": 16
+      },
+      "rows": [
+        {
+          "sym": "COM7",
+          "first_sent": "2026-09-29T16:24:34+07:00",
+          "entry_date": "2026-09-29",
+          "source": "4H",
+          "sources": [
+            "4H"
+          ],
+          "times": 1,
+          "reason": "RSI ต่ำ 40",
+          "vstat": "🔴 บาง",
+          "entry": 29.5,
+          "last": 29.75,
+          "last_date": "2026-09-30",
+          "chg": 0.8474576271186418,
+          "max_up": 3.3898305084745672,
+          "max_dn": 0.0,
+          "set_chg": -2.2135106316251596,
+          "status": "ถืออยู่"
+        },
+        {
+          "sym": "BH",
+          "first_sent": "2026-09-30T16:14:43+07:00",
+          "entry_date": "2026-09-30",
+          "source": "4H",
+          "sources": [
+            "4H"
+          ],
+          "times": 1,
+          "reason": "RSI ต่ำ 36",
+          "vstat": "🟡 ปกติ",
+          "entry": 192.5,
+          "last": 193.0,
+          "last_date": "2026-09-30",
+          "chg": 0.2597402597402487,
+          "max_up": null,
+          "max_dn": null,
+          "set_chg": 0.0,
+          "status": "ถืออยู่"
+        },
+        {
+          "sym": "TU",
+          "first_sent": "2026-09-30T16:14:43+07:00",
+          "entry_date": "2026-09-30",
+          "source": "4H",
+          "sources": [
+            "4H"
+          ],
+          "times": 1,
+          "reason": "RSI ต่ำ 39",
+          "vstat": "🔴 บาง",
+          "entry": 12.5,
+          "last": 12.5,
+          "last_date": "2026-09-30",
+          "chg": 0.0,
+          "max_up": null,
+          "max_dn": null,
+          "set_chg": 0.0,
+          "status": "ถืออยู่"
+        },
+        {
+          "sym": "CRC",
+          "first_sent": "2026-09-30T23:01:41+07:00",
+          "entry_date": "2026-09-30",
+          "source": "4H",
+          "sources": [
+            "4H"
+          ],
+          "times": 1,
+          "reason": "RSI ต่ำ 38",
+          "vstat": "🟡 ปกติ",
+          "entry": 28.5,
+          "last": 28.5,
+          "last_date": "2026-09-30",
+          "chg": 0.0,
+          "max_up": null,
+          "max_dn": null,
+          "set_chg": 0.0,
+          "status": "ถืออยู่"
+        },
+        {
+          "sym": "AOT",
+          "first_sent": "2026-09-30T23:10:39+07:00",
+          "entry_date": "2026-09-30",
+          "source": "1D",
+          "sources": [
+            "1D"
+          ],
+          "times": 1,
+          "reason": "ย่อ -11% จากไฮ 60 วัน",
+          "vstat": "🟡 ปกติ",
+          "entry": 60.0,
+          "last": 60.0,
+          "last_date": "2026-09-30",
+          "chg": 0.0,
+          "max_up": null,
+          "max_dn": null,
+          "set_chg": 0.0,
+          "status": "ถืออยู่"
+        },
+        {
+          "sym": "SCB",
+          "first_sent": "2026-09-30T16:14:43+07:00",
+          "entry_date": "2026-09-30",
+          "source": "4H",
+          "sources": [
+            "4H"
+          ],
+          "times": 1,
+          "reason": "RSI ต่ำ 38",
+          "vstat": "🔴 บาง",
+          "entry": 150.0,
+          "last": 149.5,
+          "last_date": "2026-09-30",
+          "chg": -0.33333333333332993,
+          "max_up": null,
+          "max_dn": null,
+          "set_chg": 0.0,
+          "status": "ถืออยู่"
+        },
+        {
+          "sym": "RATCH",
+          "first_sent": "2026-09-29T16:24:34+07:00",
+          "entry_date": "2026-09-29",
+          "source": "4H",
+          "sources": [
+            "4H"
+          ],
+          "times": 1,
+          "reason": "RSI ต่ำ 38",
+          "vstat": "🟡 ปกติ",
+          "entry": 37.25,
+          "last": 37.0,
+          "last_date": "2026-09-30",
+          "chg": -0.6711409395973145,
+          "max_up": 0.6711409395973256,
+          "max_dn": -1.342281879194629,
+          "set_chg": -2.2135106316251596,
+          "status": "ถืออยู่"
+        },
+        {
+          "sym": "TISCO",
+          "first_sent": "2026-09-30T16:14:43+07:00",
+          "entry_date": "2026-09-30",
+          "source": "4H",
+          "sources": [
+            "4H"
+          ],
+          "times": 1,
+          "reason": "RSI ต่ำ 38",
+          "vstat": "🟡 ปกติ",
+          "entry": 125.5,
+          "last": 124.5,
+          "last_date": "2026-09-30",
+          "chg": -0.7968127490039834,
+          "max_up": null,
+          "max_dn": null,
+          "set_chg": 0.0,
+          "status": "ถืออยู่"
+        },
+        {
+          "sym": "IVL",
+          "first_sent": "2026-09-30T16:14:43+07:00",
+          "entry_date": "2026-09-30",
+          "source": "4H",
+          "sources": [
+            "1D",
+            "4H"
+          ],
+          "times": 2,
+          "reason": "ย่อ -11% จากไฮ",
+          "vstat": "🔴 บาง",
+          "entry": 27.0,
+          "last": 26.75,
+          "last_date": "2026-09-30",
+          "chg": -0.92592592592593,
+          "max_up": null,
+          "max_dn": null,
+          "set_chg": 0.0,
+          "status": "ถืออยู่"
+        },
+        {
+          "sym": "SCC",
+          "first_sent": "2026-09-30T16:14:43+07:00",
+          "entry_date": "2026-09-30",
+          "source": "4H",
+          "sources": [
+            "4H"
+          ],
+          "times": 1,
+          "reason": "RSI ต่ำ 38",
+          "vstat": "🟡 ปกติ",
+          "entry": 257.0,
+          "last": 254.0,
+          "last_date": "2026-09-30",
+          "chg": -1.1673151750972721,
+          "max_up": null,
+          "max_dn": null,
+          "set_chg": 0.0,
+          "status": "ถืออยู่"
+        },
+        {
+          "sym": "PTT",
+          "first_sent": "2026-09-30T16:14:43+07:00",
+          "entry_date": "2026-09-30",
+          "source": "4H",
+          "sources": [
+            "4H"
+          ],
+          "times": 1,
+          "reason": "RSI ต่ำ 36",
+          "vstat": "✅ หนุน",
+          "entry": 41.25,
+          "last": 40.75,
+          "last_date": "2026-09-30",
+          "chg": -1.2121212121212088,
+          "max_up": null,
+          "max_dn": null,
+          "set_chg": 0.0,
+          "status": "ถืออยู่"
+        },
+        {
+          "sym": "TTB",
+          "first_sent": "2026-09-30T16:14:43+07:00",
+          "entry_date": "2026-09-30",
+          "source": "4H",
+          "sources": [
+            "4H"
+          ],
+          "times": 1,
+          "reason": "RSI ต่ำ 37",
+          "vstat": "🔴 บาง",
+          "entry": 2.96,
+          "last": 2.92,
+          "last_date": "2026-09-30",
+          "chg": -1.3513513513513487,
+          "max_up": null,
+          "max_dn": null,
+          "set_chg": 0.0,
+          "status": "ถืออยู่"
+        },
+        {
+          "sym": "IRPC",
+          "first_sent": "2026-09-30T16:14:43+07:00",
+          "entry_date": "2026-09-30",
+          "source": "4H",
+          "sources": [
+            "1D",
+            "4H"
+          ],
+          "times": 2,
+          "reason": "ย่อ -11% จากไฮ",
+          "vstat": "🔴 บาง",
+          "entry": 2.88,
+          "last": 2.84,
+          "last_date": "2026-09-30",
+          "chg": -1.388888888888895,
+          "max_up": null,
+          "max_dn": null,
+          "set_chg": 0.0,
+          "status": "ถืออยู่"
+        },
+        {
+          "sym": "EGCO",
+          "first_sent": "2026-09-29T16:24:34+07:00",
+          "entry_date": "2026-09-29",
+          "source": "4H",
+          "sources": [
+            "1D",
+            "4H"
+          ],
+          "times": 3,
+          "reason": "RSI ต่ำ 40",
+          "vstat": "🟡 ปกติ",
+          "entry": 127.5,
+          "last": 125.5,
+          "last_date": "2026-09-30",
+          "chg": -1.5686274509803977,
+          "max_up": 1.17647058823529,
+          "max_dn": -1.5686274509803977,
+          "set_chg": -2.2135106316251596,
+          "status": "ถืออยู่"
+        },
+        {
+          "sym": "SCGP",
+          "first_sent": "2026-09-30T16:14:43+07:00",
+          "entry_date": "2026-09-30",
+          "source": "4H",
+          "sources": [
+            "1D",
+            "4H"
+          ],
+          "times": 2,
+          "reason": "RSI ต่ำ 35",
+          "vstat": "🔴 บาง",
+          "entry": 29.0,
+          "last": 28.5,
+          "last_date": "2026-09-30",
+          "chg": -1.7241379310344862,
+          "max_up": null,
+          "max_dn": null,
+          "set_chg": 0.0,
+          "status": "ถืออยู่"
+        },
+        {
+          "sym": "DELTA",
+          "first_sent": "2026-09-25T21:52:45+07:00",
+          "entry_date": "2026-09-25",
+          "source": "1D",
+          "sources": [
+            "1D"
+          ],
+          "times": 1,
+          "reason": "ย่อ -21% จากไฮ 60 วัน",
+          "vstat": "🟡 ปกติ",
+          "entry": 263.0,
+          "last": 258.0,
+          "last_date": "2026-09-30",
+          "chg": -1.9011406844106515,
+          "max_up": 1.520912547528508,
+          "max_dn": -4.1825095057034245,
+          "set_chg": -3.0243277371036936,
+          "status": "ถืออยู่ · ⚠️ ต่ำกว่า EMA200"
+        },
+        {
+          "sym": "KKP",
+          "first_sent": "2026-09-29T16:24:34+07:00",
+          "entry_date": "2026-09-29",
+          "source": "4H",
+          "sources": [
+            "1D",
+            "4H"
+          ],
+          "times": 2,
+          "reason": "RSI ต่ำ 35",
+          "vstat": "🔴 บาง",
+          "entry": 113.0,
+          "last": 110.5,
+          "last_date": "2026-09-30",
+          "chg": -2.212389380530977,
+          "max_up": 0.0,
+          "max_dn": -3.9823008849557473,
+          "set_chg": -2.2135106316251596,
+          "status": "ถืออยู่"
+        },
+        {
+          "sym": "GULF",
+          "first_sent": "2026-09-25T08:38:23+07:00",
+          "entry_date": "2026-09-24",
+          "source": "1D",
+          "sources": [
+            "1D"
+          ],
+          "times": 5,
+          "reason": "ย่อ -12% จากไฮ 60 วัน",
+          "vstat": "🟡 ปกติ",
+          "entry": 60.5,
+          "last": 59.0,
+          "last_date": "2026-09-30",
+          "chg": -2.4793388429752095,
+          "max_up": 0.8264462809917328,
+          "max_dn": -2.892561983471076,
+          "set_chg": -2.718741030088978,
+          "status": "ถืออยู่"
+        },
+        {
+          "sym": "WHA",
+          "first_sent": "2026-09-23T16:22:38+07:00",
+          "entry_date": "2026-09-23",
+          "source": "1D",
+          "sources": [
+            "1D"
+          ],
+          "times": 6,
+          "reason": "",
+          "vstat": "",
+          "entry": 4.82,
+          "last": 4.7,
+          "last_date": "2026-09-30",
+          "chg": -2.4896265560165998,
+          "max_up": 1.2448132780082943,
+          "max_dn": -3.319502074688796,
+          "set_chg": -3.209163717638297,
+          "status": "ถืออยู่"
+        },
+        {
+          "sym": "BBL",
+          "first_sent": "2026-09-29T16:24:34+07:00",
+          "entry_date": "2026-09-29",
+          "source": "4H",
+          "sources": [
+            "1D",
+            "4H"
+          ],
+          "times": 2,
+          "reason": "RSI ต่ำ 37",
+          "vstat": "🔴 บาง",
+          "entry": 189.5,
+          "last": 184.5,
+          "last_date": "2026-09-30",
+          "chg": -2.638522427440637,
+          "max_up": 0.0,
+          "max_dn": -2.638522427440637,
+          "set_chg": -2.2135106316251596,
+          "status": "ถืออยู่"
+        },
+        {
+          "sym": "PTTEP",
+          "first_sent": "2026-09-24T09:57:51+07:00",
+          "entry_date": "2026-09-23",
+          "source": "4H",
+          "sources": [
+            "1D",
+            "4H"
+          ],
+          "times": 5,
+          "reason": "",
+          "vstat": "",
+          "entry": 148.0,
+          "last": 144.0,
+          "last_date": "2026-09-30",
+          "chg": -2.7027027027026973,
+          "max_up": 2.0270270270270174,
+          "max_dn": -2.7027027027026973,
+          "set_chg": -3.209163717638297,
+          "status": "ถืออยู่"
+        },
+        {
+          "sym": "CPF",
+          "first_sent": "2026-09-24T09:57:51+07:00",
+          "entry_date": "2026-09-23",
+          "source": "4H",
+          "sources": [
+            "1D",
+            "4H"
+          ],
+          "times": 3,
+          "reason": "",
+          "vstat": "",
+          "entry": 22.1,
+          "last": 21.3,
+          "last_date": "2026-09-30",
+          "chg": -3.6199095022624417,
+          "max_up": 0.0,
+          "max_dn": -4.072398190045257,
+          "set_chg": -3.209163717638297,
+          "status": "ถืออยู่ · ⚠️ ต่ำกว่า EMA200"
+        },
+        {
+          "sym": "KBANK",
+          "first_sent": "2026-09-29T16:24:34+07:00",
+          "entry_date": "2026-09-29",
+          "source": "4H",
+          "sources": [
+            "1D",
+            "4H"
+          ],
+          "times": 3,
+          "reason": "RSI ต่ำ 35",
+          "vstat": "🟡 ปกติ",
+          "entry": 244.0,
+          "last": 234.0,
+          "last_date": "2026-09-30",
+          "chg": -4.098360655737709,
+          "max_up": -1.6393442622950838,
+          "max_dn": -5.327868852459017,
+          "set_chg": -2.2135106316251596,
+          "status": "ถืออยู่"
+        },
+        {
+          "sym": "BGRIM",
+          "first_sent": "2026-09-24T15:16:06+07:00",
+          "entry_date": "2026-09-24",
+          "source": "4H",
+          "sources": [
+            "1D",
+            "4H"
+          ],
+          "times": 6,
+          "reason": "",
+          "vstat": "",
+          "entry": 19.2,
+          "last": 18.4,
+          "last_date": "2026-09-30",
+          "chg": -4.166666666666674,
+          "max_up": 1.5625,
+          "max_dn": -4.687499999999989,
+          "set_chg": -2.718741030088978,
+          "status": "ถืออยู่"
+        },
+        {
+          "sym": "CBG",
+          "first_sent": "2026-09-29T16:24:34+07:00",
+          "entry_date": "2026-09-29",
+          "source": "4H",
+          "sources": [
+            "1D",
+            "4H"
+          ],
+          "times": 3,
+          "reason": "ย่อ -11% จากไฮ",
+          "vstat": "🟡 ปกติ",
+          "entry": 52.75,
+          "last": 50.25,
+          "last_date": "2026-09-30",
+          "chg": -4.739336492891,
+          "max_up": -0.4739336492891044,
+          "max_dn": -4.739336492891,
+          "set_chg": -2.2135106316251596,
+          "status": "ถืออยู่"
+        },
+        {
+          "sym": "GPSC",
+          "first_sent": "2026-09-23T16:22:38+07:00",
+          "entry_date": "2026-09-23",
+          "source": "1D",
+          "sources": [
+            "1D",
+            "4H"
+          ],
+          "times": 8,
+          "reason": "",
+          "vstat": "",
+          "entry": 49.25,
+          "last": 46.5,
+          "last_date": "2026-09-30",
+          "chg": -5.58375634517766,
+          "max_up": 0.0,
+          "max_dn": -6.091370558375631,
+          "set_chg": -3.209163717638297,
+          "status": "ถืออยู่"
+        },
+        {
+          "sym": "KTC",
+          "first_sent": "2026-09-25T08:38:23+07:00",
+          "entry_date": "2026-09-24",
+          "source": "1D",
+          "sources": [
+            "1D",
+            "4H"
+          ],
+          "times": 6,
+          "reason": "ย่อ -11% จากไฮ 60 วัน",
+          "vstat": "🟡 ปกติ",
+          "entry": 36.75,
+          "last": 34.5,
+          "last_date": "2026-09-30",
+          "chg": -6.122448979591832,
+          "max_up": 0.6802721088435382,
+          "max_dn": -6.122448979591832,
+          "set_chg": -2.718741030088978,
+          "status": "ถืออยู่"
+        },
+        {
+          "sym": "KTB",
+          "first_sent": "2026-09-29T00:45:59+07:00",
+          "entry_date": "2026-09-28",
+          "source": "4H",
+          "sources": [
+            "1D",
+            "4H"
+          ],
+          "times": 2,
+          "reason": "RSI ต่ำ 39",
+          "vstat": "🔴 บาง",
+          "entry": 43.75,
+          "last": 41.0,
+          "last_date": "2026-09-30",
+          "chg": -6.285714285714283,
+          "max_up": 0.0,
+          "max_dn": -6.857142857142861,
+          "set_chg": -2.7059917497207153,
+          "status": "ถืออยู่"
+        },
+        {
+          "sym": "BEM",
+          "first_sent": "2026-09-24T20:41:19+07:00",
+          "entry_date": "2026-09-24",
+          "source": "4H",
+          "sources": [
+            "1D",
+            "4H"
+          ],
+          "times": 5,
+          "reason": "",
+          "vstat": "",
+          "entry": 6.6,
+          "last": 6.1,
+          "last_date": "2026-09-30",
+          "chg": -7.57575757575758,
+          "max_up": 1.5151515151515138,
+          "max_dn": -7.57575757575758,
+          "set_chg": -2.718741030088978,
+          "status": "ถืออยู่"
+        },
+        {
+          "sym": "BCP",
+          "first_sent": "2026-09-23T16:22:38+07:00",
+          "entry_date": "2026-09-23",
+          "source": "1D",
+          "sources": [
+            "1D",
+            "4H"
+          ],
+          "times": 7,
+          "reason": "",
+          "vstat": "",
+          "entry": 54.25,
+          "last": 50.0,
+          "last_date": "2026-09-30",
+          "chg": -7.834101382488479,
+          "max_up": 5.5299539170506895,
+          "max_dn": -8.75576036866359,
+          "set_chg": -3.209163717638297,
+          "status": "ถืออยู่"
+        }
+      ]
+    },
+    {
+      "title": "ระบบ 2 🐄 Cash Cow",
+      "summary": {
+        "month": "2026-09",
+        "n": 5,
+        "n_priced": 5,
+        "source": "live.atlog.asia",
+        "win": 0,
+        "beat": 1,
+        "n_set": 5,
+        "avg": -1.9781117347657284,
+        "median": -1.9011406844106515,
+        "set_avg": -1.6524332211665094,
+        "last_date": "2026-09-30",
+        "emails": 3
+      },
+      "rows": [
+        {
+          "sym": "TOA",
+          "first_sent": "2026-09-30T23:25:03+07:00",
+          "entry_date": "2026-09-30",
+          "source": "CC",
+          "sources": [
+            "CC"
+          ],
+          "times": 1,
+          "reason": "ย่อ -13% จากไฮ 60 วัน",
+          "vstat": "",
+          "entry": 14.7,
+          "last": 14.7,
+          "last_date": "2026-09-30",
+          "chg": 0.0,
+          "max_up": null,
+          "max_dn": null,
+          "set_chg": 0.0,
+          "status": "ถืออยู่"
+        },
+        {
+          "sym": "SCGP",
+          "first_sent": "2026-09-30T23:25:03+07:00",
+          "entry_date": "2026-09-30",
+          "source": "CC",
+          "sources": [
+            "CC"
+          ],
+          "times": 1,
+          "reason": "ย่อ -12% จากไฮ 60 วัน",
+          "vstat": "",
+          "entry": 28.5,
+          "last": 28.5,
+          "last_date": "2026-09-30",
+          "chg": 0.0,
+          "max_up": null,
+          "max_dn": null,
+          "set_chg": 0.0,
+          "status": "ถืออยู่"
+        },
+        {
+          "sym": "DELTA",
+          "first_sent": "2026-09-27T13:55:57+07:00",
+          "entry_date": "2026-09-25",
+          "source": "CC",
+          "sources": [
+            "CC"
+          ],
+          "times": 1,
+          "reason": "ย่อ -21% จากไฮ 60 วัน",
+          "vstat": "",
+          "entry": 263.0,
+          "last": 258.0,
+          "last_date": "2026-09-30",
+          "chg": -1.9011406844106515,
+          "max_up": 1.520912547528508,
+          "max_dn": -4.1825095057034245,
+          "set_chg": -3.0243277371036936,
+          "status": "ถืออยู่ · ⚠️ ต่ำกว่า EMA200"
+        },
+        {
+          "sym": "SIS",
+          "first_sent": "2026-09-27T13:55:57+07:00",
+          "entry_date": "2026-09-25",
+          "source": "CC",
+          "sources": [
+            "CC"
+          ],
+          "times": 3,
+          "reason": "ย่อ -12% จากไฮ 60 วัน",
+          "vstat": "",
+          "entry": 24.3,
+          "last": 23.4,
+          "last_date": "2026-09-30",
+          "chg": -3.703703703703709,
+          "max_up": 0.0,
+          "max_dn": -3.703703703703709,
+          "set_chg": -3.0243277371036936,
+          "status": "ถืออยู่"
+        },
+        {
+          "sym": "CBG",
+          "first_sent": "2026-09-29T23:31:23+07:00",
+          "entry_date": "2026-09-29",
+          "source": "CC",
+          "sources": [
+            "CC"
+          ],
+          "times": 2,
+          "reason": "ย่อ -11% จากไฮ 60 วัน",
+          "vstat": "",
+          "entry": 52.5,
+          "last": 50.25,
+          "last_date": "2026-09-30",
+          "chg": -4.285714285714281,
+          "max_up": 0.0,
+          "max_dn": -4.285714285714281,
+          "set_chg": -2.2135106316251596,
+          "status": "ถืออยู่"
+        }
+      ]
+    }
+  ],
+  "sent_at": "2026-09-30T23:46:36+07:00",
+  "email_id": "01a0f335-f9fb-75e1-94e8-997a2cf6582b",
+  "to": "atlogistics@ymail.com"
+}
