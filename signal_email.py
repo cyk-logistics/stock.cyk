@@ -17,6 +17,7 @@ import urllib.error
 import urllib.request
 from datetime import datetime, timezone, timedelta
 
+import push_notify
 import signal_history
 import signal_track
 
@@ -275,6 +276,14 @@ def main():
     r = send_resend(subj, text, html)
     print("ส่งเมลแล้ว:", r.get("id", r))
     eid = r.get("id", "") if isinstance(r, dict) else ""
+    # แจ้งเตือนเด้งขึ้นมือถือ (ล้มไม่กระทบเมล) · กดแล้วเปิดกราฟตัวแรก
+    first = ([b["sym"] for b in buys if b["new"]] or [b["sym"] for b in buys] or [p["sym"] for p in exits] or ["PTT"])[0]
+    title = ("🟢 ซื้อ %d · 🔴 ควรออก %d" % (len(buys), len(exits)) if buys and exits else
+             "🔴 ควรออก %d ตัว" % len(exits) if exits else "🟢 สัญญาณซื้อ %d ตัว" % len(buys))
+    body = " · ".join(x for x in [
+        ("ซื้อ: " + push_notify.short_list(("🆕" if b["new"] else "") + b["sym"] for b in buys)) if buys else "",
+        ("ออก: " + push_notify.short_list(p["sym"] for p in exits)) if exits else ""] if x) + " (ระบบ 1 · %s)" % last_date
+    push_notify.notify(title, body, "/#%s/1d" % first, tag="daily")
     # เก็บประวัติหุ้นที่แนะนำ → ติดตาม/สรุปสิ้นเดือน · บันทึกสัญญาณออกที่แจ้งแล้ว (ไม่แจ้งซ้ำ)
     signal_history.append("1D", [{"bar": last_date, "sym": b["sym"], "price": round(b["last"], 4), "new": b["new"],
                                   "rsi": round(b["rsi"], 1), "pct": round(b["pct"], 1), "vr": round(b["vr"], 2),

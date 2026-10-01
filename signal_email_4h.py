@@ -17,6 +17,7 @@ import urllib.request
 from datetime import datetime, timezone, timedelta
 from pathlib import Path
 
+import push_notify
 import signal_history
 
 BASE = os.environ.get("SCAN_API_BASE", "https://live.atlog.asia").rstrip("/")
@@ -166,6 +167,9 @@ def main():
         else:
             r = send_resend(subj, text, html)   # ล้ม → SystemExit ก่อนเขียน state → รอบหน้าส่งใหม่ (ไม่หลุด)
             print("ส่งเมลแล้ว:", r.get("id", r))
+            syms = sorted(new)
+            push_notify.notify("⚡ สัญญาณซื้อใหม่ กราฟ 4H", push_notify.short_list(syms) + " · แท่งปิด " + bar_close[5:16].replace("T", " "),
+                               "/#%s/240m" % syms[0], tag="h4")
             # เก็บประวัติหุ้นที่แนะนำ → สรุปผลสิ้นเดือน (signal_monthly_report.py)
             signal_history.append("4H", [{"bar": b["bar_close"], "sym": b["sym"], "price": round(b["last"], 4),
                                           "rsi": round(b["rsi"], 1), "pct": round(b["pct"], 1), "vr": round(b["vr"], 2),

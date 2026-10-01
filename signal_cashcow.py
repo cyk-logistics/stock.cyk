@@ -16,6 +16,7 @@ import sys
 from pathlib import Path
 
 import signal_email as se
+import push_notify
 import signal_history
 import signal_track
 
@@ -175,6 +176,12 @@ def main():
         raise SystemExit("ต้องตั้ง RESEND_API_KEY (ยังไม่ได้ส่ง)")
     r = se.send_resend(subj, text, html)
     print("ส่งเมลแล้ว:", r.get("id", r) if isinstance(r, dict) else r)
+    first = ([b["sym"] for b in new] or [p["sym"] for p in exits] or [b["sym"] for b in sigs] or ["PTT"])[0]
+    push_notify.notify(subj.split(" (")[0],
+                       " · ".join(x for x in [("ซื้อใหม่: " + push_notify.short_list(b["sym"] for b in new)) if new else "",
+                                              ("ออก: " + push_notify.short_list(p["sym"] for p in exits)) if exits else "",
+                                              ("ในจังหวะซื้อ: " + push_notify.short_list(b["sym"] for b in sigs)) if sigs and not new else ""] if x),
+                       "/#%s/1d" % first, tag="cashcow")
     eid = r.get("id", "") if isinstance(r, dict) else ""
     signal_history.append("CC", [{"bar": last_date, "sym": b["sym"], "price": round(b["last"], 4), "new": b["new"],
                                   "rsi": round(b["rsi"], 1), "pct": round(b["pct"], 1), "reason": b["reason"],

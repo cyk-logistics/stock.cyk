@@ -17,6 +17,7 @@ import json
 import statistics
 from datetime import date, datetime, timedelta
 
+import push_notify
 import signal_history
 import signal_track
 from signal_email import BASE, BKK, KEY, MAIL_TO, _get, send_resend
@@ -277,6 +278,7 @@ def main():
         raise SystemExit("ดึงราคาไม่ได้เลย — ยังไม่ส่ง (รอบหน้าลองใหม่)")
     r = send_resend(subj, text, html)
     print("ส่งเมลแล้ว:", r.get("id", r) if isinstance(r, dict) else r)
+    push_notify.notify("📊 สรุปหุ้นที่แนะนำ เดือน %s %d" % (TH_MONTH[m - 1], y), " · ".join(heads) + " — ดูรายละเอียดในเมล", "/", tag="monthly")
     out.write_text(json.dumps({"systems": [{"title": t, "summary": sm, "rows": rw} for t, sm, rw, _, _, _ in res],
                                "sent_at": datetime.now(BKK).isoformat(timespec="seconds"),
                                "email_id": r.get("id", "") if isinstance(r, dict) else "", "to": MAIL_TO},

@@ -30,6 +30,7 @@ jobs:
         env:
           STOCK_API_KEY: ${{ secrets.STOCK_API_KEY }}
           RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
+          PUSH_TOKEN: ${{ secrets.PUSH_TOKEN }}   # แจ้งเตือนเด้งขึ้นมือถือ (live.atlog.asia/api/push/notify)
           MAIL_TO: atlogistics@ymail.com
           MAIL_FROM: "SET Buy Signals <no-reply@lifebazi.com>"
           SCAN_API_BASE: https://live.atlog.asia
