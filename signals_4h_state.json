@@ -2,9 +2,9 @@
   "active": [
     "BCP",
     "BGRIM",
-    "BH",
     "CBG",
-    "CRC",
+    "EGCO",
+    "GPSC",
     "IRPC",
     "IVL",
     "KBANK",
@@ -13,11 +13,10 @@
     "PTT",
     "RATCH",
     "SCB",
-    "SCC",
     "SCGP",
     "TISCO",
     "TTB",
     "TU"
   ],
-  "bar_close": "2026-09-30T20:00:00+07:00"
+  "bar_close": "2026-10-01T16:00:00+07:00"
 }
