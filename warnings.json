@@ -3,17 +3,23 @@
   "exit",
   "trap"
  ],
- "BCP": [
+ "SCC": [
   "bear"
  ],
- "RATCH": [
-  "trap"
+ "PTT": [
+  "bear"
  ],
  "LH": [
   "trap"
  ],
  "EGCO": [
   "trap"
+ ],
+ "RATCH": [
+  "trap"
+ ],
+ "TOP": [
+  "bear"
  ],
  "WHA": [
   "trap"
@@ -24,9 +30,6 @@
  "CENTEL": [
   "bear"
  ],
- "SCC": [
-  "bear"
- ],
  "KCE": [
   "bear",
   "runup"
@@ -34,8 +37,5 @@
  "HANA": [
   "bear",
   "runup"
- ],
- "COM7": [
-  "exit"
  ]
 }
