@@ -1,5 +1,5 @@
 {
- "updated": "2026-10-01T12:15:57+07:00",
+ "updated": "2026-10-02T12:04:02+07:00",
  "source": "yfinance งบปี ~4 ปี · เกณฑ์ลงทุนแมน longtunman.com/66311",
  "cashcow": [
   "COM7",
@@ -41,7 +41,7 @@
    "capex_int": 29,
    "fcf_cover": 1.15,
    "div_streak": 10,
-   "yield": 3.7,
+   "yield": 3.67,
    "price": 30.0,
    "checks": {
     "fcf": true,
@@ -87,8 +87,8 @@
    "capex_int": 21,
    "fcf_cover": 1.76,
    "div_streak": 22,
-   "yield": 3.63,
-   "price": 193.5,
+   "yield": 3.62,
+   "price": 191.5,
    "checks": {
     "fcf": true,
     "fcf_every_year_up": false,
@@ -133,8 +133,8 @@
    "capex_int": 17,
    "fcf_cover": 1.34,
    "div_streak": 12,
-   "yield": 4.89,
-   "price": 34.25,
+   "yield": 4.85,
+   "price": 33.75,
    "checks": {
     "fcf": true,
     "fcf_every_year_up": false,
@@ -179,8 +179,8 @@
    "capex_int": 19,
    "fcf_cover": 2.14,
    "div_streak": 11,
-   "yield": 1.19,
-   "price": 51.0,
+   "yield": 1.18,
+   "price": 51.75,
    "checks": {
     "fcf": true,
     "fcf_every_year_up": false,
@@ -225,8 +225,8 @@
    "capex_int": 1,
    "fcf_cover": 3.54,
    "div_streak": 12,
-   "yield": 5.21,
-   "price": 23.5,
+   "yield": 5.13,
+   "price": 24.0,
    "checks": {
     "fcf": true,
     "fcf_every_year_up": false,
@@ -272,7 +272,7 @@
    "fcf_cover": 1.99,
    "div_streak": 26,
    "yield": 0.23,
-   "price": 259.0,
+   "price": 260.0,
    "checks": {
     "fcf": true,
     "fcf_every_year_up": false,
@@ -319,8 +319,8 @@
    "capex_int": 47,
    "fcf_cover": 1.0,
    "div_streak": 23,
-   "yield": 3.49,
-   "price": 6.4,
+   "yield": 3.46,
+   "price": 6.5,
    "checks": {
     "fcf": true,
     "fcf_every_year_up": false,
@@ -367,7 +367,7 @@
    "capex_int": 63,
    "fcf_cover": 0.8,
    "div_streak": 11,
-   "yield": 5.65,
+   "yield": 5.6,
    "price": 31.5,
    "checks": {
     "fcf": false,
@@ -416,7 +416,7 @@
    "fcf_cover": 0.3,
    "div_streak": 5,
    "yield": 7.59,
-   "price": 6.65,
+   "price": 6.55,
    "checks": {
     "fcf": true,
     "fcf_every_year_up": false,
@@ -464,7 +464,7 @@
    "fcf_cover": 1.31,
    "div_streak": 18,
    "yield": 3.0,
-   "price": 10.0,
+   "price": 10.1,
    "checks": {
     "fcf": false,
     "fcf_every_year_up": false,
@@ -511,8 +511,8 @@
    "capex_int": 25,
    "fcf_cover": 2.05,
    "div_streak": 8,
-   "yield": 5.24,
-   "price": 15.0,
+   "yield": 5.2,
+   "price": 14.9,
    "checks": {
     "fcf": true,
     "fcf_every_year_up": false,
@@ -559,8 +559,8 @@
    "capex_int": 25,
    "fcf_cover": 1.96,
    "div_streak": 26,
-   "yield": 2.39,
-   "price": 182.5,
+   "yield": 2.42,
+   "price": 183.5,
    "checks": {
     "fcf": true,
     "fcf_every_year_up": false,
@@ -607,7 +607,7 @@
    "capex_int": 40,
    "fcf_cover": 1.11,
    "div_streak": 16,
-   "yield": 9.94,
+   "yield": 9.82,
    "price": 16.2,
    "checks": {
     "fcf": true,
@@ -655,7 +655,7 @@
    "capex_int": 2,
    "fcf_cover": 1.5,
    "div_streak": 23,
-   "yield": 5.19,
+   "yield": 5.11,
    "price": 1.36,
    "checks": {
     "fcf": true,
@@ -703,8 +703,8 @@
    "capex_int": 23,
    "fcf_cover": 2.11,
    "div_streak": 24,
-   "yield": 2.16,
-   "price": 37.0,
+   "yield": 2.18,
+   "price": 37.25,
    "checks": {
     "fcf": true,
     "fcf_every_year_up": false,
@@ -751,8 +751,8 @@
    "capex_int": 37,
    "fcf_cover": 4.23,
    "div_streak": 5,
-   "yield": 2.63,
-   "price": 28.75,
+   "yield": 2.54,
+   "price": 29.5,
    "checks": {
     "fcf": true,
     "fcf_every_year_up": false,
@@ -800,7 +800,7 @@
    "fcf_cover": 1.93,
    "div_streak": 10,
    "yield": 3.94,
-   "price": 6.35,
+   "price": 6.4,
    "checks": {
     "fcf": true,
     "fcf_every_year_up": false,
@@ -847,7 +847,7 @@
    "capex_int": 44,
    "fcf_cover": 2.01,
    "div_streak": 25,
-   "yield": 5.0,
+   "yield": 4.96,
    "price": 345.0,
    "checks": {
     "fcf": true,
@@ -896,7 +896,7 @@
    "capex_int": 10,
    "fcf_cover": 0.73,
    "div_streak": 7,
-   "yield": 8.45,
+   "yield": 8.28,
    "price": 15.0,
    "checks": {
     "roe": true,
@@ -941,8 +941,8 @@
    "capex_int": 22,
    "fcf_cover": 1.16,
    "div_streak": 10,
-   "yield": 5.74,
-   "price": 4.8,
+   "yield": 5.6,
+   "price": 4.96,
    "checks": {
     "fcf": false,
     "fcf_every_year_up": false,
@@ -990,8 +990,8 @@
    "capex_int": 26,
    "fcf_cover": 0.87,
    "div_streak": 7,
-   "yield": 6.86,
-   "price": 4.54,
+   "yield": 6.83,
+   "price": 4.56,
    "checks": {
     "fcf": false,
     "fcf_every_year_up": false,
@@ -1039,8 +1039,8 @@
    "capex_int": 8,
    "fcf_cover": 0.99,
    "div_streak": 13,
-   "yield": 5.13,
-   "price": 34.5,
+   "yield": 5.21,
+   "price": 33.75,
    "checks": {
     "roe": true,
     "payout": false
@@ -1084,8 +1084,8 @@
    "capex_int": 43,
    "fcf_cover": 1.03,
    "div_streak": 24,
-   "yield": 4.81,
-   "price": 1.34,
+   "yield": 4.85,
+   "price": 1.35,
    "checks": {
     "fcf": false,
     "fcf_every_year_up": false,
@@ -1133,8 +1133,8 @@
    "capex_int": 13,
    "fcf_cover": 0.57,
    "div_streak": 8,
-   "yield": 3.12,
-   "price": 4.76,
+   "yield": 3.15,
+   "price": 4.8,
    "checks": {
     "fcf": false,
     "fcf_every_year_up": false,
@@ -1183,7 +1183,7 @@
    "fcf_cover": 1.24,
    "div_streak": 18,
    "yield": 4.62,
-   "price": 125.0,
+   "price": 125.5,
    "checks": {
     "roe": true,
     "payout": false
@@ -1227,8 +1227,8 @@
    "capex_int": null,
    "fcf_cover": -11.45,
    "div_streak": 11,
-   "yield": 1.05,
-   "price": 27.25,
+   "yield": 1.06,
+   "price": 27.5,
    "checks": {
     "roe": true,
     "payout": false
@@ -1273,7 +1273,7 @@
    "fcf_cover": 4.19,
    "div_streak": 26,
    "yield": 3.9,
-   "price": 62.0,
+   "price": 61.75,
    "checks": {
     "fcf": true,
     "fcf_every_year_up": true,
@@ -1321,7 +1321,7 @@
    "capex_int": 42,
    "fcf_cover": 1.23,
    "div_streak": 14,
-   "yield": 3.39,
+   "yield": 3.42,
    "price": 19.1,
    "checks": {
     "fcf": false,
@@ -1370,8 +1370,8 @@
    "capex_int": 30,
    "fcf_cover": 0.78,
    "div_streak": 7,
-   "yield": 5.38,
-   "price": 16.1,
+   "yield": 5.35,
+   "price": 16.0,
    "checks": {
     "fcf": true,
     "fcf_every_year_up": false,
@@ -1420,7 +1420,7 @@
    "fcf_cover": 2.08,
    "div_streak": 26,
    "yield": 0.2,
-   "price": 143.5,
+   "price": 146.0,
    "checks": {
     "fcf": false,
     "fcf_every_year_up": false,
@@ -1468,8 +1468,8 @@
    "capex_int": 43,
    "fcf_cover": 0.93,
    "div_streak": 9,
-   "yield": 3.06,
-   "price": 4.66,
+   "yield": 3.13,
+   "price": 4.6,
    "checks": {
     "fcf": false,
     "fcf_every_year_up": false,
@@ -1565,7 +1565,7 @@
    "fcf_cover": 1.42,
    "div_streak": 16,
    "yield": 1.57,
-   "price": 76.75,
+   "price": 76.0,
    "checks": {
     "fcf": true,
     "fcf_every_year_up": false,
@@ -1613,8 +1613,8 @@
    "capex_int": 42,
    "fcf_cover": 3.56,
    "div_streak": 21,
-   "yield": 1.5,
-   "price": 66.25,
+   "yield": 1.49,
+   "price": 71.5,
    "checks": {
     "fcf": true,
     "fcf_every_year_up": true,
@@ -1663,7 +1663,7 @@
    "fcf_cover": 3.48,
    "div_streak": 16,
    "yield": null,
-   "price": 6.35,
+   "price": 6.5,
    "checks": {
     "fcf": true,
     "fcf_every_year_up": false,
@@ -1712,7 +1712,7 @@
    "fcf_cover": 3.26,
    "div_streak": 12,
    "yield": null,
-   "price": 10.6,
+   "price": 10.9,
    "checks": {
     "fcf": true,
     "fcf_every_year_up": true,
@@ -1760,8 +1760,8 @@
    "capex_int": 36,
    "fcf_cover": 1.29,
    "div_streak": 25,
-   "yield": 7.26,
-   "price": 152.5,
+   "yield": 7.24,
+   "price": 152.0,
    "checks": {
     "fcf": true,
     "fcf_every_year_up": false,
@@ -1809,8 +1809,8 @@
    "capex_int": 28,
    "fcf_cover": 5.3,
    "div_streak": 4,
-   "yield": 3.04,
-   "price": 7.15,
+   "yield": 2.93,
+   "price": 7.35,
    "checks": {
     "fcf": true,
     "fcf_every_year_up": true,
@@ -1858,8 +1858,8 @@
    "capex_int": 46,
    "fcf_cover": 1.44,
    "div_streak": 5,
-   "yield": 4.88,
-   "price": 12.4,
+   "yield": 4.92,
+   "price": 12.3,
    "checks": {
     "fcf": false,
     "fcf_every_year_up": false,
@@ -1907,8 +1907,8 @@
    "capex_int": 10,
    "fcf_cover": 2.43,
    "div_streak": 4,
-   "yield": 6.21,
-   "price": 149.5,
+   "yield": 6.23,
+   "price": 150.0,
    "checks": {
     "roe": false,
     "payout": true
@@ -1952,7 +1952,7 @@
    "capex_int": 3,
    "fcf_cover": 0.86,
    "div_streak": 23,
-   "yield": 2.72,
+   "yield": 2.78,
    "price": 80.5,
    "checks": {
     "roe": false,
@@ -1998,7 +1998,7 @@
    "fcf_cover": -0.53,
    "div_streak": 9,
    "yield": 4.27,
-   "price": 1.65,
+   "price": 1.64,
    "checks": {
     "fcf": false,
     "fcf_every_year_up": false,
@@ -2047,7 +2047,7 @@
    "fcf_cover": 1.76,
    "div_streak": 24,
    "yield": 6.38,
-   "price": 40.75,
+   "price": 41.5,
    "checks": {
     "fcf": true,
     "fcf_every_year_up": false,
@@ -2095,8 +2095,8 @@
    "capex_int": 8,
    "fcf_cover": 3.67,
    "div_streak": 15,
-   "yield": 5.1,
-   "price": 2.96,
+   "yield": 5.07,
+   "price": 2.98,
    "checks": {
     "roe": false,
     "payout": true
@@ -2139,8 +2139,8 @@
    "capex_int": 17,
    "fcf_cover": 3.01,
    "div_streak": 4,
-   "yield": 5.63,
-   "price": 13.9,
+   "yield": 5.71,
+   "price": 14.7,
    "checks": {
     "fcf": false,
     "fcf_every_year_up": false,
@@ -2189,7 +2189,7 @@
    "fcf_cover": 5.94,
    "div_streak": 11,
    "yield": 3.79,
-   "price": 2.34,
+   "price": 2.36,
    "checks": {
     "fcf": true,
     "fcf_every_year_up": true,
@@ -2281,8 +2281,8 @@
    "capex_int": 41,
    "fcf_cover": 3.39,
    "div_streak": 26,
-   "yield": 1.17,
-   "price": 21.2,
+   "yield": 1.18,
+   "price": 21.0,
    "checks": {
     "fcf": true,
     "fcf_every_year_up": true,
@@ -2329,8 +2329,8 @@
    "capex_int": 54,
    "fcf_cover": 1.82,
    "div_streak": 26,
-   "yield": 1.47,
-   "price": 53.0,
+   "yield": 1.4,
+   "price": 52.5,
    "checks": {
     "fcf": false,
     "fcf_every_year_up": false,
@@ -2378,8 +2378,8 @@
    "capex_int": 37,
    "fcf_cover": 4.24,
    "div_streak": 26,
-   "yield": 3.03,
-   "price": 17.9,
+   "yield": 2.98,
+   "price": 17.7,
    "checks": {
     "fcf": false,
     "fcf_every_year_up": false,
@@ -2428,7 +2428,7 @@
    "fcf_cover": 1.76,
    "div_streak": 1,
    "yield": 4.93,
-   "price": 14.5,
+   "price": 14.4,
    "checks": {
     "fcf": false,
     "fcf_every_year_up": false,
@@ -2475,8 +2475,8 @@
    "capex_int": 49,
    "fcf_cover": 1.46,
    "div_streak": 26,
-   "yield": 6.0,
-   "price": 12.5,
+   "yield": 6.05,
+   "price": 12.3,
    "checks": {
     "fcf": true,
     "fcf_every_year_up": false,
@@ -2524,8 +2524,8 @@
    "capex_int": 84,
    "fcf_cover": 0.74,
    "div_streak": 5,
-   "yield": 4.42,
-   "price": 45.5,
+   "yield": 4.44,
+   "price": 46.0,
    "checks": {
     "fcf": false,
     "fcf_every_year_up": false,
@@ -2574,8 +2574,8 @@
    "capex_int": 16,
    "fcf_cover": 0.9,
    "div_streak": 8,
-   "yield": 7.72,
-   "price": 13.6,
+   "yield": 7.78,
+   "price": 13.5,
    "checks": {
     "fcf": false,
     "fcf_every_year_up": false,
@@ -2624,7 +2624,7 @@
    "capex_int": 40,
    "fcf_cover": 0.91,
    "div_streak": 13,
-   "yield": 4.61,
+   "yield": 4.58,
    "price": 1.53,
    "checks": {
     "fcf": false,
@@ -2674,8 +2674,8 @@
    "capex_int": 36,
    "fcf_cover": 5.88,
    "div_streak": 22,
-   "yield": 3.88,
-   "price": 42.25,
+   "yield": 3.91,
+   "price": 43.25,
    "checks": {
     "fcf": true,
     "fcf_every_year_up": false,
@@ -2774,8 +2774,8 @@
    "capex_int": 31,
    "fcf_cover": 1.55,
    "div_streak": 26,
-   "yield": 7.53,
-   "price": 27.5,
+   "yield": 7.46,
+   "price": 28.0,
    "checks": {
     "fcf": false,
     "fcf_every_year_up": false,
@@ -2824,8 +2824,8 @@
    "capex_int": 34,
    "fcf_cover": 1.49,
    "div_streak": 21,
-   "yield": 4.05,
-   "price": 11.0,
+   "yield": 4.09,
+   "price": 11.2,
    "checks": {
     "fcf": false,
     "fcf_every_year_up": false,
@@ -2874,8 +2874,8 @@
    "capex_int": null,
    "fcf_cover": -1.06,
    "div_streak": 22,
-   "yield": 6.71,
-   "price": 7.8,
+   "yield": 6.67,
+   "price": 7.85,
    "checks": {
     "fcf": false,
     "fcf_every_year_up": false,
@@ -2925,7 +2925,7 @@
    "fcf_cover": 2.36,
    "div_streak": 7,
    "yield": 2.66,
-   "price": 18.8,
+   "price": 18.9,
    "checks": {
     "fcf": false,
     "fcf_every_year_up": false,
@@ -3024,8 +3024,8 @@
    "capex_int": 62,
    "fcf_cover": 1.18,
    "div_streak": 23,
-   "yield": 3.5,
-   "price": 7.0,
+   "yield": 3.52,
+   "price": 7.15,
    "checks": {
     "fcf": false,
     "fcf_every_year_up": false,
@@ -3074,7 +3074,7 @@
    "capex_int": 58,
    "fcf_cover": 2.95,
    "div_streak": 5,
-   "yield": 1.86,
+   "yield": 1.8,
    "price": 29.5,
    "checks": {
     "fcf": true,
@@ -3124,7 +3124,7 @@
    "capex_int": 20,
    "fcf_cover": 1.14,
    "div_streak": 14,
-   "yield": 1.2,
+   "yield": 1.17,
    "price": 17.1,
    "checks": {
     "fcf": false,
@@ -3174,8 +3174,8 @@
    "capex_int": 82,
    "fcf_cover": 0.5,
    "div_streak": 5,
-   "yield": 2.11,
-   "price": 9.5,
+   "yield": 2.14,
+   "price": 9.45,
    "checks": {
     "fcf": false,
     "fcf_every_year_up": false,
@@ -3224,8 +3224,8 @@
    "capex_int": 50,
    "fcf_cover": 5.11,
    "div_streak": 20,
-   "yield": 2.1,
-   "price": 49.5,
+   "yield": 2.12,
+   "price": 52.5,
    "checks": {
     "fcf": true,
     "fcf_every_year_up": false,
@@ -3274,8 +3274,8 @@
    "capex_int": 76,
    "fcf_cover": 2.39,
    "div_streak": 13,
-   "yield": 4.35,
-   "price": 8.05,
+   "yield": 4.22,
+   "price": 8.35,
    "checks": {
     "fcf": false,
     "fcf_every_year_up": false,
@@ -3324,8 +3324,8 @@
    "capex_int": 33,
    "fcf_cover": 1.68,
    "div_streak": 12,
-   "yield": 7.35,
-   "price": 20.3,
+   "yield": 7.43,
+   "price": 20.2,
    "checks": {
     "fcf": false,
     "fcf_every_year_up": false,
@@ -3374,8 +3374,8 @@
    "capex_int": null,
    "fcf_cover": -2.87,
    "div_streak": 10,
-   "yield": 2.46,
-   "price": 6.4,
+   "yield": 2.34,
+   "price": 6.35,
    "checks": {
     "fcf": false,
     "fcf_every_year_up": false,
@@ -3424,8 +3424,8 @@
    "capex_int": 39,
    "fcf_cover": 1.22,
    "div_streak": 25,
-   "yield": 11.21,
-   "price": 226.0,
+   "yield": 11.11,
+   "price": 222.0,
    "checks": {
     "fcf": false,
     "fcf_every_year_up": false,
@@ -3473,7 +3473,7 @@
    "capex_int": 50,
    "fcf_cover": 2.53,
    "div_streak": 3,
-   "yield": 1.35,
+   "yield": 1.36,
    "price": 59.5,
    "checks": {
     "fcf": false,
@@ -3523,8 +3523,8 @@
    "capex_int": 61,
    "fcf_cover": 6.35,
    "div_streak": 2,
-   "yield": 1.53,
-   "price": 43.25,
+   "yield": 1.52,
+   "price": 44.25,
    "checks": {
     "fcf": false,
     "fcf_every_year_up": false,
@@ -3574,7 +3574,7 @@
    "fcf_cover": 0.16,
    "div_streak": 16,
    "yield": 3.41,
-   "price": 0.89,
+   "price": 0.88,
    "checks": {
     "fcf": false,
     "fcf_every_year_up": false,
@@ -3623,8 +3623,8 @@
    "capex_int": 116,
    "fcf_cover": -0.59,
    "div_streak": 4,
-   "yield": 2.55,
-   "price": 3.12,
+   "yield": 2.6,
+   "price": 3.14,
    "checks": {
     "fcf": false,
     "fcf_every_year_up": false,
@@ -3673,8 +3673,8 @@
    "capex_int": 82,
    "fcf_cover": 0.72,
    "div_streak": 24,
-   "yield": 2.36,
-   "price": 252.0,
+   "yield": 2.45,
+   "price": 246.0,
    "checks": {
     "fcf": false,
     "fcf_every_year_up": false,
@@ -3723,8 +3723,8 @@
    "capex_int": 27,
    "fcf_cover": 5.07,
    "div_streak": 11,
-   "yield": 3.23,
-   "price": 47.25,
+   "yield": 3.16,
+   "price": 48.0,
    "checks": {
     "fcf": false,
     "fcf_every_year_up": false,
@@ -3773,8 +3773,8 @@
    "capex_int": 130,
    "fcf_cover": -1.88,
    "div_streak": 24,
-   "yield": 0.19,
-   "price": 5.1,
+   "yield": 0.2,
+   "price": 4.98,
    "checks": {
     "fcf": false,
     "fcf_every_year_up": false,
@@ -3870,7 +3870,7 @@
    "capex_int": 14,
    "fcf_cover": 1.89,
    "div_streak": 26,
-   "yield": 2.59,
+   "yield": 2.57,
    "price": 126.5,
    "checks": {
     "fcf": false,
@@ -3965,8 +3965,8 @@
    "capex_int": 60,
    "fcf_cover": 2.48,
    "div_streak": 14,
-   "yield": 2.27,
-   "price": 49.0,
+   "yield": 2.23,
+   "price": 50.25,
    "checks": {
     "fcf": false,
     "fcf_every_year_up": false,
@@ -4011,7 +4011,7 @@
    "fcf_cover": 4.41,
    "div_streak": 19,
    "yield": 0.35,
-   "price": 2.86,
+   "price": 2.94,
    "checks": {
     "fcf": false,
     "fcf_every_year_up": false,
@@ -4056,8 +4056,8 @@
    "capex_int": 96,
    "fcf_cover": 0.79,
    "div_streak": 1,
-   "yield": 3.23,
-   "price": 12.7,
+   "yield": 3.28,
+   "price": 12.8,
    "checks": {
     "fcf": false,
     "fcf_every_year_up": false,
@@ -4106,8 +4106,8 @@
    "capex_int": null,
    "fcf_cover": -3.38,
    "div_streak": 11,
-   "yield": 3.21,
-   "price": 22.0,
+   "yield": 3.27,
+   "price": 21.4,
    "checks": {
     "roe": false,
     "payout": false
@@ -4152,8 +4152,8 @@
    "capex_int": null,
    "fcf_cover": -0.88,
    "div_streak": 17,
-   "yield": 5.19,
-   "price": 9.3,
+   "yield": 5.16,
+   "price": 9.35,
    "checks": {
     "fcf": false,
     "fcf_every_year_up": false,
@@ -4198,7 +4198,7 @@
    "fcf_cover": -0.04,
    "div_streak": 1,
    "yield": 2.04,
-   "price": 16.6,
+   "price": 16.5,
    "checks": {
     "roe": false,
     "payout": false
@@ -4243,8 +4243,8 @@
    "capex_int": 13,
    "fcf_cover": 2.74,
    "div_streak": 24,
-   "yield": 5.98,
-   "price": 91.25,
+   "yield": 6.13,
+   "price": 90.25,
    "checks": {
     "roe": false,
     "payout": false
@@ -4289,8 +4289,8 @@
    "capex_int": 243,
    "fcf_cover": -0.44,
    "div_streak": 24,
-   "yield": 3.47,
-   "price": 3.44,
+   "yield": 3.49,
+   "price": 3.46,
    "checks": {
     "fcf": false,
     "fcf_every_year_up": false,
@@ -4337,8 +4337,8 @@
    "capex_int": 6,
    "fcf_cover": 0.26,
    "div_streak": 19,
-   "yield": 6.62,
-   "price": 4.7,
+   "yield": 6.57,
+   "price": 4.68,
    "checks": {
     "roe": false,
     "payout": false
@@ -4383,8 +4383,8 @@
    "capex_int": 6,
    "fcf_cover": 4.86,
    "div_streak": 25,
-   "yield": 6.74,
-   "price": 111.5,
+   "yield": 6.68,
+   "price": 113.0,
    "checks": {
     "roe": false,
     "payout": false
@@ -4429,8 +4429,8 @@
    "capex_int": 13,
    "fcf_cover": 4.35,
    "div_streak": 23,
-   "yield": 5.17,
-   "price": 41.5,
+   "yield": 5.14,
+   "price": 42.25,
    "checks": {
     "roe": false,
     "payout": false
@@ -4475,8 +4475,8 @@
    "capex_int": 0,
    "fcf_cover": 7.31,
    "div_streak": 22,
-   "yield": 8.25,
-   "price": 2.06,
+   "yield": 8.42,
+   "price": 2.04,
    "checks": {
     "roe": false,
     "payout": false
@@ -4521,7 +4521,7 @@
    "capex_int": null,
    "fcf_cover": 0.24,
    "div_streak": 3,
-   "yield": 7.66,
+   "yield": 7.59,
    "price": 11.2,
    "checks": {
     "roe": false,
@@ -4616,8 +4616,8 @@
    "capex_int": null,
    "fcf_cover": 0.79,
    "div_streak": 17,
-   "yield": 3.9,
-   "price": 22.7,
+   "yield": 3.94,
+   "price": 22.6,
    "checks": {
     "roe": false,
     "payout": false
@@ -4662,8 +4662,8 @@
    "capex_int": null,
    "fcf_cover": -0.72,
    "div_streak": 21,
-   "yield": 4.0,
-   "price": 9.95,
+   "yield": 4.06,
+   "price": 9.9,
    "checks": {
     "roe": false,
     "payout": false
@@ -4708,8 +4708,8 @@
    "capex_int": 11,
    "fcf_cover": 4.19,
    "div_streak": 21,
-   "yield": 5.13,
-   "price": 234.0,
+   "yield": 5.15,
+   "price": 238.0,
    "checks": {
     "roe": false,
     "payout": false
@@ -4753,8 +4753,8 @@
    "capex_int": 82,
    "fcf_cover": 2.12,
    "div_streak": 2,
-   "yield": 1.94,
-   "price": 3.52,
+   "yield": 2.0,
+   "price": 3.56,
    "checks": {
     "fcf": false,
     "fcf_every_year_up": false,
@@ -4851,7 +4851,7 @@
    "fcf_cover": 11.27,
    "div_streak": 3,
    "yield": 1.9,
-   "price": 21.1,
+   "price": 21.2,
    "checks": {
     "fcf": false,
     "fcf_every_year_up": false,
@@ -4901,8 +4901,8 @@
    "capex_int": null,
    "fcf_cover": -2.31,
    "div_streak": 14,
-   "yield": 5.79,
-   "price": 1.22,
+   "yield": 5.74,
+   "price": 1.21,
    "checks": {
     "roe": false,
     "payout": false
@@ -4946,8 +4946,8 @@
    "capex_int": 56,
    "fcf_cover": 5.82,
    "div_streak": 8,
-   "yield": 2.24,
-   "price": 18.4,
+   "yield": 2.25,
+   "price": 18.7,
    "checks": {
     "fcf": false,
     "fcf_every_year_up": false,
@@ -4996,7 +4996,7 @@
    "fcf_cover": 10.19,
    "div_streak": 0,
    "yield": null,
-   "price": 1.95,
+   "price": 1.96,
    "checks": {
     "fcf": false,
     "fcf_every_year_up": false,
@@ -5043,7 +5043,7 @@
    "capex_int": 43,
    "fcf_cover": 5.44,
    "div_streak": 16,
-   "yield": 1.31,
+   "yield": 1.3,
    "price": 27.25,
    "checks": {
     "fcf": false,
