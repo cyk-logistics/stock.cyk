@@ -1,21 +1,18 @@
 {
   "active": [
+    "BBL",
     "BCP",
     "BEM",
     "BGRIM",
+    "BH",
     "CBG",
     "EGCO",
     "GPSC",
-    "IRPC",
     "IVL",
     "KBANK",
-    "KKP",
     "KTB",
-    "PTT",
-    "RATCH",
     "SCB",
-    "TISCO",
-    "TTB"
+    "TISCO"
   ],
-  "bar_close": "2026-10-01T20:00:00+07:00"
+  "bar_close": "2026-10-02T16:00:00+07:00"
 }
