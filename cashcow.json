@@ -1,5 +1,5 @@
 {
- "updated": "2026-10-02T12:04:02+07:00",
+ "updated": "2026-10-03T11:47:17+07:00",
  "source": "yfinance งบปี ~4 ปี · เกณฑ์ลงทุนแมน longtunman.com/66311",
  "cashcow": [
   "COM7",
@@ -42,7 +42,7 @@
    "fcf_cover": 1.15,
    "div_streak": 10,
    "yield": 3.67,
-   "price": 30.0,
+   "price": 30.5,
    "checks": {
     "fcf": true,
     "fcf_every_year_up": false,
@@ -88,7 +88,7 @@
    "fcf_cover": 1.76,
    "div_streak": 22,
    "yield": 3.62,
-   "price": 191.5,
+   "price": 190.5,
    "checks": {
     "fcf": true,
     "fcf_every_year_up": false,
@@ -180,7 +180,7 @@
    "fcf_cover": 2.14,
    "div_streak": 11,
    "yield": 1.18,
-   "price": 51.75,
+   "price": 52.5,
    "checks": {
     "fcf": true,
     "fcf_every_year_up": false,
@@ -226,7 +226,7 @@
    "fcf_cover": 3.54,
    "div_streak": 12,
    "yield": 5.13,
-   "price": 24.0,
+   "price": 24.1,
    "checks": {
     "fcf": true,
     "fcf_every_year_up": false,
@@ -272,7 +272,7 @@
    "fcf_cover": 1.99,
    "div_streak": 26,
    "yield": 0.23,
-   "price": 260.0,
+   "price": 261.0,
    "checks": {
     "fcf": true,
     "fcf_every_year_up": false,
@@ -320,7 +320,7 @@
    "fcf_cover": 1.0,
    "div_streak": 23,
    "yield": 3.46,
-   "price": 6.5,
+   "price": 6.65,
    "checks": {
     "fcf": true,
     "fcf_every_year_up": false,
@@ -368,7 +368,7 @@
    "fcf_cover": 0.8,
    "div_streak": 11,
    "yield": 5.6,
-   "price": 31.5,
+   "price": 31.25,
    "checks": {
     "fcf": false,
     "fcf_every_year_up": false,
@@ -416,7 +416,7 @@
    "fcf_cover": 0.3,
    "div_streak": 5,
    "yield": 7.59,
-   "price": 6.55,
+   "price": 6.6,
    "checks": {
     "fcf": true,
     "fcf_every_year_up": false,
@@ -464,7 +464,7 @@
    "fcf_cover": 1.31,
    "div_streak": 18,
    "yield": 3.0,
-   "price": 10.1,
+   "price": 10.0,
    "checks": {
     "fcf": false,
     "fcf_every_year_up": false,
@@ -512,7 +512,7 @@
    "fcf_cover": 2.05,
    "div_streak": 8,
    "yield": 5.2,
-   "price": 14.9,
+   "price": 14.8,
    "checks": {
     "fcf": true,
     "fcf_every_year_up": false,
@@ -560,7 +560,7 @@
    "fcf_cover": 1.96,
    "div_streak": 26,
    "yield": 2.42,
-   "price": 183.5,
+   "price": 184.0,
    "checks": {
     "fcf": true,
     "fcf_every_year_up": false,
@@ -608,7 +608,7 @@
    "fcf_cover": 1.11,
    "div_streak": 16,
    "yield": 9.82,
-   "price": 16.2,
+   "price": 16.4,
    "checks": {
     "fcf": true,
     "fcf_every_year_up": false,
@@ -752,7 +752,7 @@
    "fcf_cover": 4.23,
    "div_streak": 5,
    "yield": 2.54,
-   "price": 29.5,
+   "price": 29.25,
    "checks": {
     "fcf": true,
     "fcf_every_year_up": false,
@@ -800,7 +800,7 @@
    "fcf_cover": 1.93,
    "div_streak": 10,
    "yield": 3.94,
-   "price": 6.4,
+   "price": 6.45,
    "checks": {
     "fcf": true,
     "fcf_every_year_up": false,
@@ -897,7 +897,7 @@
    "fcf_cover": 0.73,
    "div_streak": 7,
    "yield": 8.28,
-   "price": 15.0,
+   "price": 15.1,
    "checks": {
     "roe": true,
     "payout": false
@@ -942,7 +942,7 @@
    "fcf_cover": 1.16,
    "div_streak": 10,
    "yield": 5.6,
-   "price": 4.96,
+   "price": 4.82,
    "checks": {
     "fcf": false,
     "fcf_every_year_up": false,
@@ -991,7 +991,7 @@
    "fcf_cover": 0.87,
    "div_streak": 7,
    "yield": 6.83,
-   "price": 4.56,
+   "price": 4.58,
    "checks": {
     "fcf": false,
     "fcf_every_year_up": false,
@@ -1040,7 +1040,7 @@
    "fcf_cover": 0.99,
    "div_streak": 13,
    "yield": 5.21,
-   "price": 33.75,
+   "price": 34.0,
    "checks": {
     "roe": true,
     "payout": false
@@ -1134,7 +1134,7 @@
    "fcf_cover": 0.57,
    "div_streak": 8,
    "yield": 3.15,
-   "price": 4.8,
+   "price": 4.82,
    "checks": {
     "fcf": false,
     "fcf_every_year_up": false,
@@ -1183,7 +1183,7 @@
    "fcf_cover": 1.24,
    "div_streak": 18,
    "yield": 4.62,
-   "price": 125.5,
+   "price": 125.0,
    "checks": {
     "roe": true,
     "payout": false
@@ -1371,7 +1371,7 @@
    "fcf_cover": 0.78,
    "div_streak": 7,
    "yield": 5.35,
-   "price": 16.0,
+   "price": 16.1,
    "checks": {
     "fcf": true,
     "fcf_every_year_up": false,
@@ -1565,7 +1565,7 @@
    "fcf_cover": 1.42,
    "div_streak": 16,
    "yield": 1.57,
-   "price": 76.0,
+   "price": 75.0,
    "checks": {
     "fcf": true,
     "fcf_every_year_up": false,
@@ -1614,7 +1614,7 @@
    "fcf_cover": 3.56,
    "div_streak": 21,
    "yield": 1.49,
-   "price": 71.5,
+   "price": 71.0,
    "checks": {
     "fcf": true,
     "fcf_every_year_up": true,
@@ -1663,7 +1663,7 @@
    "fcf_cover": 3.48,
    "div_streak": 16,
    "yield": null,
-   "price": 6.5,
+   "price": 6.65,
    "checks": {
     "fcf": true,
     "fcf_every_year_up": false,
@@ -1712,7 +1712,7 @@
    "fcf_cover": 3.26,
    "div_streak": 12,
    "yield": null,
-   "price": 10.9,
+   "price": 11.3,
    "checks": {
     "fcf": true,
     "fcf_every_year_up": true,
@@ -1810,7 +1810,7 @@
    "fcf_cover": 5.3,
    "div_streak": 4,
    "yield": 2.93,
-   "price": 7.35,
+   "price": 7.75,
    "checks": {
     "fcf": true,
     "fcf_every_year_up": true,
@@ -1859,7 +1859,7 @@
    "fcf_cover": 1.44,
    "div_streak": 5,
    "yield": 4.92,
-   "price": 12.3,
+   "price": 12.2,
    "checks": {
     "fcf": false,
     "fcf_every_year_up": false,
@@ -1908,7 +1908,7 @@
    "fcf_cover": 2.43,
    "div_streak": 4,
    "yield": 6.23,
-   "price": 150.0,
+   "price": 149.0,
    "checks": {
     "roe": false,
     "payout": true
@@ -1953,7 +1953,7 @@
    "fcf_cover": 0.86,
    "div_streak": 23,
    "yield": 2.78,
-   "price": 80.5,
+   "price": 80.0,
    "checks": {
     "roe": false,
     "payout": true
@@ -2096,7 +2096,7 @@
    "fcf_cover": 3.67,
    "div_streak": 15,
    "yield": 5.07,
-   "price": 2.98,
+   "price": 2.96,
    "checks": {
     "roe": false,
     "payout": true
@@ -2189,7 +2189,7 @@
    "fcf_cover": 5.94,
    "div_streak": 11,
    "yield": 3.79,
-   "price": 2.36,
+   "price": 2.34,
    "checks": {
     "fcf": true,
     "fcf_every_year_up": true,
@@ -2282,7 +2282,7 @@
    "fcf_cover": 3.39,
    "div_streak": 26,
    "yield": 1.18,
-   "price": 21.0,
+   "price": 21.1,
    "checks": {
     "fcf": true,
     "fcf_every_year_up": true,
@@ -2330,7 +2330,7 @@
    "fcf_cover": 1.82,
    "div_streak": 26,
    "yield": 1.4,
-   "price": 52.5,
+   "price": 52.0,
    "checks": {
     "fcf": false,
     "fcf_every_year_up": false,
@@ -2379,7 +2379,7 @@
    "fcf_cover": 4.24,
    "div_streak": 26,
    "yield": 2.98,
-   "price": 17.7,
+   "price": 17.6,
    "checks": {
     "fcf": false,
     "fcf_every_year_up": false,
@@ -2476,7 +2476,7 @@
    "fcf_cover": 1.46,
    "div_streak": 26,
    "yield": 6.05,
-   "price": 12.3,
+   "price": 12.4,
    "checks": {
     "fcf": true,
     "fcf_every_year_up": false,
@@ -2525,7 +2525,7 @@
    "fcf_cover": 0.74,
    "div_streak": 5,
    "yield": 4.44,
-   "price": 46.0,
+   "price": 45.75,
    "checks": {
     "fcf": false,
     "fcf_every_year_up": false,
@@ -2575,7 +2575,7 @@
    "fcf_cover": 0.9,
    "div_streak": 8,
    "yield": 7.78,
-   "price": 13.5,
+   "price": 13.3,
    "checks": {
     "fcf": false,
     "fcf_every_year_up": false,
@@ -2625,7 +2625,7 @@
    "fcf_cover": 0.91,
    "div_streak": 13,
    "yield": 4.58,
-   "price": 1.53,
+   "price": 1.52,
    "checks": {
     "fcf": false,
     "fcf_every_year_up": false,
@@ -2675,7 +2675,7 @@
    "fcf_cover": 5.88,
    "div_streak": 22,
    "yield": 3.91,
-   "price": 43.25,
+   "price": 43.0,
    "checks": {
     "fcf": true,
     "fcf_every_year_up": false,
@@ -2725,7 +2725,7 @@
    "fcf_cover": 1.87,
    "div_streak": 24,
    "yield": 5.75,
-   "price": 8.6,
+   "price": 8.55,
    "checks": {
     "fcf": false,
     "fcf_every_year_up": false,
@@ -2775,7 +2775,7 @@
    "fcf_cover": 1.55,
    "div_streak": 26,
    "yield": 7.46,
-   "price": 28.0,
+   "price": 28.25,
    "checks": {
     "fcf": false,
     "fcf_every_year_up": false,
@@ -2875,7 +2875,7 @@
    "fcf_cover": -1.06,
    "div_streak": 22,
    "yield": 6.67,
-   "price": 7.85,
+   "price": 7.8,
    "checks": {
     "fcf": false,
     "fcf_every_year_up": false,
@@ -2975,7 +2975,7 @@
    "fcf_cover": 0.26,
    "div_streak": 22,
    "yield": 7.86,
-   "price": 15.8,
+   "price": 15.9,
    "checks": {
     "fcf": false,
     "fcf_every_year_up": false,
@@ -3025,7 +3025,7 @@
    "fcf_cover": 1.18,
    "div_streak": 23,
    "yield": 3.52,
-   "price": 7.15,
+   "price": 7.4,
    "checks": {
     "fcf": false,
     "fcf_every_year_up": false,
@@ -3075,7 +3075,7 @@
    "fcf_cover": 2.95,
    "div_streak": 5,
    "yield": 1.8,
-   "price": 29.5,
+   "price": 29.75,
    "checks": {
     "fcf": true,
     "fcf_every_year_up": false,
@@ -3125,7 +3125,7 @@
    "fcf_cover": 1.14,
    "div_streak": 14,
    "yield": 1.17,
-   "price": 17.1,
+   "price": 17.2,
    "checks": {
     "fcf": false,
     "fcf_every_year_up": false,
@@ -3175,7 +3175,7 @@
    "fcf_cover": 0.5,
    "div_streak": 5,
    "yield": 2.14,
-   "price": 9.45,
+   "price": 9.55,
    "checks": {
     "fcf": false,
     "fcf_every_year_up": false,
@@ -3275,7 +3275,7 @@
    "fcf_cover": 2.39,
    "div_streak": 13,
    "yield": 4.22,
-   "price": 8.35,
+   "price": 8.25,
    "checks": {
     "fcf": false,
     "fcf_every_year_up": false,
@@ -3375,7 +3375,7 @@
    "fcf_cover": -2.87,
    "div_streak": 10,
    "yield": 2.34,
-   "price": 6.35,
+   "price": 6.45,
    "checks": {
     "fcf": false,
     "fcf_every_year_up": false,
@@ -3390,6 +3390,56 @@
     "roe",
     "fcf",
     "ibde"
+   ]
+  },
+  {
+   "sym": "BANPU",
+   "name": "BANPU_BANPU",
+   "sector": "Utilities",
+   "fin": false,
+   "years": 4,
+   "roe": [
+    11.8,
+    10.6,
+    3.5,
+    6.3
+   ],
+   "roe_min": 3.5,
+   "roe_avg": 8.1,
+   "payout": [
+    40,
+    40,
+    122,
+    55
+   ],
+   "payout_avg": 64,
+   "payout_max": 122,
+   "fcf": [
+    223,
+    2743,
+    -860,
+    99
+   ],
+   "ibde": 0.79,
+   "capex_int": 53,
+   "fcf_cover": 0.27,
+   "div_streak": 9,
+   "yield": 0.12,
+   "price": 14.3,
+   "checks": {
+    "fcf": false,
+    "fcf_every_year_up": false,
+    "ibde": true,
+    "roe": false,
+    "payout": false
+   },
+   "passed": 1,
+   "of": 4,
+   "cashcow": false,
+   "fail": [
+    "roe",
+    "payout",
+    "fcf"
    ]
   },
   {
@@ -3425,7 +3475,7 @@
    "fcf_cover": 1.22,
    "div_streak": 25,
    "yield": 11.11,
-   "price": 222.0,
+   "price": 223.0,
    "checks": {
     "fcf": false,
     "fcf_every_year_up": false,
@@ -3474,7 +3524,7 @@
    "fcf_cover": 2.53,
    "div_streak": 3,
    "yield": 1.36,
-   "price": 59.5,
+   "price": 59.75,
    "checks": {
     "fcf": false,
     "fcf_every_year_up": false,
@@ -3524,7 +3574,7 @@
    "fcf_cover": 6.35,
    "div_streak": 2,
    "yield": 1.52,
-   "price": 44.25,
+   "price": 43.75,
    "checks": {
     "fcf": false,
     "fcf_every_year_up": false,
@@ -3674,7 +3724,7 @@
    "fcf_cover": 0.72,
    "div_streak": 24,
    "yield": 2.45,
-   "price": 246.0,
+   "price": 244.0,
    "checks": {
     "fcf": false,
     "fcf_every_year_up": false,
@@ -3724,7 +3774,7 @@
    "fcf_cover": 5.07,
    "div_streak": 11,
    "yield": 3.16,
-   "price": 48.0,
+   "price": 48.5,
    "checks": {
     "fcf": false,
     "fcf_every_year_up": false,
@@ -3774,7 +3824,7 @@
    "fcf_cover": -1.88,
    "div_streak": 24,
    "yield": 0.2,
-   "price": 4.98,
+   "price": 5.0,
    "checks": {
     "fcf": false,
     "fcf_every_year_up": false,
@@ -3919,7 +3969,7 @@
    "fcf_cover": 5.65,
    "div_streak": 3,
    "yield": 3.55,
-   "price": 9.85,
+   "price": 9.9,
    "checks": {
     "fcf": true,
     "fcf_every_year_up": false,
@@ -3966,7 +4016,7 @@
    "fcf_cover": 2.48,
    "div_streak": 14,
    "yield": 2.23,
-   "price": 50.25,
+   "price": 50.0,
    "checks": {
     "fcf": false,
     "fcf_every_year_up": false,
@@ -4011,7 +4061,7 @@
    "fcf_cover": 4.41,
    "div_streak": 19,
    "yield": 0.35,
-   "price": 2.94,
+   "price": 2.9,
    "checks": {
     "fcf": false,
     "fcf_every_year_up": false,
@@ -4057,7 +4107,7 @@
    "fcf_cover": 0.79,
    "div_streak": 1,
    "yield": 3.28,
-   "price": 12.8,
+   "price": 12.9,
    "checks": {
     "fcf": false,
     "fcf_every_year_up": false,
@@ -4107,7 +4157,7 @@
    "fcf_cover": -3.38,
    "div_streak": 11,
    "yield": 3.27,
-   "price": 21.4,
+   "price": 21.5,
    "checks": {
     "roe": false,
     "payout": false
@@ -4244,7 +4294,7 @@
    "fcf_cover": 2.74,
    "div_streak": 24,
    "yield": 6.13,
-   "price": 90.25,
+   "price": 90.5,
    "checks": {
     "roe": false,
     "payout": false
@@ -4290,7 +4340,7 @@
    "fcf_cover": -0.44,
    "div_streak": 24,
    "yield": 3.49,
-   "price": 3.46,
+   "price": 3.44,
    "checks": {
     "fcf": false,
     "fcf_every_year_up": false,
@@ -4338,7 +4388,7 @@
    "fcf_cover": 0.26,
    "div_streak": 19,
    "yield": 6.57,
-   "price": 4.68,
+   "price": 4.7,
    "checks": {
     "roe": false,
     "payout": false
@@ -4384,7 +4434,7 @@
    "fcf_cover": 4.86,
    "div_streak": 25,
    "yield": 6.68,
-   "price": 113.0,
+   "price": 112.0,
    "checks": {
     "roe": false,
     "payout": false
@@ -4430,7 +4480,7 @@
    "fcf_cover": 4.35,
    "div_streak": 23,
    "yield": 5.14,
-   "price": 42.25,
+   "price": 41.75,
    "checks": {
     "roe": false,
     "payout": false
@@ -4476,7 +4526,7 @@
    "fcf_cover": 7.31,
    "div_streak": 22,
    "yield": 8.42,
-   "price": 2.04,
+   "price": 2.02,
    "checks": {
     "roe": false,
     "payout": false
@@ -4536,55 +4586,6 @@
    ]
   },
   {
-   "sym": "BANPU",
-   "name": "BANPU_BANPU",
-   "sector": "Utilities",
-   "fin": false,
-   "years": 4,
-   "roe": [
-    34.1,
-    4.2,
-    -0.7,
-    -1.8
-   ],
-   "roe_min": -1.8,
-   "roe_avg": 9.0,
-   "payout": [
-    12,
-    153
-   ],
-   "payout_avg": 82,
-   "payout_max": 153,
-   "fcf": [
-    1548,
-    -206,
-    190,
-    -122
-   ],
-   "ibde": 2.14,
-   "capex_int": 52,
-   "fcf_cover": 2.53,
-   "div_streak": 9,
-   "yield": 0.12,
-   "price": 14.5,
-   "checks": {
-    "fcf": false,
-    "fcf_every_year_up": false,
-    "ibde": false,
-    "roe": false,
-    "payout": false
-   },
-   "passed": 0,
-   "of": 4,
-   "cashcow": false,
-   "fail": [
-    "roe",
-    "payout",
-    "fcf",
-    "ibde"
-   ]
-  },
-  {
    "sym": "BLA",
    "name": "BLA_BANGKOK LIFE ASSURANCE",
    "sector": "Financial Services",
@@ -4617,7 +4618,7 @@
    "fcf_cover": 0.79,
    "div_streak": 17,
    "yield": 3.94,
-   "price": 22.6,
+   "price": 22.7,
    "checks": {
     "roe": false,
     "payout": false
@@ -4663,7 +4664,7 @@
    "fcf_cover": -0.72,
    "div_streak": 21,
    "yield": 4.06,
-   "price": 9.9,
+   "price": 9.8,
    "checks": {
     "roe": false,
     "payout": false
@@ -4709,7 +4710,7 @@
    "fcf_cover": 4.19,
    "div_streak": 21,
    "yield": 5.15,
-   "price": 238.0,
+   "price": 236.0,
    "checks": {
     "roe": false,
     "payout": false
@@ -4902,7 +4903,7 @@
    "fcf_cover": -2.31,
    "div_streak": 14,
    "yield": 5.74,
-   "price": 1.21,
+   "price": 1.22,
    "checks": {
     "roe": false,
     "payout": false
@@ -4947,7 +4948,7 @@
    "fcf_cover": 5.82,
    "div_streak": 8,
    "yield": 2.25,
-   "price": 18.7,
+   "price": 18.8,
    "checks": {
     "fcf": false,
     "fcf_every_year_up": false,
@@ -4996,7 +4997,7 @@
    "fcf_cover": 10.19,
    "div_streak": 0,
    "yield": null,
-   "price": 1.96,
+   "price": 1.94,
    "checks": {
     "fcf": false,
     "fcf_every_year_up": false,
