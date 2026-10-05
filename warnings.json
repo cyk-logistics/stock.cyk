@@ -1,15 +1,12 @@
 {
- "GULF": [
-  "exit",
-  "trap"
- ],
  "SCC": [
   "bear"
  ],
  "PTT": [
   "bear"
  ],
- "LH": [
+ "GULF": [
+  "exit",
   "trap"
  ],
  "EGCO": [
@@ -21,11 +18,20 @@
  "TOP": [
   "bear"
  ],
+ "LH": [
+  "trap"
+ ],
  "WHA": [
   "trap"
  ],
+ "BJC": [
+  "bear"
+ ],
  "OR": [
   "trap"
+ ],
+ "CPAXT": [
+  "bear"
  ],
  "CENTEL": [
   "bear"

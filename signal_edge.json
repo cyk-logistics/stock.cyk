@@ -1,7 +1,7 @@
 {
- "as_of": "2026-10-05",
+ "as_of": "2026-10-06",
  "years": 5,
- "n_stocks": 149,
+ "n_stocks": 148,
  "horizon_days": 20,
  "baseline_hit": 40.6,
  "baseline_avg": NaN,
@@ -14,15 +14,15 @@
  },
  "signals": {
   "bull_confirm": {
-   "n": 365,
-   "hit20": 43.6,
-   "avg20": 0.12,
+   "n": 363,
+   "hit20": 43.8,
+   "avg20": 0.13,
    "med20": -1.13,
    "hit10": 38.6,
    "avg10": -0.28,
-   "maxgain": 8.91,
+   "maxgain": 8.93,
    "maxdd": -7.77,
-   "edge_hit": 3.0,
+   "edge_hit": 3.2,
    "edge_avg": NaN
   },
   "dip_buy": {
@@ -38,26 +38,26 @@
    "edge_avg": NaN
   },
   "oversold": {
-   "n": 5277,
+   "n": 5244,
    "hit20": 43.2,
    "avg20": -0.6,
    "med20": -0.86,
    "hit10": 44.8,
-   "avg10": -0.27,
-   "maxgain": 8.91,
-   "maxdd": -8.82,
+   "avg10": -0.28,
+   "maxgain": 8.92,
+   "maxdd": -8.83,
    "edge_hit": 2.6,
    "edge_avg": NaN
   },
   "near800": {
-   "n": 3039,
+   "n": 3024,
    "hit20": 42.4,
-   "avg20": 0.11,
+   "avg20": 0.07,
    "med20": -0.91,
    "hit10": 42.5,
-   "avg10": 0.01,
-   "maxgain": 8.56,
-   "maxdd": -7.22,
+   "avg10": -0.02,
+   "maxgain": 8.48,
+   "maxdd": -7.21,
    "edge_hit": 1.8,
    "edge_avg": NaN
   },
