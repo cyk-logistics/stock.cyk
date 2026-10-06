@@ -1,7 +1,4 @@
 {
- "SCC": [
-  "bear"
- ],
  "PTT": [
   "bear"
  ],
@@ -15,14 +12,17 @@
  "RATCH": [
   "trap"
  ],
- "TOP": [
+ "CPAXT": [
   "bear"
+ ],
+ "WHA": [
+  "trap"
  ],
  "LH": [
   "trap"
  ],
- "WHA": [
-  "trap"
+ "TOP": [
+  "bear"
  ],
  "BJC": [
   "bear"
@@ -30,10 +30,14 @@
  "OR": [
   "trap"
  ],
- "CPAXT": [
-  "bear"
+ "BANPU": [
+  "runup",
+  "trap"
  ],
  "CENTEL": [
+  "bear"
+ ],
+ "SCC": [
   "bear"
  ],
  "KCE": [
