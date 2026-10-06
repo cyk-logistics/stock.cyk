@@ -2,12 +2,12 @@
   "active": [
     "BCP",
     "BGRIM",
-    "EGCO",
+    "CENTEL",
     "GPSC",
-    "IVL",
     "KBANK",
+    "KTB",
     "TISCO",
     "TTB"
   ],
-  "bar_close": "2026-10-05T20:00:00+07:00"
+  "bar_close": "2026-10-06T16:00:00+07:00"
 }
