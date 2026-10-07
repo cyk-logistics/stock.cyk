@@ -2,11 +2,9 @@
   "active": [
     "BCP",
     "BGRIM",
-    "GPSC",
     "KBANK",
-    "KTB",
-    "RATCH",
-    "TISCO"
+    "PTT",
+    "TTB"
   ],
-  "bar_close": "2026-10-06T20:00:00+07:00"
+  "bar_close": "2026-10-07T16:00:00+07:00"
 }
