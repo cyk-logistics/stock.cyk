@@ -1,9 +1,13 @@
 name: Build & Deploy SET Screener
 
+# ⏰ เวลารันจริง: Mac mini (192.168.10.158 · launchd com.cyk.screener-trigger · ~/stockcyk/gh_trigger.sh) push commit ว่าง
+#    "⏰ รอบเที่ยง/รอบเย็น YYYY-MM-DD" เข้า main ตรงเวลา 12:35 / 17:30 ICT จ-ศ → event push เริ่มรันในไม่กี่วินาที
+#    เพราะ cron ของ GitHub มาช้า 4–9 ชม. (รอบ 17:30 เคยวิ่งจริง ~00:30) · cron ข้างล่างเหลือเป็นตัวสำรอง (job gate ข้ามถ้ารอบนั้นวันนี้รันแล้ว)
+# 📭 ไม่ส่งไปไหน (9 ต.ค. 2026 ผู้ใช้: "ไม่ต้องมีการส่งไปที่ไหนอีก เดี๋ยวเข้าไปดูในเว็บเอง") — อัปเดตหน้าเว็บอย่างเดียว
 on:
   schedule:
-    - cron: '30 10 * * 1-5'   # ~17:30 ICT วันธรรมดา (หลังตลาด SET ปิด) — เวลาเป็น UTC
-    - cron: '35 5 * * 1-5'    # ~12:35 ICT พักเที่ยง — อัปเดตหน้าเว็บอย่างเดียว (--intraday)
+    - cron: '30 10 * * 1-5'   # สำรอง ~17:30 ICT (มาช้าได้หลายชั่วโมง) — เวลาเป็น UTC
+    - cron: '35 5 * * 1-5'    # สำรอง ~12:35 ICT พักเที่ยง — อัปเดตหน้าเว็บอย่างเดียว (--intraday)
   workflow_dispatch:           # กดรันเองได้จากหน้า Actions
   push:
     branches: [ main ]
@@ -18,7 +22,32 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
+  gate:   # cron สำรองมาช้า: Mac mini สั่งรอบเดียวกันของวันนี้ไปแล้ว (สำเร็จ/กำลังรัน) → ไม่ต้องรันซ้ำ · รอบที่ mini สั่งล้ม → cron รันแทน
+    runs-on: ubuntu-latest
+    permissions:
+      actions: read
+    outputs:
+      go: ${{ steps.g.outputs.go }}
+    steps:
+      - id: g
+        env:
+          GH_TOKEN: ${{ github.token }}
+          EV: ${{ github.event_name }}
+          SCHED: ${{ github.event.schedule }}
+        run: |
+          go=true
+          if [ "$EV" = "schedule" ]; then
+            slot="รอบเย็น"; [ "$SCHED" = "35 5 * * 1-5" ] && slot="รอบเที่ยง"
+            today=$(TZ=Asia/Bangkok date +%F)
+            n=$(gh api -X GET "repos/$GITHUB_REPOSITORY/actions/workflows/deploy.yml/runs" -f event=push -f per_page=50 \
+                --jq "[.workflow_runs[] | select((.display_title | startswith(\"⏰ $slot $today\")) and (.conclusion == \"success\" or .status != \"completed\"))] | length" || echo 0)
+            if [ "${n:-0}" -gt 0 ]; then go=false; echo "ข้าม — Mac mini สั่ง$slot $today ไปแล้ว (cron GitHub มาช้า)"; fi
+          fi
+          echo "go=$go" >> "$GITHUB_OUTPUT"
+
   build:
+    needs: gate
+    if: needs.gate.outputs.go == 'true'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -36,15 +65,13 @@ jobs:
           else
             echo "ข้าม — ไม่ใช่วันจันทร์"
           fi
-      - name: สแกนหุ้น + สร้างหน้าเว็บ
+      - name: สแกนหุ้น + สร้างหน้าเว็บ (ไม่ส่งไปไหน — ผู้ใช้ดูบนเว็บเอง)
         env:
-          DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
-          # LINE ยกเลิกแล้ว (9 ต.ค. 2026 ผู้ใช้สั่ง "ยกเลิกส่งหุ้นน่าเก็บไปที่ atls operation") — ไม่ส่ง STOCK_LINE_HOOK
-          # → screener.py ไม่ส่งการ์ดสรุปเย็นเข้า LINE OA Atls Operations อีก (หน้าเว็บ/เมล/แจ้งเตือนมือถือยังทำงานปกติ)
+          HEAD_MSG: ${{ github.event.head_commit.message }}
         run: |
           mkdir -p site
           EXTRA=""
-          if [ "${{ github.event.schedule }}" = "35 5 * * 1-5" ]; then EXTRA="--intraday"; fi
+          if [ "${{ github.event.schedule }}" = "35 5 * * 1-5" ] || [[ "$HEAD_MSG" == "⏰ รอบเที่ยง"* ]]; then EXTRA="--intraday"; fi
           python screener.py --out site/index.html $EXTRA
       - name: บันทึก track record กลับ repo (best-effort — ห้ามทำ deploy ล้ม)
         run: |
@@ -54,9 +81,9 @@ jobs:
           if ! git diff --cached --quiet; then
             git commit -m "Update signal track record + edge [skip ci]"
             git pull --rebase --autostash origin main || git rebase --abort || true
-            git push || echo "⚠ push ไม่ผ่าน (ชนกัน) — track record จะอัปเดตรอบหน้า ไม่กระทบเว็บ/LINE"
+            git push || echo "⚠ push ไม่ผ่าน (ชนกัน) — track record จะอัปเดตรอบหน้า ไม่กระทบเว็บ"
           fi
-        continue-on-error: true   # step นี้ล้มไม่ทำให้ทั้ง job ล้ม (เว็บ+LINE ต้องไปต่อได้)
+        continue-on-error: true   # step นี้ล้มไม่ทำให้ทั้ง job ล้ม (เว็บต้องไปต่อได้)
       - uses: actions/upload-pages-artifact@v3
         with:
           path: site

@@ -215,6 +215,9 @@ def sector_th(fund):
 # ---------- วิเคราะห์หุ้น 1 ตัว ----------
 def analyze(ticker, df, fund):
     df = df.dropna(how="all")
+    # ⚠️ หลังเที่ยงคืนเวลาไทย Yahoo ใส่แท่ง "วันใหม่" ที่ยังไม่มีราคา (Close=NaN แต่ Dividends=0 → dropna(how="all") ไม่ตัด)
+    #    → ราคาล่าสุด NaN → ทุกตัวถูกทิ้ง → "❌ ไม่ได้ข้อมูล" รอบเย็นล้ม (28 ก.ย., 1/7/8 ต.ค. 2026) → ใช้เฉพาะแท่งที่มีราคาปิด
+    df = df[df["Close"].notna()]
     if df.index.tz is not None:
         df.index = df.index.tz_localize(None)
     if len(df) < 60:
@@ -640,6 +643,7 @@ def apply_sector_heat(results):
 def fetch_set_index():
     try:
         h = yf.Ticker("^SET.BK").history(period="1y", auto_adjust=False)
+        h = h[h["Close"].notna()]   # ตัดแท่งวันใหม่ที่ยังไม่มีราคา (หลังเที่ยงคืนไทย)
         if len(h) < 20:
             return None
         c = h["Close"]
@@ -949,95 +953,6 @@ def build_digest(res_set, market, open_signals, new_msgs):
         L.append("⚠️ เตือนใหม่ — ไม่มี")
     L += [BAR, "👉 ดูเต็ม + กราฟ", SITE_URL]
     return "\n".join(L)
-
-
-def _ftxt(s, **kw):
-    d = {"type": "text", "text": s, "size": "sm", "wrap": True, "color": "#1A1A1A"}
-    d.update(kw)
-    return d
-
-
-def _fsep():
-    return {"type": "separator", "margin": "lg", "color": "#E4E7EB"}
-
-
-def build_flex(res_set, market, open_signals, new_msgs):
-    """LINE Flex card — SET เท่านั้น (ไม่ส่ง MAI)"""
-    now = datetime.now(timezone.utc) + timedelta(hours=7)
-    ent, xd, exits, shop = _digest_parts(res_set, market, open_signals, new_msgs)
-    body = []
-    if market:
-        c1 = market.get("chg_1m") or 0
-        mood = "🐂 ขาขึ้น" if c1 > 1 else ("🐻 ขาลง" if c1 < -1 else "↔ ออกข้าง")
-        body.append({"type": "box", "layout": "baseline", "contents": [
-            _ftxt("🇹🇭 SET", color="#7D8590", flex=0, size="sm"),
-            _ftxt(f"{market['level']:,.0f}   {c1:+.1f}%/ด.   {mood}", align="end", weight="bold", size="sm")]})
-
-    body += [_fsep(), _ftxt("🟢 เข้าซื้อได้ตอนนี้", weight="bold", color="#0B6E4F")]
-    if ent:
-        body += [_ftxt("•  " + t, margin="sm") for t in ent[:8]]
-        body.append(_ftxt("💎 = ปันผลคุณภาพ", size="xxs", color="#9AA4B0", margin="sm"))
-        _en = edge_note("เข้าได้", load_edge())
-        if _en:
-            body.append(_ftxt("📊 สถิติ 5ปี: " + _en, size="xxs", color="#9AA4B0", margin="sm"))
-    else:
-        body.append(_ftxt("— ยังไม่มีจังหวะ (ดูโซนน่าเก็บ)", margin="sm", color="#7D8590"))
-
-    if shop:
-        body += [_fsep(), _ftxt("🎯 โซนน่าเก็บ (รอจังหวะ)", weight="bold", color="#1F7A4D")]
-        for tk, z in shop:
-            body.append({"type": "box", "layout": "baseline", "margin": "sm", "contents": [
-                _ftxt("•  " + tk, flex=0), _ftxt(z, align="end", size="xs", color="#555555")]})
-
-    if xd:
-        body += [_fsep(), _ftxt("📅 ใกล้ขึ้น XD (≤10 วัน)", weight="bold", color="#8A6D1F")]
-        body += [_ftxt(f"•  {r['ticker']}   ~{r['xd_next']}", margin="sm") for r in xd[:6]]
-
-    if exits:
-        body += [_fsep(), _ftxt("🚪 หุ้นแนะนำ — ควรพิจารณาออก", weight="bold", color="#7A2222"),
-                 _ftxt("•  " + " · ".join(exits[:10]), margin="sm")]
-
-    body.append(_fsep())
-    if new_msgs:
-        body.append(_ftxt(f"⚠️ เตือนใหม่ ({len(new_msgs)})", weight="bold", color="#7A2222"))
-        body += [_ftxt("•  " + m, margin="sm", size="xs", color="#555555") for m in new_msgs[:6]]
-    else:
-        body.append(_ftxt("⚠️ เตือนใหม่ — ไม่มี", weight="bold", color="#7D8590"))
-
-    bubble = {
-        "type": "bubble",
-        "header": {"type": "box", "layout": "vertical", "backgroundColor": "#0E1117", "paddingAll": "16px",
-                   "contents": [_ftxt("📊 stock.cyk", color="#5FE0C8", weight="bold", size="lg"),
-                                _ftxt(f"สรุปเย็น {now.day} {TH_MON[now.month]} {now.year}", color="#9AA4B0", size="xs")]},
-        "body": {"type": "box", "layout": "vertical", "spacing": "sm", "paddingAll": "16px", "contents": body},
-        "footer": {"type": "box", "layout": "vertical", "contents": [
-            {"type": "button", "style": "primary", "color": "#1F7A4D", "height": "sm",
-             "action": {"type": "uri", "label": "ดูเต็ม + กราฟ 📈", "uri": SITE_URL}}]},
-    }
-    return {"type": "flex", "altText": f"📊 stock.cyk สรุปเย็น {now.day} {TH_MON[now.month]}", "contents": bubble}
-
-
-def send_alert(text, flex=None):
-    """Discord = ข้อความล้วน · LINE = Flex card (ผ่านสะพาน n8n; n8n ถือ token เอง)"""
-    sent_dc = sent_line = False
-    hook = os.environ.get("DISCORD_WEBHOOK", "").strip()
-    if hook:
-        try:
-            import requests
-            requests.post(hook, json={"content": text}, timeout=10).raise_for_status()
-            sent_dc = True
-        except Exception:
-            pass
-    line_hook = os.environ.get("STOCK_LINE_HOOK", "").strip()
-    if line_hook:
-        payload = {"messages": [flex]} if flex else {"text": text}
-        try:
-            import requests
-            requests.post(line_hook, json=payload, timeout=10).raise_for_status()
-            sent_line = True
-        except Exception:
-            pass
-    return sent_dc, sent_line
 
 
 def tabs_html(active):
@@ -1593,11 +1508,7 @@ if __name__ == "__main__":
     tk = TICKERS[:args.limit] if args.limit else TICKERS
     res = run(tk)
     if not res:
-        print("❌ ไม่ได้ข้อมูล — yfinance โดน rate-limit/ล่ม")
-        if not args.intraday:   # อย่าเงียบ — แจ้ง LINE ว่ารอบนี้ดึงข้อมูลไม่ได้ (กันเข้าใจผิดว่าระบบตาย)
-            now = datetime.now(timezone.utc) + timedelta(hours=7)
-            send_alert(f"⚠️ stock.cyk — รอบเย็น {now.day} {TH_MON[now.month]} ดึงข้อมูลไม่ได้ "
-                       f"(yfinance โดน rate-limit) · ระบบยังปกติ ไว้พรุ่งนี้ลองใหม่ · ดูเว็บ: {SITE_URL}")
+        print("❌ ไม่ได้ข้อมูล — yfinance โดน rate-limit/ล่ม (ไม่แจ้งไปไหน · หน้าเว็บคงข้อมูลรอบก่อน)")
         raise SystemExit(1)
 
     print(f"\n{'หุ้น':<8}{'ราคา':>8}{'ปผ%':>6}{'Pay%':>6}{'กำไรโต%':>8}{'งบ':>10}{'คะแนน':>7}  สัญญาณ")
@@ -1646,16 +1557,13 @@ if __name__ == "__main__":
     if args.intraday:
         print("⏸ รอบพักเที่ยง: อัปเดตหน้าเว็บอย่างเดียว — ไม่บันทึกสัญญาณ/ไม่ส่งสรุป (รอราคาปิดรอบเย็น)")
     else:
-        # แจ้งเตือน = SET เท่านั้น (ผู้ใช้ขอไม่ส่ง MAI)
+        # สรุปประจำวัน = SET เท่านั้น
         set_open = signals["open"]
         exit_warns = [{"ticker": s["ticker"], "price": s.get("last", s["entry"]),
                        "items": [("exit", "🚪 " + s["exit"])]}
                       for s in set_open if s.get("exit_st", "").startswith("🔴")]
         new_msgs = diff_new_warnings(warns_set + exit_warns)
         digest = build_digest(res, market, set_open, new_msgs)
-        flex = build_flex(res, market, set_open, new_msgs)
-        sent_dc, sent_line = send_alert(digest, flex)
-        _st = lambda on, env: ('ส่งแล้ว ✅' if on else ('ยังไม่ตั้ง' if not os.environ.get(env) else 'พลาด'))
-        print(f"\n📤 สรุปประจำวัน (SET) — เตือนใหม่ {len(new_msgs)} · "
-              f"Discord: {_st(sent_dc, 'DISCORD_WEBHOOK')} · LINE(Flex): {_st(sent_line, 'STOCK_LINE_HOOK')}")
+        # ไม่ส่งสรุปไปไหนแล้ว (9 ต.ค. 2026 ผู้ใช้: "ไม่ต้องมีการส่งไปที่ไหนอีก เดี๋ยวเข้าไปดูในเว็บเอง") — เก็บไว้ใน log อย่างเดียว
+        print(f"\n📝 สรุปประจำวัน (SET) — เตือนใหม่ {len(new_msgs)} · ไม่ส่งออก (ดูบนเว็บ)")
         print("─" * 40 + "\n" + digest + "\n" + "─" * 40)
