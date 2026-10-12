@@ -1,34 +1,28 @@
 {
- "PTT": [
-  "bear"
- ],
  "EGCO": [
   "trap"
  ],
- "RATCH": [
-  "trap"
+ "PTT": [
+  "bear"
  ],
  "GULF": [
   "exit",
   "trap"
  ],
- "CPAXT": [
-  "bear"
- ],
  "LH": [
-  "trap"
- ],
- "OR": [
   "trap"
  ],
  "TOP": [
   "bear"
  ],
- "WHA": [
-  "trap"
- ],
  "BJC": [
   "bear"
+ ],
+ "CPAXT": [
+  "bear"
+ ],
+ "OR": [
+  "trap"
  ],
  "BANPU": [
   "runup",
@@ -46,5 +40,8 @@
  ],
  "HANA": [
   "bear"
+ ],
+ "WHA": [
+  "trap"
  ]
 }
