@@ -1,16 +1,18 @@
 {
- "EGCO": [
-  "trap"
- ],
  "PTT": [
   "bear"
  ],
+ "EGCO": [
+  "trap"
+ ],
  "GULF": [
-  "exit",
   "trap"
  ],
  "LH": [
   "trap"
+ ],
+ "CENTEL": [
+  "bear"
  ],
  "TOP": [
   "bear"
@@ -25,11 +27,7 @@
   "trap"
  ],
  "BANPU": [
-  "runup",
-  "trap"
- ],
- "CENTEL": [
-  "bear"
+  "runup"
  ],
  "SCC": [
   "bear"
@@ -43,5 +41,11 @@
  ],
  "WHA": [
   "trap"
+ ],
+ "DELTA": [
+  "exit"
+ ],
+ "TU": [
+  "exit"
  ]
 }
