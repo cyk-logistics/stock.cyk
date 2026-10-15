@@ -8,14 +8,11 @@
  "GULF": [
   "trap"
  ],
- "LH": [
-  "trap"
- ],
  "CENTEL": [
   "bear"
  ],
- "TOP": [
-  "bear"
+ "LH": [
+  "trap"
  ],
  "BJC": [
   "bear"
@@ -33,7 +30,6 @@
   "bear"
  ],
  "KCE": [
-  "bear",
   "runup"
  ],
  "HANA": [
@@ -43,9 +39,6 @@
   "trap"
  ],
  "DELTA": [
-  "exit"
- ],
- "TU": [
   "exit"
  ]
 }
