@@ -1,7 +1,4 @@
 {
- "PTT": [
-  "bear"
- ],
  "EGCO": [
   "trap"
  ],
@@ -24,7 +21,8 @@
   "trap"
  ],
  "BANPU": [
-  "runup"
+  "runup",
+  "trap"
  ],
  "SCC": [
   "bear"
