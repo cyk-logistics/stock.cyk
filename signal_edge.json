@@ -38,15 +38,15 @@
    "edge_avg": NaN
   },
   "oversold": {
-   "n": 5222,
-   "hit20": 43.0,
+   "n": 5223,
+   "hit20": 43.1,
    "avg20": -0.57,
    "med20": -0.86,
    "hit10": 44.7,
    "avg10": -0.3,
    "maxgain": 8.94,
-   "maxdd": -8.85,
-   "edge_hit": 2.5,
+   "maxdd": -8.84,
+   "edge_hit": 2.6,
    "edge_avg": NaN
   },
   "near800": {
