@@ -5,26 +5,27 @@
  "EGCO": [
   "trap"
  ],
- "RATCH": [
-  "trap"
- ],
  "GULF": [
   "trap"
  ],
- "CPAXT": [
+ "CENTEL": [
   "bear"
  ],
- "WHA": [
+ "LH": [
   "trap"
  ],
  "BJC": [
+  "bear"
+ ],
+ "CPAXT": [
   "bear"
  ],
  "OR": [
   "trap"
  ],
  "BANPU": [
-  "runup"
+  "runup",
+  "trap"
  ],
  "SCC": [
   "bear"
@@ -35,7 +36,7 @@
  "HANA": [
   "bear"
  ],
- "LH": [
+ "WHA": [
   "trap"
  ],
  "DELTA": [
