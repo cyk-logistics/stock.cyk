@@ -5,13 +5,19 @@
  "EGCO": [
   "trap"
  ],
+ "RATCH": [
+  "trap"
+ ],
  "GULF": [
   "trap"
  ],
- "CENTEL": [
+ "HANA": [
   "bear"
  ],
- "LH": [
+ "CRC": [
+  "bear"
+ ],
+ "WHA": [
   "trap"
  ],
  "BJC": [
@@ -24,19 +30,12 @@
   "trap"
  ],
  "BANPU": [
-  "runup",
-  "trap"
+  "runup"
  ],
  "SCC": [
   "bear"
  ],
- "KCE": [
-  "runup"
- ],
- "HANA": [
-  "bear"
- ],
- "WHA": [
+ "LH": [
   "trap"
  ],
  "DELTA": [
