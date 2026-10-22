@@ -2,6 +2,9 @@
  "PTT": [
   "bear"
  ],
+ "BBL": [
+  "trap"
+ ],
  "GULF": [
   "trap"
  ],
@@ -14,11 +17,11 @@
  "BJC": [
   "bear"
  ],
- "CPAXT": [
-  "bear"
- ],
  "EGCO": [
   "trap"
+ ],
+ "CPAXT": [
+  "bear"
  ],
  "OR": [
   "trap"
@@ -29,9 +32,6 @@
  "SCC": [
   "bear"
  ],
- "KCE": [
-  "runup"
- ],
  "HANA": [
   "bear"
  ],
@@ -39,9 +39,6 @@
   "trap"
  ],
  "DELTA": [
-  "exit"
- ],
- "TU": [
   "exit"
  ]
 }
