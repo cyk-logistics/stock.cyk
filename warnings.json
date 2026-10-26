@@ -1,18 +1,21 @@
 {
- "PTT": [
-  "bear"
- ],
  "BBL": [
   "trap"
+ ],
+ "PTT": [
+  "bear"
  ],
  "GULF": [
   "trap"
  ],
- "CRC": [
+ "HANA": [
   "bear"
  ],
  "WHA": [
   "trap"
+ ],
+ "CRC": [
+  "bear"
  ],
  "BJC": [
   "bear"
@@ -20,20 +23,16 @@
  "EGCO": [
   "trap"
  ],
- "CPAXT": [
-  "bear"
- ],
  "OR": [
   "trap"
  ],
  "BANPU": [
-  "runup",
-  "trap"
+  "runup"
  ],
- "SCC": [
+ "CPAXT": [
   "bear"
  ],
- "HANA": [
+ "SCC": [
   "bear"
  ],
  "LH": [
