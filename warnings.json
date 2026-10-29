@@ -5,11 +5,11 @@
  "GULF": [
   "trap"
  ],
- "EGCO": [
-  "trap"
- ],
  "PTT": [
   "bear"
+ ],
+ "WHA": [
+  "trap"
  ],
  "CRC": [
   "bear"
@@ -17,11 +17,15 @@
  "BJC": [
   "bear"
  ],
+ "EGCO": [
+  "trap"
+ ],
  "OR": [
   "trap"
  ],
  "BANPU": [
-  "runup"
+  "runup",
+  "trap"
  ],
  "CPAXT": [
   "bear"
@@ -32,16 +36,10 @@
  "HANA": [
   "bear"
  ],
- "WHA": [
-  "trap"
- ],
  "LH": [
   "trap"
  ],
  "DELTA": [
-  "exit"
- ],
- "TISCO": [
   "exit"
  ]
 }
