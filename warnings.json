@@ -2,23 +2,20 @@
  "BBL": [
   "trap"
  ],
- "PTT": [
-  "bear"
- ],
  "GULF": [
   "trap"
  ],
- "WHA": [
+ "EGCO": [
   "trap"
+ ],
+ "PTT": [
+  "bear"
  ],
  "CRC": [
   "bear"
  ],
  "BJC": [
   "bear"
- ],
- "EGCO": [
-  "trap"
  ],
  "OR": [
   "trap"
@@ -35,10 +32,16 @@
  "HANA": [
   "bear"
  ],
+ "WHA": [
+  "trap"
+ ],
  "LH": [
   "trap"
  ],
  "DELTA": [
+  "exit"
+ ],
+ "TISCO": [
   "exit"
  ]
 }
