@@ -1,11 +1,19 @@
 {
  "BBL": [
+  "exit",
   "trap"
  ],
- "GULF": [
+ "RATCH": [
   "trap"
  ],
  "PTT": [
+  "bear"
+ ],
+ "GULF": [
+  "exit",
+  "trap"
+ ],
+ "HANA": [
   "bear"
  ],
  "WHA": [
@@ -17,6 +25,9 @@
  "BJC": [
   "bear"
  ],
+ "SCC": [
+  "bear"
+ ],
  "EGCO": [
   "trap"
  ],
@@ -24,22 +35,18 @@
   "trap"
  ],
  "BANPU": [
-  "runup",
-  "trap"
- ],
- "CPAXT": [
-  "bear"
- ],
- "SCC": [
-  "bear"
- ],
- "HANA": [
-  "bear"
+  "runup"
  ],
  "LH": [
   "trap"
  ],
  "DELTA": [
+  "exit"
+ ],
+ "TU": [
+  "exit"
+ ],
+ "TISCO": [
   "exit"
  ]
 }
