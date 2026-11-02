@@ -1,5 +1,5 @@
 {
- "as_of": "2026-11-02",
+ "as_of": "2026-11-03",
  "years": 5,
  "n_stocks": 149,
  "horizon_days": 20,
@@ -39,26 +39,26 @@
   },
   "oversold": {
    "n": 5291,
-   "hit20": 42.8,
-   "avg20": -0.53,
-   "med20": -0.88,
+   "hit20": 42.6,
+   "avg20": NaN,
+   "med20": NaN,
    "hit10": 45.2,
    "avg10": -0.21,
    "maxgain": 9.01,
    "maxdd": -8.79,
-   "edge_hit": 2.5,
+   "edge_hit": 2.3,
    "edge_avg": NaN
   },
   "near800": {
    "n": 2924,
-   "hit20": 43.4,
-   "avg20": -0.27,
-   "med20": -0.86,
+   "hit20": 43.3,
+   "avg20": NaN,
+   "med20": NaN,
    "hit10": 42.4,
    "avg10": -0.2,
    "maxgain": 7.91,
    "maxdd": -7.1,
-   "edge_hit": 3.1,
+   "edge_hit": 3.0,
    "edge_avg": NaN
   },
   "bear_avoid": {
