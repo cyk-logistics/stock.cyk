@@ -3,48 +3,38 @@
   "exit",
   "trap"
  ],
+ "HANA": [
+  "bear"
+ ],
  "RATCH": [
   "trap"
- ],
- "PTT": [
-  "bear"
  ],
  "GULF": [
   "exit",
   "trap"
  ],
- "HANA": [
-  "bear"
+ "EGCO": [
+  "trap"
  ],
  "WHA": [
   "trap"
  ],
- "CRC": [
+ "PTTGC": [
   "bear"
  ],
  "BJC": [
   "bear"
  ],
- "SCC": [
-  "bear"
- ],
- "EGCO": [
-  "trap"
- ],
  "OR": [
   "trap"
  ],
  "BANPU": [
-  "runup",
-  "trap"
+  "runup"
  ],
  "LH": [
   "trap"
  ],
  "DELTA": [
-  "exit"
- ],
- "TU": [
   "exit"
  ],
  "TISCO": [
