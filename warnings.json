@@ -10,16 +10,10 @@
   "exit",
   "trap"
  ],
- "EGCO": [
-  "trap"
- ],
- "SCC": [
-  "bear"
- ],
  "WHA": [
   "trap"
  ],
- "CRC": [
+ "PTTGC": [
   "bear"
  ],
  "BJC": [
@@ -29,8 +23,7 @@
   "trap"
  ],
  "BANPU": [
-  "runup",
-  "trap"
+  "runup"
  ],
  "HANA": [
   "bear"
