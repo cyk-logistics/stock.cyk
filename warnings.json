@@ -3,11 +3,17 @@
   "exit",
   "trap"
  ],
+ "HANA": [
+  "bear"
+ ],
  "RATCH": [
   "trap"
  ],
  "GULF": [
   "exit",
+  "trap"
+ ],
+ "EGCO": [
   "trap"
  ],
  "WHA": [
@@ -23,10 +29,8 @@
   "trap"
  ],
  "BANPU": [
-  "runup"
- ],
- "HANA": [
-  "bear"
+  "runup",
+  "trap"
  ],
  "LH": [
   "trap"
@@ -35,9 +39,6 @@
   "exit"
  ],
  "TISCO": [
-  "exit"
- ],
- "ADVANC": [
   "exit"
  ]
 }
