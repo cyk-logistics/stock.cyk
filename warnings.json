@@ -1,44 +1,39 @@
 {
+ "PTTGC": [
+  "bear"
+ ],
+ "GULF": [
+  "trap"
+ ],
  "BBL": [
   "exit",
+  "trap"
+ ],
+ "RATCH": [
   "trap"
  ],
  "HANA": [
   "bear"
  ],
- "RATCH": [
-  "trap"
- ],
- "GULF": [
-  "exit",
-  "trap"
- ],
  "EGCO": [
   "trap"
- ],
- "WHA": [
-  "trap"
- ],
- "PTTGC": [
-  "bear"
  ],
  "BJC": [
   "bear"
  ],
+ "BANPU": [
+  "runup"
+ ],
  "OR": [
   "trap"
  ],
- "BANPU": [
-  "runup",
+ "WHA": [
   "trap"
  ],
  "LH": [
   "trap"
  ],
  "DELTA": [
-  "exit"
- ],
- "TISCO": [
   "exit"
  ]
 }
