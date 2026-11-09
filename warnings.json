@@ -1,10 +1,4 @@
 {
- "PTTGC": [
-  "bear"
- ],
- "GULF": [
-  "trap"
- ],
  "BBL": [
   "exit",
   "trap"
@@ -12,21 +6,26 @@
  "RATCH": [
   "trap"
  ],
- "HANA": [
+ "BH": [
   "bear"
+ ],
+ "PTTGC": [
+  "bear"
+ ],
+ "WHA": [
+  "trap"
  ],
  "EGCO": [
   "trap"
  ],
- "BJC": [
-  "bear"
- ],
  "BANPU": [
-  "runup",
+  "runup"
+ ],
+ "CPAXT": [
   "trap"
  ],
- "WHA": [
-  "trap"
+ "HANA": [
+  "bear"
  ],
  "LH": [
   "trap"

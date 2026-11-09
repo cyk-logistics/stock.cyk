@@ -26,15 +26,15 @@
    "edge_avg": NaN
   },
   "dip_buy": {
-   "n": 924,
-   "hit20": 41.5,
+   "n": 925,
+   "hit20": 41.4,
    "avg20": -0.38,
-   "med20": -0.81,
-   "hit10": 40.6,
+   "med20": -0.82,
+   "hit10": 40.5,
    "avg10": -0.18,
-   "maxgain": 6.82,
+   "maxgain": 6.81,
    "maxdd": -6.5,
-   "edge_hit": 1.2,
+   "edge_hit": 1.1,
    "edge_avg": NaN
   },
   "oversold": {
