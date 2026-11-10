@@ -12,25 +12,23 @@
  "PTTGC": [
   "bear"
  ],
- "HANA": [
-  "bear"
+ "WHA": [
+  "trap"
  ],
  "EGCO": [
   "trap"
  ],
  "BANPU": [
-  "runup"
+  "runup",
+  "trap"
  ],
  "CPAXT": [
   "trap"
  ],
- "WHA": [
-  "trap"
+ "HANA": [
+  "bear"
  ],
  "LH": [
   "trap"
- ],
- "ADVANC": [
-  "exit"
  ]
 }
