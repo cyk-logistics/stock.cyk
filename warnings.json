@@ -12,6 +12,9 @@
  "PTTGC": [
   "bear"
  ],
+ "HANA": [
+  "bear"
+ ],
  "SPALI": [
   "trap"
  ],
@@ -19,18 +22,22 @@
   "trap"
  ],
  "BANPU": [
-  "runup"
+  "runup",
+  "trap"
  ],
  "CPAXT": [
   "trap"
- ],
- "HANA": [
-  "bear"
  ],
  "WHA": [
   "trap"
  ],
  "LH": [
   "trap"
+ ],
+ "ADVANC": [
+  "exit"
+ ],
+ "EA": [
+  "exit"
  ]
 }
