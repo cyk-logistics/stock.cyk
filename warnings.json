@@ -1,36 +1,33 @@
 {
  "BBL": [
-  "exit",
-  "trap"
- ],
- "RATCH": [
   "trap"
  ],
  "BH": [
   "bear"
  ],
- "PTTGC": [
-  "bear"
+ "RATCH": [
+  "trap"
  ],
  "SPALI": [
-  "trap"
- ],
- "BANPU": [
-  "runup"
- ],
- "EGCO": [
-  "trap"
- ],
- "CPAXT": [
   "trap"
  ],
  "HANA": [
   "bear"
  ],
- "WHA": [
+ "LH": [
   "trap"
  ],
- "LH": [
+ "EGCO": [
+  "bear",
+  "trap"
+ ],
+ "PTTGC": [
+  "bear"
+ ],
+ "BANPU": [
+  "runup"
+ ],
+ "CPAXT": [
   "trap"
  ]
 }
