@@ -1,22 +1,15 @@
 {
+ "BBL": [
+  "trap"
+ ],
  "BH": [
   "bear"
- ],
- "BBL": [
-  "exit",
-  "trap"
- ],
- "RATCH": [
-  "trap"
  ],
  "PTTGC": [
   "bear"
  ],
  "SPALI": [
   "trap"
- ],
- "BANPU": [
-  "runup"
  ],
  "EGCO": [
   "bear",
@@ -30,9 +23,6 @@
  ],
  "LH": [
   "trap"
- ],
- "EA": [
-  "exit"
  ],
  "CPF": [
   "exit"
