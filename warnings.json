@@ -5,17 +5,7 @@
  "BH": [
   "bear"
  ],
- "PTTGC": [
-  "bear"
- ],
  "SPALI": [
-  "trap"
- ],
- "EGCO": [
-  "bear",
-  "trap"
- ],
- "CPAXT": [
   "trap"
  ],
  "HANA": [
@@ -24,7 +14,14 @@
  "LH": [
   "trap"
  ],
- "CPF": [
-  "exit"
+ "EGCO": [
+  "bear",
+  "trap"
+ ],
+ "PTTGC": [
+  "bear"
+ ],
+ "CPAXT": [
+  "trap"
  ]
 }
