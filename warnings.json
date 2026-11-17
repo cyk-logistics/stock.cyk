@@ -1,11 +1,22 @@
 {
  "BBL": [
+  "exit",
+  "trap"
+ ],
+ "PTTGC": [
+  "bear"
+ ],
+ "SPALI": [
   "trap"
  ],
  "BH": [
   "bear"
  ],
- "SPALI": [
+ "CPAXT": [
+  "trap"
+ ],
+ "EGCO": [
+  "bear",
   "trap"
  ],
  "HANA": [
@@ -14,14 +25,16 @@
  "LH": [
   "trap"
  ],
- "EGCO": [
-  "bear",
-  "trap"
+ "GULF": [
+  "exit"
  ],
- "PTTGC": [
-  "bear"
+ "ADVANC": [
+  "exit"
  ],
- "CPAXT": [
-  "trap"
+ "EA": [
+  "exit"
+ ],
+ "CPF": [
+  "exit"
  ]
 }
