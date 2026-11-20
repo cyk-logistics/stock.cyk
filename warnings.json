@@ -2,27 +2,21 @@
  "SPALI": [
   "trap"
  ],
- "EGCO": [
-  "bear"
- ],
  "BBL": [
   "exit",
   "trap"
  ],
+ "EGCO": [
+  "bear"
+ ],
+ "PTTGC": [
+  "bear"
+ ],
  "BH": [
-  "bear"
- ],
- "KTC": [
-  "bear"
- ],
- "CRC": [
   "bear"
  ],
  "CPAXT": [
   "trap"
- ],
- "PTTGC": [
-  "bear"
  ],
  "LH": [
   "trap"
@@ -34,9 +28,6 @@
   "exit"
  ],
  "ADVANC": [
-  "exit"
- ],
- "EA": [
   "exit"
  ],
  "CPF": [
