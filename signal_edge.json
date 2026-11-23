@@ -51,14 +51,14 @@
   },
   "near800": {
    "n": 2974,
-   "hit20": 43.0,
+   "hit20": 42.9,
    "avg20": -0.51,
-   "med20": -0.94,
+   "med20": -0.95,
    "hit10": 42.6,
    "avg10": -0.24,
    "maxgain": 7.7,
    "maxdd": -7.14,
-   "edge_hit": 2.8,
+   "edge_hit": 2.7,
    "edge_avg": NaN
   },
   "bear_avoid": {

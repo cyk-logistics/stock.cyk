@@ -2,12 +2,24 @@
  "SPALI": [
   "trap"
  ],
+ "EGCO": [
+  "bear"
+ ],
  "BBL": [
   "exit",
   "trap"
  ],
- "EGCO": [
+ "KTC": [
   "bear"
+ ],
+ "CENTEL": [
+  "bear"
+ ],
+ "CRC": [
+  "bear"
+ ],
+ "CPAXT": [
+  "trap"
  ],
  "PTTGC": [
   "bear"
@@ -15,14 +27,8 @@
  "BH": [
   "bear"
  ],
- "CPAXT": [
-  "trap"
- ],
  "LH": [
   "trap"
- ],
- "GULF": [
-  "exit"
  ],
  "TU": [
   "exit"
