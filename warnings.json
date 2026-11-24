@@ -2,9 +2,6 @@
  "SPALI": [
   "trap"
  ],
- "EGCO": [
-  "bear"
- ],
  "BBL": [
   "exit",
   "trap"
@@ -12,14 +9,21 @@
  "KTC": [
   "bear"
  ],
- "CENTEL": [
+ "EGCO": [
   "bear"
  ],
- "CRC": [
+ "ADVANC": [
+  "bear",
+  "exit"
+ ],
+ "CENTEL": [
   "bear"
  ],
  "CPAXT": [
   "trap"
+ ],
+ "CRC": [
+  "bear"
  ],
  "PTTGC": [
   "bear"
@@ -30,10 +34,7 @@
  "LH": [
   "trap"
  ],
- "TU": [
-  "exit"
- ],
- "ADVANC": [
+ "TISCO": [
   "exit"
  ],
  "CPF": [
