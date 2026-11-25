@@ -1,39 +1,37 @@
 {
+ "EGCO": [
+  "bear"
+ ],
  "SPALI": [
   "trap"
  ],
- "EGCO": [
+ "KTC": [
+  "bear"
+ ],
+ "ADVANC": [
+  "bear",
+  "exit"
+ ],
+ "CENTEL": [
+  "bear"
+ ],
+ "CPAXT": [
+  "trap"
+ ],
+ "CRC": [
+  "bear"
+ ],
+ "PTTGC": [
   "bear"
  ],
  "BBL": [
   "exit",
   "trap"
  ],
- "KTC": [
-  "bear"
- ],
- "CENTEL": [
-  "bear"
- ],
- "CRC": [
-  "bear"
- ],
- "CPAXT": [
-  "trap"
- ],
- "PTTGC": [
-  "bear"
- ],
- "BH": [
-  "bear"
- ],
  "LH": [
   "trap"
  ],
- "TU": [
-  "exit"
- ],
- "ADVANC": [
+ "TISCO": [
   "exit"
  ],
  "CPF": [
