@@ -1,11 +1,15 @@
 {
- "EGCO": [
-  "bear"
- ],
  "SPALI": [
   "trap"
  ],
+ "BBL": [
+  "exit",
+  "trap"
+ ],
  "KTC": [
+  "bear"
+ ],
+ "EGCO": [
   "bear"
  ],
  "ADVANC": [
@@ -24,9 +28,8 @@
  "PTTGC": [
   "bear"
  ],
- "BBL": [
-  "exit",
-  "trap"
+ "BH": [
+  "bear"
  ],
  "LH": [
   "trap"
