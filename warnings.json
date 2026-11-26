@@ -1,14 +1,4 @@
 {
- "SPALI": [
-  "trap"
- ],
- "BBL": [
-  "exit",
-  "trap"
- ],
- "KTC": [
-  "bear"
- ],
  "EGCO": [
   "bear"
  ],
@@ -16,8 +6,21 @@
   "bear",
   "exit"
  ],
+ "SPALI": [
+  "trap"
+ ],
  "CENTEL": [
   "bear"
+ ],
+ "KTC": [
+  "bear"
+ ],
+ "BBL": [
+  "exit",
+  "trap"
+ ],
+ "LH": [
+  "trap"
  ],
  "CPAXT": [
   "trap"
@@ -28,13 +31,13 @@
  "PTTGC": [
   "bear"
  ],
- "BH": [
-  "bear"
- ],
- "LH": [
-  "trap"
+ "TU": [
+  "exit"
  ],
  "TISCO": [
+  "exit"
+ ],
+ "EA": [
   "exit"
  ],
  "CPF": [
