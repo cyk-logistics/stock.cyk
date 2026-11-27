@@ -2,6 +2,10 @@
  "EGCO": [
   "bear"
  ],
+ "BBL": [
+  "exit",
+  "trap"
+ ],
  "SPALI": [
   "trap"
  ],
@@ -15,7 +19,11 @@
  "CENTEL": [
   "bear"
  ],
+ "LH": [
+  "trap"
+ ],
  "CPAXT": [
+  "runup",
   "trap"
  ],
  "CRC": [
@@ -24,12 +32,8 @@
  "PTTGC": [
   "bear"
  ],
- "BBL": [
-  "exit",
-  "trap"
- ],
- "LH": [
-  "trap"
+ "TU": [
+  "exit"
  ],
  "TISCO": [
   "exit"
